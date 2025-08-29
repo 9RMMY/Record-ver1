@@ -5,11 +5,13 @@
  * @format
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 
 import MainPage from './src/pages/MainPage';
 import AddTicketPage from './src/pages/AddTicketPage';
@@ -25,7 +27,27 @@ import CalenderScreen from './src/pages/CalenderScreen';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
+// Wrapper component for Add Tickets tab that opens modal
+function AddTicketTabWrapper({ navigation }: { navigation: any }) {
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('tabPress', (e: any) => {
+      e.preventDefault();
+      navigation.navigate('AddTicket', {
+        isFirstTicket: false,
+        fromAddButton: true
+      });
+    });
+
+    return unsubscribe;
+  }, [navigation]);
+
+  // Return empty view since this tab should only trigger modal
+  return <View style={{ flex: 1, backgroundColor: '#FFFFFF' }} />;
+}
+
 function MainTabs() {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -34,9 +56,10 @@ function MainTabs() {
           backgroundColor: '#FFFFFF',
           borderTopColor: '#E0E0E0',
           borderTopWidth: 1,
-          paddingBottom: 5,
+          paddingBottom: insets.bottom,
           paddingTop: 5,
-          height: 60,
+          height: 60 + insets.bottom,
+          borderRadius: 8,
         },
         tabBarActiveTintColor: '#3498DB',
         tabBarInactiveTintColor: '#7F8C8D',
@@ -59,7 +82,7 @@ function MainTabs() {
       />
       <Tab.Screen 
         name="Add Tickets" 
-        component={AddTicketPage}
+        component={AddTicketTabWrapper}
         options={{
           tabBarLabel: 'Add Tickets',
           tabBarIcon: ({ color }: { color: string }) => (

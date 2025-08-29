@@ -17,10 +17,22 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 
 interface AddTicketPageProps {
   navigation: any;
+  route?: {
+    params?: {
+      isFirstTicket?: boolean;
+      fromEmptyState?: boolean;
+      fromAddButton?: boolean;
+    };
+  };
 }
 
-const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation }) => {
+const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation, route }) => {
   const [, addTicket] = useAtom(addTicketAtom);
+  
+  // 라우트 파라미터 추출
+  const isFirstTicket = route?.params?.isFirstTicket || false;
+  const fromEmptyState = route?.params?.fromEmptyState || false;
+  const fromAddButton = route?.params?.fromAddButton || false;
 
   const [formData, setFormData] = useState<Omit<Ticket, 'id' | 'updatedAt'>>({
     title: '',
@@ -77,57 +89,79 @@ const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation }) => {
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>New Ticket</Text>
+        <Text style={styles.headerTitle}>
+          {isFirstTicket ? '첫 번째 티켓' : 'New Ticket'}
+        </Text>
         <View style={styles.placeholder} />
       </View>
+
+      {/* 컨텍스트 메시지 */}
+      {(fromEmptyState || fromAddButton) && (
+        <View style={styles.contextMessage}>
+          <Text style={styles.contextTitle}>
+            {fromEmptyState 
+              ? '🎭 첫 번째 공연 기록을 시작해보세요!' 
+              : '🎫 새로운 공연 기록을 추가해보세요!'}
+          </Text>
+          <Text style={styles.contextSubtitle}>
+            {fromEmptyState
+              ? '소중한 공연의 추억을 기록하고 언제든 다시 만나보세요'
+              : '관람한 공연의 소중한 순간을 기록해보세요'}
+          </Text>
+        </View>
+      )}
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.formContainer}>
           {/* 제목 */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Title *</Text>
+            <Text style={styles.label}>공연 제목 *</Text>
             <TextInput
               style={styles.input}
               value={formData.title}
               onChangeText={(value) => handleInputChange('title', value)}
-              placeholder="Enter ticket title"
+              placeholder="예: 아이유 콘서트, 오페라의 유령"
               placeholderTextColor="#BDC3C7"
             />
           </View>
 
           {/* 아티스트 */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Artist *</Text>
+            <Text style={styles.label}>아티스트/연출 *</Text>
             <TextInput
               style={styles.input}
               value={formData.artist}
               onChangeText={(value) => handleInputChange('artist', value)}
-              placeholder="Artist name"
+              placeholder="예: 아이유, 뮤지컬 배우명"
               placeholderTextColor="#BDC3C7"
             />
           </View>
 
           {/* 장소 */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Place *</Text>
+            <Text style={styles.label}>공연장 *</Text>
             <TextInput
               style={styles.input}
               value={formData.place}
               onChangeText={(value) => handleInputChange('place', value)}
-              placeholder="Venue"
+              placeholder="예: 잠실종합운동장, 세종문화회관"
               placeholderTextColor="#BDC3C7"
             />
           </View>
 
           {/* 공연 날짜 */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Performed At *</Text>
+            <Text style={styles.label}>공연 날짜 *</Text>
             <TouchableOpacity
               style={styles.dateButton}
               onPress={() => setShowDatePicker(true)}
             >
               <Text style={styles.dateButtonText}>
-                {formData.performedAt.toISOString().split('T')[0]}
+                {formData.performedAt.toLocaleDateString('ko-KR', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
               </Text>
             </TouchableOpacity>
             {showDatePicker && (
@@ -142,7 +176,7 @@ const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation }) => {
 
           {/* 공개/비공개 토글 */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Status *</Text>
+            <Text style={styles.label}>공개 설정 *</Text>
             <View style={styles.statusContainer}>
               <TouchableOpacity
                 style={[
@@ -182,12 +216,12 @@ const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation }) => {
 
           {/* 예매처 */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Booking Site *</Text>
+            <Text style={styles.label}>예매처 *</Text>
             <TextInput
               style={styles.input}
               value={formData.bookingSite}
               onChangeText={(value) => handleInputChange('bookingSite', value)}
-              placeholder="멜론티켓"
+              placeholder="예: 멜론티켓, 인터파크, 예스24"
               placeholderTextColor="#BDC3C7"
             />
           </View>
@@ -197,10 +231,12 @@ const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation }) => {
       {/* 푸터 버튼 */}
       <View style={styles.footer}>
         <TouchableOpacity style={styles.resetButton} onPress={resetForm}>
-          <Text style={styles.resetButtonText}>Reset</Text>
+          <Text style={styles.resetButtonText}>초기화</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitButtonText}>Create Ticket</Text>
+          <Text style={styles.submitButtonText}>
+            {isFirstTicket ? '첫 티켓 만들기' : '티켓 만들기'}
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -239,6 +275,26 @@ const styles = StyleSheet.create({
   resetButtonText: { fontSize: 16, fontWeight: '600', color: '#7F8C8D' },
   submitButton: { flex: 2, backgroundColor: '#3498DB', borderRadius: 12, padding: 16, alignItems: 'center', marginLeft: 8 },
   submitButtonText: { fontSize: 16, fontWeight: '600', color: '#FFFFFF' },
+  contextMessage: {
+    backgroundColor: '#F8F9FF',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E8EAED',
+  },
+  contextTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#2C3E50',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  contextSubtitle: {
+    fontSize: 14,
+    color: '#666666',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
 });
 
 export default AddTicketPage;
