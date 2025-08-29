@@ -9,10 +9,10 @@ export interface Ticket {
   updatedAt: Date;
   userId?: string;
   review?: {
-    rating: number;
     reviewText: string;
   };
   images?: string[];
+  createdAt: Date;
 }
 
 export interface TicketFormData {

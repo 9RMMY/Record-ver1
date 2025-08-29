@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   Dimensions,
   StatusBar,
+  Image,
+  ImageBackground,
 } from 'react-native';
 import { useAtom } from 'jotai';
 import { addTicketAtom } from '../atoms/ticketAtoms';
@@ -32,6 +34,9 @@ const TicketCompletePage: React.FC<TicketCompletePageProps> = ({ navigation, rou
   const reviewData = route?.params?.reviewData;
   const images = route?.params?.images;
   const [, addTicket] = useAtom(addTicketAtom);
+
+  // Get the first image (likely AI generated) to display on ticket
+  const ticketImage = images && images.length > 0 ? images[0] : null;
 
   useEffect(() => {
     // Save the complete ticket with review and images
@@ -97,12 +102,27 @@ const TicketCompletePage: React.FC<TicketCompletePageProps> = ({ navigation, rou
 
           {/* Main Ticket Content */}
           <View style={styles.ticketMain}>
-            <View style={styles.circleContainer}>
-              <Text style={styles.circleText}>Jamong</Text>
-              <Text style={styles.circleText}>Salgu</Text>
-              <Text style={styles.circleText}>Club</Text>
-              <Text style={styles.circleStars}>✦</Text>
-            </View>
+            {ticketImage ? (
+              <ImageBackground
+                source={{ uri: ticketImage }}
+                style={styles.circleContainer}
+                imageStyle={styles.circleImageStyle}
+              >
+                <View style={styles.circleOverlay}>
+                  <Text style={styles.circleText}>Jamong</Text>
+                  <Text style={styles.circleText}>Salgu</Text>
+                  <Text style={styles.circleText}>Club</Text>
+                  <Text style={styles.circleStars}>✦</Text>
+                </View>
+              </ImageBackground>
+            ) : (
+              <View style={styles.circleContainer}>
+                <Text style={styles.circleText}>Jamong</Text>
+                <Text style={styles.circleText}>Salgu</Text>
+                <Text style={styles.circleText}>Club</Text>
+                <Text style={styles.circleStars}>✦</Text>
+              </View>
+            )}
           </View>
 
           {/* Ticket Footer */}
@@ -258,6 +278,18 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 30,
     right: 30,
+  },
+  circleImageStyle: {
+    borderRadius: 100,
+  },
+  circleOverlay: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(255, 107, 71, 0.7)',
+    borderRadius: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
   },
   ticketFooter: {
     padding: 20,

@@ -13,10 +13,14 @@ import { Text, View } from 'react-native';
 
 import MainPage from './src/pages/MainPage';
 import AddTicketPage from './src/pages/AddTicketPage';
+import ReviewOptions from './src/pages/ReviewOptions';
+import ImageOptions from './src/pages/ImageOptions';
 import AddReviewPage from './src/pages/AddReviewPage';
 import AddImagePage from './src/pages/AddImagePage';
+import GenerateAIImage from './src/pages/GenerateAIImage';
 import TicketCompletePage from './src/pages/TicketCompletePage';
 import MyPage from './src/pages/MyPage';
+import CalenderScreen from './src/pages/CalenderScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -54,6 +58,30 @@ function MainTabs() {
         }}
       />
       <Tab.Screen 
+        name="Add Tickets" 
+        component={AddTicketPage}
+        options={{
+          tabBarLabel: 'Add Tickets',
+          tabBarIcon: ({ color }: { color: string }) => (
+            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={{ color, fontSize: 20 }}>⊕</Text>
+            </View>
+          ),
+        }}
+      />
+      <Tab.Screen 
+        name="CalenderScreen" 
+        component={CalenderScreen}
+        options={{
+          tabBarLabel: 'Calender',
+          tabBarIcon: ({ color }: { color: string }) => (
+            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={{ color, fontSize: 20 }}>📆</Text>
+            </View>
+          ),
+        }}
+      />
+      <Tab.Screen 
         name="MyTickets" 
         component={MyPage}
         options={{
@@ -85,6 +113,13 @@ function App(): React.JSX.Element {
           }}
         />
         <Stack.Screen 
+          name="ReviewOptions" 
+          component={ReviewOptions}
+          options={{
+            presentation: 'modal',
+          }}
+        />
+        <Stack.Screen 
           name="AddReview" 
           component={AddReviewPage}
           options={{
@@ -92,8 +127,22 @@ function App(): React.JSX.Element {
           }}
         />
         <Stack.Screen 
+          name="ImageOptions" 
+          component={ImageOptions}
+          options={{
+            presentation: 'modal',
+          }}
+        />
+        <Stack.Screen 
           name="AddImage" 
           component={AddImagePage}
+          options={{
+            presentation: 'modal',
+          }}
+        />
+        <Stack.Screen 
+          name="GenerateAIImage" 
+          component={GenerateAIImage}
           options={{
             presentation: 'modal',
           }}

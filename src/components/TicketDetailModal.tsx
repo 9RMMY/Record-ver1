@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,8 @@ import {
   StatusBar,
   Alert,
   Share,
+  Animated,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import { Ticket } from '../types/ticket';
 import { useAtom } from 'jotai';
@@ -30,6 +32,8 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
   onClose,
 }) => {
   const [, deleteTicket] = useAtom(deleteTicketAtom);
+  const [isFlipped, setIsFlipped] = useState(false);
+  const flipAnimation = useRef(new Animated.Value(0)).current;
 
   if (!ticket) return null;
 
@@ -43,11 +47,12 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
         return '#E0E0E0';
     }
   };
-
   const handleShare = async () => {
     try {
       const shareContent = {
-        message: `🎫 ${ticket.title}\n🎤 ${ticket.artist}\n📍 ${ticket.place}\n📅 ${ticket.performedAt.toLocaleDateString('ko-KR')}\n${ticket.review ? `⭐ ${ticket.review.rating}/5 - ${ticket.review.reviewText}` : ''}`,
+        message: `🎫 ${ticket.title}\n🎤 ${ticket.artist}\n📍 ${
+          ticket.place
+        }\n📅 ${ticket.performedAt.toLocaleDateString('ko-KR')}`,
         title: `${ticket.title} 티켓`,
       };
       await Share.share(shareContent);
@@ -74,20 +79,38 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
             Alert.alert('완료', '티켓이 삭제되었습니다.');
           },
         },
-      ]
+      ],
     );
   };
 
-  const renderStars = (rating: number) => {
-    const stars = [];
-    for (let i = 1; i <= 5; i++) {
-      stars.push(
-        <Text key={i} style={[styles.star, i <= rating && styles.starActive]}>
-          ★
-        </Text>
-      );
-    }
-    return stars;
+  const handleFlip = () => {
+    const toValue = isFlipped ? 0 : 1;
+
+    Animated.timing(flipAnimation, {
+      toValue,
+      duration: 600,
+      useNativeDriver: true,
+    }).start();
+
+    setIsFlipped(!isFlipped);
+  };
+
+  const frontInterpolate = flipAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '180deg'],
+  });
+
+  const backInterpolate = flipAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['180deg', '360deg'],
+  });
+
+  const frontAnimatedStyle = {
+    transform: [{ rotateY: frontInterpolate }],
+  };
+
+  const backAnimatedStyle = {
+    transform: [{ rotateY: backInterpolate }],
   };
 
   return (
@@ -99,80 +122,171 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
     >
       <View style={styles.container}>
         <StatusBar barStyle="dark-content" />
-        
+
         {/* Header */}
         <View style={styles.header}>
-          <View style={styles.dragHandle} />
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Text style={styles.closeButtonText}>✕</Text>
+          <TouchableOpacity style={styles.backButton} onPress={onClose}>
+            <Text style={styles.backButtonText}>‹</Text>
           </TouchableOpacity>
+          <Text style={styles.headerTitle}>{isFlipped ? '후기' : '티켓'}</Text>
+          <View style={styles.headerActions}>
+            <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
+              <Text style={styles.actionButtonText}>↗</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={handleDelete}
+            >
+              <Text style={styles.actionButtonText}>⋯</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {/* Ticket Info */}
-          <View style={styles.ticketSection}>
-            <View style={styles.titleRow}>
-              <Text style={styles.ticketTitle}>{ticket.title}</Text>
-              <View style={[styles.statusBadge, { backgroundColor: getStatusColor(ticket.status) }]}>
-                <Text style={styles.statusText}>{ticket.status}</Text>
+          {/* Flippable Ticket Card */}
+          <View style={styles.posterContainer}>
+            <TouchableWithoutFeedback onPress={handleFlip}>
+              <View style={styles.flipContainer}>
+                {/* Front Side */}
+                <Animated.View
+                  style={[
+                    styles.flipCard,
+                    styles.flipCardFront,
+                    frontAnimatedStyle,
+                  ]}
+                >
+                  <View style={styles.posterWrapper}>
+                    {ticket.images && ticket.images.length > 0 ? (
+                      <Image
+                        source={{ uri: ticket.images[0] }}
+                        style={styles.posterImage}
+                      />
+                    ) : (
+                      <View style={styles.placeholderPoster}>
+                        <Text style={styles.placeholderText}>🎫</Text>
+                        <Text style={styles.placeholderTitle}>
+                          {ticket.title}
+                        </Text>
+                      </View>
+                    )}
+                    <View style={styles.tapHint}>
+                      <Text style={styles.tapHintText}>탭하여 후기 보기</Text>
+                    </View>
+                  </View>
+                </Animated.View>
+
+                {/* Back Side - Review */}
+                <Animated.View
+                  style={[
+                    styles.flipCard,
+                    styles.flipCardBack,
+                    backAnimatedStyle,
+                  ]}
+                >
+                  <View style={styles.reviewCardContent}>
+                    <Text style={styles.reviewCardTitle}>관람 후기</Text>
+
+                    {ticket.review ? (
+                      <>
+                        <ScrollView
+                          style={styles.reviewTextContainer}
+                          showsVerticalScrollIndicator={false}
+                        >
+                          <Text style={styles.reviewText}>
+                            {ticket.review.reviewText}
+                          </Text>
+                        </ScrollView>
+
+                        <View style={styles.reviewDate}>
+                          <Text style={styles.reviewDateText}>
+                            {ticket.createdAt?.toLocaleDateString('ko-KR')}
+                          </Text>
+                        </View>
+                      </>
+                    ) : (
+                      <View style={styles.noReviewContainer}>
+                        <Text style={styles.noReviewEmoji}>✍️</Text>
+                        <Text style={styles.noReviewText}>
+                          아직 후기가 없습니다
+                        </Text>
+                        <Text style={styles.noReviewSubText}>
+                          관람 후 소중한 후기를 남겨보세요
+                        </Text>
+                      </View>
+                    )}
+
+                    <View style={styles.tapHint}>
+                      <Text style={styles.tapHintText}>탭하여 티켓 보기</Text>
+                    </View>
+                  </View>
+                </Animated.View>
               </View>
-            </View>
-            
-            <Text style={styles.ticketInfo}>🎤 {ticket.artist}</Text>
-            <Text style={styles.ticketInfo}>📍 {ticket.place}</Text>
-            <Text style={styles.ticketInfo}>📅 {ticket.performedAt.toLocaleDateString('ko-KR', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-              weekday: 'short'
-            })}</Text>
-            <Text style={styles.ticketInfo}>🎫 {ticket.bookingSite}</Text>
-            <Text style={styles.dateText}>
-              업데이트: {ticket.updatedAt.toLocaleDateString('ko-KR')}
+            </TouchableWithoutFeedback>
+          </View>
+
+          {/* Title and Date */}
+          <View style={styles.titleSection}>
+            <Text style={styles.title}>{ticket.title}</Text>
+            <Text style={styles.date}>
+              {ticket.performedAt.toLocaleDateString('ko-KR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
             </Text>
           </View>
 
-          {/* Review Section */}
-          {ticket.review && (
-            <View style={styles.reviewSection}>
-              <Text style={styles.sectionTitle}>후기</Text>
-              <View style={styles.ratingContainer}>
-                <View style={styles.starsContainer}>
-                  {renderStars(ticket.review.rating)}
-                </View>
-                <Text style={styles.ratingText}>{ticket.review.rating}/5</Text>
-              </View>
-              <Text style={styles.reviewText}>{ticket.review.reviewText}</Text>
-            </View>
-          )}
-
-          {/* Images Section */}
-          {ticket.images && ticket.images.length > 0 && (
-            <View style={styles.imagesSection}>
-              <Text style={styles.sectionTitle}>사진 ({ticket.images.length})</Text>
-              <ScrollView 
-                horizontal 
-                showsHorizontalScrollIndicator={false}
-                style={styles.imagesScrollView}
-              >
-                {ticket.images.map((imageUri, index) => (
-                  <View key={index} style={styles.imageContainer}>
-                    <Image source={{ uri: imageUri }} style={styles.ticketImage} />
-                  </View>
-                ))}
-              </ScrollView>
-            </View>
-          )}
-
-          {/* No Review/Images Message */}
-          {!ticket.review && (!ticket.images || ticket.images.length === 0) && (
-            <View style={styles.noContentSection}>
-              <Text style={styles.noContentText}>아직 후기나 사진이 없습니다</Text>
-              <Text style={styles.noContentSubtext}>
-                티켓을 생성할 때 후기와 사진을 추가해보세요!
+          {/* Event Details */}
+          <View style={styles.detailsSection}>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>일시</Text>
+              <Text style={styles.detailValue}>
+                {ticket.performedAt.toLocaleDateString('ko-KR', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  weekday: 'short',
+                })}{' '}
+                {ticket.performedAt.toLocaleTimeString('ko-KR', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: true,
+                })}
               </Text>
             </View>
-          )}
+
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>장소</Text>
+              <Text style={styles.detailValue}>{ticket.place}</Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>출연</Text>
+              <Text style={styles.detailValue}>{ticket.artist}</Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>좌석번호</Text>
+              <Text style={styles.detailValue}>22번</Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>예매처</Text>
+              <Text style={styles.detailValue}>{ticket.bookingSite}</Text>
+            </View>
+          </View>
+
+          {/* Status Badge */}
+          <View style={styles.statusSection}>
+            <View
+              style={[
+                styles.statusBadge,
+                { backgroundColor: getStatusColor(ticket.status) },
+              ]}
+            >
+              <Text style={styles.statusText}>{ticket.status}</Text>
+            </View>
+          </View>
         </ScrollView>
       </View>
     </Modal>
@@ -182,193 +296,243 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#FFFFFF',
   },
   header: {
-    backgroundColor: '#FFFFFF',
-    paddingTop: 12,
-    paddingBottom: 16,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 20,
+    backgroundColor: '#FFFFFF',
   },
-  dragHandle: {
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#2C3E50',
+  },
+  backButton: {
     width: 40,
-    height: 4,
-    backgroundColor: '#BDC3C7',
-    borderRadius: 2,
-    marginBottom: 12,
-  },
-  closeButton: {
-    position: 'absolute',
-    right: 20,
-    top: 16,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#ECF0F1',
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F8F9FA',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  closeButtonText: {
-    fontSize: 16,
-    color: '#7F8C8D',
+  backButtonText: {
+    fontSize: 24,
+    color: '#2C3E50',
+    fontWeight: 'bold',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  actionButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F8F9FA',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  actionButtonText: {
+    fontSize: 18,
+    color: '#2C3E50',
     fontWeight: 'bold',
   },
   content: {
     flex: 1,
+    backgroundColor: '#F8F9FA',
   },
-  ticketSection: {
+  posterContainer: {
+    alignItems: 'center',
+    paddingVertical: 30,
     backgroundColor: '#FFFFFF',
-    margin: 20,
-    padding: 20,
-    borderRadius: 16,
+  },
+  flipContainer: {
+    width: width * 0.7,
+    aspectRatio: 0.7,
+  },
+  flipCard: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+    backfaceVisibility: 'hidden',
+    borderRadius: 20,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 8,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
   },
-  titleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 16,
+  flipCardFront: {
+    backgroundColor: 'transparent',
   },
-  ticketTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#2C3E50',
-    flex: 1,
-    marginRight: 12,
-  },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
-  statusText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-    fontSize: 12,
-  },
-  ticketInfo: {
-    fontSize: 16,
-    color: '#34495E',
-    marginBottom: 8,
-    lineHeight: 24,
-  },
-  dateText: {
-    fontSize: 12,
-    color: '#BDC3C7',
-    marginTop: 8,
-  },
-  reviewSection: {
+  flipCardBack: {
     backgroundColor: '#FFFFFF',
-    marginHorizontal: 20,
-    marginBottom: 20,
-    padding: 20,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
   },
-  sectionTitle: {
+  posterWrapper: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 20,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  posterImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  placeholderPoster: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#4ECDC4',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  placeholderText: {
+    fontSize: 60,
+    marginBottom: 10,
+  },
+  placeholderTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#2C3E50',
-    marginBottom: 16,
+    color: '#FFFFFF',
+    textAlign: 'center',
+    paddingHorizontal: 20,
   },
-  ratingContainer: {
-    flexDirection: 'row',
+  tapHint: {
+    position: 'absolute',
+    bottom: 16,
+    left: 0,
+    right: 0,
     alignItems: 'center',
-    marginBottom: 12,
   },
-  starsContainer: {
-    flexDirection: 'row',
-    marginRight: 8,
+  tapHintText: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    overflow: 'hidden',
   },
-  star: {
+  reviewCardContent: {
+    flex: 1,
+    padding: 24,
+    justifyContent: 'center',
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+  },
+  reviewCardTitle: {
     fontSize: 20,
-    color: '#E0E0E0',
-    marginRight: 2,
+    fontWeight: 'bold',
+    color: '#2C3E50',
+    textAlign: 'center',
+    marginBottom: 20,
   },
-  starActive: {
-    color: '#F39C12',
-  },
-  ratingText: {
-    fontSize: 16,
-    color: '#7F8C8D',
-    fontWeight: '600',
+  reviewTextContainer: {
+    flex: 1,
+    maxHeight: 200,
   },
   reviewText: {
     fontSize: 16,
     color: '#2C3E50',
     lineHeight: 24,
+    textAlign: 'center',
   },
-  imagesSection: {
-    backgroundColor: '#FFFFFF',
-    marginHorizontal: 20,
-    marginBottom: 20,
-    padding: 20,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  imagesScrollView: {
-    marginTop: 8,
-  },
-  imageContainer: {
-    marginRight: 12,
-  },
-  ticketImage: {
-    width: 150,
-    height: 150,
-    borderRadius: 12,
-  },
-  noContentSection: {
-    backgroundColor: '#FFFFFF',
-    marginHorizontal: 20,
-    marginBottom: 20,
-    padding: 40,
-    borderRadius: 16,
+  reviewDate: {
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    marginTop: 16,
   },
-  noContentText: {
-    fontSize: 16,
+  reviewDateText: {
+    fontSize: 12,
+    color: '#95A5A6',
+  },
+  noReviewContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noReviewEmoji: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  noReviewText: {
+    fontSize: 18,
     fontWeight: '600',
-    color: '#BDC3C7',
+    color: '#7F8C8D',
+    textAlign: 'center',
     marginBottom: 8,
+  },
+  noReviewSubText: {
+    fontSize: 14,
+    color: '#95A5A6',
     textAlign: 'center',
   },
-  noContentSubtext: {
-    fontSize: 14,
-    color: '#BDC3C7',
+  titleSection: {
+    alignItems: 'center',
+    paddingVertical: 20,
+    backgroundColor: '#FFFFFF',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#2C3E50',
     textAlign: 'center',
-    lineHeight: 20,
+    marginBottom: 8,
+  },
+  date: {
+    fontSize: 16,
+    color: '#7F8C8D',
+  },
+  detailsSection: {
+    backgroundColor: '#FFFFFF',
+    marginTop: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F2F6',
+  },
+  detailLabel: {
+    fontSize: 16,
+    color: '#7F8C8D',
+    fontWeight: '500',
+    flex: 1,
+  },
+  detailValue: {
+    fontSize: 16,
+    color: '#2C3E50',
+    fontWeight: '600',
+    flex: 2,
+    textAlign: 'right',
+  },
+  statusSection: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  statusBadge: {
+    alignSelf: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  statusText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 14,
   },
 });
 

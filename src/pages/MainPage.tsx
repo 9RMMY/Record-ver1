@@ -5,8 +5,10 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
+  Image,
+  Dimensions,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAtom } from 'jotai';
 import { ticketsAtom, ticketsCountAtom } from '../atoms/ticketAtoms';
 import { Ticket } from '../types/ticket';
@@ -16,22 +18,21 @@ interface MainPageProps {
   navigation: any;
 }
 
+const { width } = Dimensions.get('window');
+const CARD_WIDTH = width * 0.75;
+const CARD_HEIGHT = (CARD_WIDTH * 4) / 3;
+
 const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
+  const insets = useSafeAreaInsets();
   const [tickets] = useAtom(ticketsAtom);
   const [ticketsCount] = useAtom(ticketsCountAtom);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
-
-  const getStatusColor = (status: '공개' | '비공개') => {
-    switch (status) {
-      case '공개':
-        return '#4ECDC4';
-      case '비공개':
-        return '#FF6B6B';
-      default:
-        return '#E0E0E0';
-    }
-  };
+  const [selectedFilter, setSelectedFilter] = useState<
+    '밴드' | '연극/뮤지컬'
+  >('밴드');
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [currentTicketIndex, setCurrentTicketIndex] = useState(0);
 
   const handleTicketPress = (ticket: Ticket) => {
     setSelectedTicket(ticket);
@@ -43,93 +44,304 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
     setSelectedTicket(null);
   };
 
-  const renderTicketItem = ({ item }: { item: Ticket }) => (
-    <TouchableOpacity style={styles.ticketCard} onPress={() => handleTicketPress(item)}>
-      <Text style={styles.ticketTitle}>{item.title}</Text>
-      <Text style={styles.ticketInfo}>
-        {item.artist} - {item.place}
-      </Text>
-      <Text style={styles.ticketInfo}>
-        공연일: {item.performedAt.toLocaleDateString()}
-      </Text>
-      <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
-        <Text style={styles.statusText}>{item.status}</Text>
+  const getCurrentMonth = () => {
+    const now = new Date();
+    return `${now.getMonth() + 1}월`;
+  };
+
+  const formatDate = (date: Date) => {
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${month}월 ${day}일`;
+  };
+
+  const handleFilterSelect = (
+    filter: '밴드' | '연극/뮤지컬',
+  ) => {
+    setSelectedFilter(filter);
+    setShowFilterDropdown(false);
+  };
+
+  // Mock ticket data for demo
+  const mockTicket: Ticket = {
+    id: '1',
+    title: '지구의 마지막 밤',
+    artist: '2 Day Old Sneakers',
+    place: '생기 스튜디오',
+    performedAt: new Date('2025-07-06'),
+    bookingSite: '구글폼',
+    status: '비공개',
+    images: ['https://picsum.photos/400/600?random=1'],
+    review: {
+      reviewText: 'Amazing performance!',
+    },
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  const displayTickets = tickets.length > 0 ? tickets : [mockTicket];
+
+  const renderMainTicket = () => {
+    const currentTicket =
+      displayTickets[currentTicketIndex] || displayTickets[0];
+
+    return (
+      <View style={styles.mainTicketContainer}>
+        <TouchableOpacity
+          style={styles.mainTicketCard}
+          onPress={() => handleTicketPress(currentTicket)}
+        >
+          {currentTicket.images && currentTicket.images.length > 0 ? (
+            <Image
+              source={{ uri: currentTicket.images[0] }}
+              style={styles.mainTicketImage}
+            />
+          ) : (
+            <View style={styles.mainTicketPlaceholder}>
+              <Text style={styles.placeholderText}>
+                새 티켓을 추가해보세요!
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
+
+        <View style={styles.dateButtonContainer}>
+          <TouchableOpacity style={styles.dateButton}>
+            <Text style={styles.dateButtonText}>
+              {formatDate(currentTicket.performedAt)}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
-      <Text style={styles.dateText}>업데이트: {item.updatedAt.toLocaleDateString()}</Text>
-      
-      {/* Show indicators for review and images */}
-      <View style={styles.indicatorsContainer}>
-        {item.review && (
-          <View style={styles.indicator}>
-            <Text style={styles.indicatorText}>⭐ 후기</Text>
-          </View>
-        )}
-        {item.images && item.images.length > 0 && (
-          <View style={styles.indicator}>
-            <Text style={styles.indicatorText}>📷 {item.images.length}</Text>
-          </View>
-        )}
-      </View>
-    </TouchableOpacity>
-  );
+    );
+  };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Ticket Book</Text>
-        <Text style={styles.ticketCount}>Total: {ticketsCount} tickets</Text>
-      </View>
+    <View style={[styles.container, { paddingBottom: insets.bottom }]}>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Re:cord</Text>
+          <View style={styles.headerRight}>
+            <TouchableOpacity
+              style={styles.filterButton}
+              onPress={() => setShowFilterDropdown(!showFilterDropdown)}
+            >
+              <Text style={styles.filterButtonText}>{selectedFilter}</Text>
+              <Text style={styles.filterArrow}>▼</Text>
+            </TouchableOpacity>
 
-      {tickets.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No tickets yet</Text>
-          <Text style={styles.emptySubtext}>Tap the + button to create your first ticket</Text>
+            {showFilterDropdown && (
+              <View style={styles.filterDropdown}>
+                <TouchableOpacity
+                  style={[
+                    styles.filterOption,
+                    selectedFilter === '밴드' && styles.filterOptionSelected,
+                  ]}
+                  onPress={() => handleFilterSelect('밴드')}
+                >
+                  <Text
+                    style={[
+                      styles.filterOptionText,
+                      selectedFilter === '밴드' && styles.filterOptionTextSelected,
+                    ]}
+                  >
+                    밴드
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.filterOption,
+                    selectedFilter === '연극/뮤지컬' &&
+                      styles.filterOptionSelected,
+                  ]}
+                  onPress={() => handleFilterSelect('연극/뮤지컬')}
+                >
+                  <Text
+                    style={[
+                      styles.filterOptionText,
+                      selectedFilter === '연극/뮤지컬' &&
+                        styles.filterOptionTextSelected,
+                    ]}
+                  >
+                    연극/뮤지컬
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
         </View>
-      ) : (
-        <FlatList
-          data={tickets}
-          renderItem={renderTicketItem}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContainer}
-          showsVerticalScrollIndicator={false}
+
+        {/* Sub Header */}
+        <View style={styles.subHeader}>
+          <Text style={styles.monthTitle}>{getCurrentMonth()}에 관람한 공연</Text>
+          <Text style={styles.monthSubtitle}>
+            한 달의 기록, 옆으로 넘기며 다시 만나보세요!
+          </Text>
+        </View>
+
+        {/* Main Ticket */}
+        <View style={styles.contentContainer}>{renderMainTicket()}</View>
+
+        <TicketDetailModal
+          visible={modalVisible}
+          ticket={selectedTicket}
+          onClose={handleCloseModal}
         />
-      )}
-
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => navigation.navigate('AddTicket')}>
-        <Text style={styles.addButtonText}>+</Text>
-      </TouchableOpacity>
-
-      <TicketDetailModal
-        visible={modalVisible}
-        ticket={selectedTicket}
-        onClose={handleCloseModal}
-      />
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F8F9FA' },
-  header: { padding: 20, backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#E0E0E0' },
-  headerTitle: { fontSize: 28, fontWeight: 'bold', color: '#2C3E50', marginBottom: 5 },
-  ticketCount: { fontSize: 16, color: '#7F8C8D' },
-  listContainer: { padding: 16 },
-  ticketCard: { backgroundColor: '#FFFFFF', borderRadius: 12, padding: 16, marginBottom: 12 },
-  ticketTitle: { fontSize: 18, fontWeight: 'bold', color: '#2C3E50', marginBottom: 4 },
-  ticketInfo: { fontSize: 14, color: '#7F8C8D', marginBottom: 4 },
-  statusBadge: { alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, marginTop: 4 },
-  statusText: { color: '#FFFFFF', fontWeight: 'bold' },
-  dateText: { fontSize: 12, color: '#BDC3C7', marginTop: 4 },
-  emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 40 },
-  emptyText: { fontSize: 24, fontWeight: 'bold', color: '#BDC3C7', marginBottom: 8 },
-  emptySubtext: { fontSize: 16, color: '#BDC3C7', textAlign: 'center', lineHeight: 24 },
-  indicatorsContainer: { flexDirection: 'row', marginTop: 8, gap: 8 },
-  indicator: { backgroundColor: '#ECF0F1', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
-  indicatorText: { fontSize: 12, color: '#7F8C8D', fontWeight: '600' },
-  addButton: { position: 'absolute', bottom: 30, right: 30, width: 60, height: 60, borderRadius: 30, backgroundColor: '#3498DB', justifyContent: 'center', alignItems: 'center' },
-  addButtonText: { fontSize: 30, color: '#FFFFFF', fontWeight: 'bold' },
+  container: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  safeArea: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 16,
+    backgroundColor: '#FFFFFF',
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#000000',
+  },
+  headerRight: {
+    position: 'relative',
+  },
+  filterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  filterButtonText: {
+    fontSize: 14,
+    color: '#666666',
+    marginRight: 4,
+  },
+  filterArrow: {
+    fontSize: 10,
+    color: '#666666',
+  },
+  filterDropdown: {
+    position: 'absolute',
+    top: 38,
+    right: 0,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    paddingVertical: 6,
+    minWidth: 140,
+    borderWidth: 0.5,
+    borderColor: '#E5E5EA',
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    zIndex: 1000,
+  },
+  filterOption: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  filterOptionSelected: {
+    backgroundColor: '#F2F2F7',
+  },
+  filterOptionText: {
+    fontSize: 15,
+    color: '#3C3C43',
+  },
+  filterOptionTextSelected: {
+    color: '#007AFF',
+    fontWeight: '600',
+  },
+  subHeader: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 16,
+    backgroundColor: '#FFFFFF',
+  },
+  monthTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#000000',
+    marginBottom: 8,
+  },
+  monthSubtitle: {
+    fontSize: 14,
+    color: '#666666',
+    lineHeight: 20,
+  },
+  contentContainer: {
+    flex: 1,
+    paddingHorizontal: 20,
+    justifyContent: 'flex-start',
+    paddingTop: 20,
+  },
+  mainTicketContainer: {
+    alignItems: 'center',
+  },
+  mainTicketCard: {
+    width: width - 80,
+    height: (width - 80) * 1.3,
+    borderRadius: 20,
+    overflow: 'hidden',
+    backgroundColor: '#8FBC8F',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  mainTicketImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  mainTicketPlaceholder: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  placeholderText: {
+    fontSize: 16,
+    color: '#666666',
+    fontWeight: '500',
+  },
+  dateButtonContainer: {
+    marginTop: 16,
+    alignItems: 'center',
+  },
+  dateButton: {
+    backgroundColor: '#F5F5F5',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  dateButtonText: {
+    fontSize: 14,
+    color: '#333333',
+    fontWeight: '500',
+  },
 });
 
 export default MainPage;

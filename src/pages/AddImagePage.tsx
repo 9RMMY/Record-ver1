@@ -12,8 +12,6 @@ import {
   TextInput,
   Dimensions,
 } from 'react-native';
-// Note: react-native-image-picker would be used in production
-// For now, we'll simulate image selection
 
 interface AddImagePageProps {
   navigation: any;
@@ -24,24 +22,32 @@ interface AddImagePageProps {
         rating: number;
         reviewText: string;
       };
+      images?: string[];
+      selectedAIImage?: string;
     };
   };
 }
 
 const { width } = Dimensions.get('window');
 
+//nav && 상태관리
 const AddImagePage: React.FC<AddImagePageProps> = ({ navigation, route }) => {
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
-  const [aiPrompt, setAiPrompt] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
 
   const ticketData = route?.params?.ticketData;
   const reviewData = route?.params?.reviewData;
+  const selectedAIImage = route?.params?.selectedAIImage;
+  const imagesFromParams = route?.params?.images;
+
+  // Handle images from GenerateAIImage page
+  React.useEffect(() => {
+    if (imagesFromParams && imagesFromParams.length > 0) {
+      setSelectedImages(imagesFromParams);
+    }
+  }, [imagesFromParams]);
 
   const handleImagePicker = () => {
-    // Mock image selection for demo purposes
-    // In production, you would use react-native-image-picker here
+    //수정해야함, react-native-image-picker 사용, 1장만 추가할 수 있도록
     const mockImages = [
       `https://picsum.photos/400/300?random=${Date.now()}`,
       `https://picsum.photos/400/300?random=${Date.now() + 1}`,
@@ -64,37 +70,15 @@ const AddImagePage: React.FC<AddImagePageProps> = ({ navigation, route }) => {
     );
   };
 
-  const handleGenerateAIImage = async () => {
-    if (!aiPrompt.trim()) {
-      Alert.alert('Error', 'Please enter a prompt for AI image generation');
-      return;
-    }
-
-    setIsGenerating(true);
-    
-    try {
-      // Simulate AI image generation - in real app, you'd call an AI service like OpenAI DALL-E, Midjourney, etc.
-      await new Promise<void>(resolve => setTimeout(() => resolve(), 3000));
-      
-      // For demo purposes, we'll use a placeholder image
-      const mockGeneratedImageUrl = `https://picsum.photos/400/400?random=${Date.now()}`;
-      setGeneratedImage(mockGeneratedImageUrl);
-      
-      Alert.alert('Success', 'AI image generated successfully!');
-    } catch (error) {
-      Alert.alert('Error', 'Failed to generate AI image. Please try again.');
-    } finally {
-      setIsGenerating(false);
-    }
+  const handleGenerateAIImage = () => {
+    // Navigate to GenerateAIImage page
+    navigation.navigate('GenerateAIImage', {
+      ticketData,
+      reviewData,
+      images: selectedImages,
+    });
   };
 
-  const handleAddGeneratedImage = () => {
-    if (generatedImage && selectedImages.length < 5) {
-      setSelectedImages(prev => [...prev, generatedImage]);
-      setGeneratedImage(null);
-      setAiPrompt('');
-    }
-  };
 
   const handleRemoveImage = (index: number) => {
     setSelectedImages(prev => prev.filter((_, i) => i !== index));
@@ -136,7 +120,10 @@ const AddImagePage: React.FC<AddImagePageProps> = ({ navigation, route }) => {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Add Images</Text>
@@ -146,94 +133,63 @@ const AddImagePage: React.FC<AddImagePageProps> = ({ navigation, route }) => {
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Review Summary */}
-        {ticketData && reviewData && (
-          <View style={styles.summaryContainer}>
-            <Text style={styles.summaryTitle}>Review Summary</Text>
-            <Text style={styles.ticketTitle}>{ticketData.title}</Text>
-            <View style={styles.ratingContainer}>
-              <Text style={styles.ratingText}>
-                {'★'.repeat(reviewData.rating)}{'☆'.repeat(5 - reviewData.rating)} ({reviewData.rating}/5)
-              </Text>
-            </View>
-            <Text style={styles.reviewPreview} numberOfLines={2}>
-              {reviewData.reviewText}
-            </Text>
-          </View>
-        )}
-
-        {/* Upload Images Section */}
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Upload Photos</Text>
-          <Text style={styles.sectionDescription}>
-            Add photos from your gallery ({selectedImages.length}/5)
-          </Text>
-          
-          <TouchableOpacity 
-            style={[styles.uploadButton, selectedImages.length >= 5 && styles.uploadButtonDisabled]} 
-            onPress={handleImagePicker}
-            disabled={selectedImages.length >= 5}
-          >
-            <Text style={styles.uploadButtonText}>📷 Choose from Gallery</Text>
-          </TouchableOpacity>
-        </View>
-
         {/* AI Image Generation Section */}
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Generate AI Image</Text>
           <Text style={styles.sectionDescription}>
             Describe the image you want to generate
           </Text>
-          
-          <TextInput
-            style={styles.promptInput}
-            value={aiPrompt}
-            onChangeText={setAiPrompt}
-            placeholder="e.g., A beautiful concert stage with colorful lights..."
-            placeholderTextColor="#BDC3C7"
-            multiline
-            numberOfLines={3}
-            textAlignVertical="top"
-          />
-          
-          <TouchableOpacity 
-            style={[styles.generateButton, isGenerating && styles.generateButtonDisabled]} 
-            onPress={handleGenerateAIImage}
-            disabled={isGenerating}
-          >
-            {isGenerating ? (
-              <ActivityIndicator color="#FFFFFF" />
-            ) : (
-              <Text style={styles.generateButtonText}>🎨 Generate AI Image</Text>
-            )}
-          </TouchableOpacity>
 
-          {/* Generated Image Preview */}
-          {generatedImage && (
-            <View style={styles.generatedImageContainer}>
-              <Text style={styles.generatedImageTitle}>Generated Image:</Text>
-              <Image source={{ uri: generatedImage }} style={styles.generatedImage} />
-              <TouchableOpacity 
-                style={styles.addGeneratedButton} 
-                onPress={handleAddGeneratedImage}
-                disabled={selectedImages.length >= 5}
-              >
-                <Text style={styles.addGeneratedButtonText}>Add to Review</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+          <TouchableOpacity
+            style={styles.generateButton}
+            onPress={handleGenerateAIImage}
+          >
+            <Text style={styles.generateButtonText}>
+              🎨 Generate AI Image
+            </Text>
+          </TouchableOpacity>
         </View>
+
+                  {/* Upload Images Section */}
+          <View style={styles.sectionContainer}>
+            <Text style={styles.sectionTitle}>Upload Photos</Text>
+            <Text style={styles.sectionDescription}>
+              Add photos from your gallery ({selectedImages.length}/5)
+            </Text>
+
+            <TouchableOpacity
+              style={[
+                styles.uploadButton,
+                selectedImages.length >= 5 && styles.uploadButtonDisabled,
+              ]}
+              onPress={handleImagePicker}
+              disabled={selectedImages.length >= 5}
+            >
+              <Text style={styles.uploadButtonText}>
+                📷 Choose from Gallery
+              </Text>
+            </TouchableOpacity>
+          </View>
 
         {/* Selected Images */}
         {selectedImages.length > 0 && (
           <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Selected Images ({selectedImages.length})</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imagesContainer}>
+            <Text style={styles.sectionTitle}>
+              Selected Images ({selectedImages.length})
+            </Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.imagesContainer}
+            >
               {selectedImages.map((imageUri, index) => (
                 <View key={index} style={styles.imageWrapper}>
-                  <Image source={{ uri: imageUri }} style={styles.selectedImage} />
-                  <TouchableOpacity 
-                    style={styles.removeButton} 
+                  <Image
+                    source={{ uri: imageUri }}
+                    style={styles.selectedImage}
+                  />
+                  <TouchableOpacity
+                    style={styles.removeButton}
                     onPress={() => handleRemoveImage(index)}
                   >
                     <Text style={styles.removeButtonText}>×</Text>
@@ -250,18 +206,20 @@ const AddImagePage: React.FC<AddImagePageProps> = ({ navigation, route }) => {
         <TouchableOpacity style={styles.skipFooterButton} onPress={handleSkip}>
           <Text style={styles.skipFooterButtonText}>Save Without Images</Text>
         </TouchableOpacity>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[
             styles.finishButton,
-            selectedImages.length === 0 && styles.finishButtonDisabled
-          ]} 
+            selectedImages.length === 0 && styles.finishButtonDisabled,
+          ]}
           onPress={handleFinish}
           disabled={selectedImages.length === 0}
         >
-          <Text style={[
-            styles.finishButtonText,
-            selectedImages.length === 0 && styles.finishButtonTextDisabled
-          ]}>
+          <Text
+            style={[
+              styles.finishButtonText,
+              selectedImages.length === 0 && styles.finishButtonTextDisabled,
+            ]}
+          >
             Finish Review
           </Text>
         </TouchableOpacity>
@@ -376,55 +334,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FFFFFF',
   },
-  promptInput: {
-    backgroundColor: '#F8F9FA',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    color: '#2C3E50',
-    minHeight: 80,
-    marginBottom: 16,
-  },
   generateButton: {
     backgroundColor: '#9B59B6',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
   },
-  generateButtonDisabled: {
-    backgroundColor: '#BDC3C7',
-  },
   generateButtonText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
-  generatedImageContainer: {
-    marginTop: 16,
-    alignItems: 'center',
-  },
-  generatedImageTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#2C3E50',
-    marginBottom: 12,
-  },
-  generatedImage: {
-    width: width - 80,
-    height: 200,
-    borderRadius: 12,
-    marginBottom: 12,
-  },
-  addGeneratedButton: {
-    backgroundColor: '#27AE60',
-    borderRadius: 8,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-  },
-  addGeneratedButtonText: {
-    fontSize: 14,
     fontWeight: '600',
     color: '#FFFFFF',
   },

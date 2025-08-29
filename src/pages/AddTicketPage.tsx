@@ -29,6 +29,7 @@ const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation }) => {
     performedAt: new Date(),
     bookingSite: '',
     status: '공개', // 기본값 공개
+    createdAt: new Date(),
   });
 
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -53,8 +54,8 @@ const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation }) => {
       return;
     }
 
-    // Navigate to AddReview page with ticket data (don't save ticket yet)
-    navigation.navigate('AddReview', { ticketData: formData });
+    // Navigate to ReviewOptions page with ticket data
+    navigation.navigate('ReviewOptions', { ticketData: formData });
   };
 
   const resetForm = () => {
@@ -65,6 +66,7 @@ const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation }) => {
       performedAt: new Date(),
       bookingSite: '',
       status: '공개',
+      createdAt: new Date(),
     });
   };
 

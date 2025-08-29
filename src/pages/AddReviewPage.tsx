@@ -23,12 +23,7 @@ interface AddReviewPageProps {
 
 const AddReviewPage: React.FC<AddReviewPageProps> = ({ navigation, route }) => {
   const [reviewText, setReviewText] = useState('');
-  const [rating, setRating] = useState(0);
   const ticketData = route?.params?.ticketData;
-
-  const handleRatingPress = (selectedRating: number) => {
-    setRating(selectedRating);
-  };
 
   const handleSubmitReview = () => {
     if (!reviewText.trim()) {
@@ -36,37 +31,13 @@ const AddReviewPage: React.FC<AddReviewPageProps> = ({ navigation, route }) => {
       return;
     }
 
-    if (rating === 0) {
-      Alert.alert('Error', 'Please select a rating');
-      return;
-    }
-
     // Navigate to AddImage page with review and ticket data
     navigation.navigate('AddImage', { 
       ticketData,
       reviewData: {
-        rating,
         reviewText,
       }
     });
-  };
-
-  const renderStars = () => {
-    const stars = [];
-    for (let i = 1; i <= 5; i++) {
-      stars.push(
-        <TouchableOpacity
-          key={i}
-          style={styles.starButton}
-          onPress={() => handleRatingPress(i)}
-        >
-          <Text style={[styles.star, i <= rating && styles.starActive]}>
-            ★
-          </Text>
-        </TouchableOpacity>
-      );
-    }
-    return stars;
   };
 
   return (
@@ -85,30 +56,6 @@ const AddReviewPage: React.FC<AddReviewPageProps> = ({ navigation, route }) => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {/* Ticket Info (if available) */}
-          {ticketData && (
-            <View style={styles.ticketInfoContainer}>
-              <Text style={styles.ticketInfoTitle}>Reviewing:</Text>
-              <Text style={styles.ticketTitle}>{ticketData.title}</Text>
-              <Text style={styles.ticketDetails}>
-                {ticketData.artist} • {ticketData.place}
-              </Text>
-              <Text style={styles.ticketDate}>
-                {new Date(ticketData.performedAt).toLocaleDateString()}
-              </Text>
-            </View>
-          )}
-
-          {/* Rating Section */}
-          <View style={styles.ratingContainer}>
-            <Text style={styles.sectionTitle}>Rating *</Text>
-            <View style={styles.starsContainer}>
-              {renderStars()}
-            </View>
-            <Text style={styles.ratingText}>
-              {rating > 0 ? `${rating}/5 stars` : 'Tap to rate'}
-            </Text>
-          </View>
 
           {/* Review Text Input */}
           <View style={styles.reviewContainer}>
@@ -141,14 +88,14 @@ const AddReviewPage: React.FC<AddReviewPageProps> = ({ navigation, route }) => {
           <TouchableOpacity 
             style={[
               styles.submitButton,
-              (!reviewText.trim() || rating === 0) && styles.submitButtonDisabled
+              (!reviewText.trim()) && styles.submitButtonDisabled
             ]} 
             onPress={handleSubmitReview}
-            disabled={!reviewText.trim() || rating === 0}
+            disabled={!reviewText.trim()}
           >
             <Text style={[
               styles.submitButtonText,
-              (!reviewText.trim() || rating === 0) && styles.submitButtonTextDisabled
+              (!reviewText.trim()) && styles.submitButtonTextDisabled
             ]}>
               Submit Review
             </Text>
@@ -228,40 +175,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#7F8C8D',
   },
-  ratingContainer: {
-    backgroundColor: '#FFFFFF',
-    marginHorizontal: 20,
-    marginBottom: 20,
-    padding: 20,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    alignItems: 'center',
-  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: '#2C3E50',
     marginBottom: 16,
     alignSelf: 'flex-start',
-  },
-  starsContainer: {
-    flexDirection: 'row',
-    marginBottom: 8,
-  },
-  starButton: {
-    padding: 4,
-  },
-  star: {
-    fontSize: 32,
-    color: '#E0E0E0',
-  },
-  starActive: {
-    color: '#F39C12',
-  },
-  ratingText: {
-    fontSize: 14,
-    color: '#7F8C8D',
   },
   reviewContainer: {
     backgroundColor: '#FFFFFF',
