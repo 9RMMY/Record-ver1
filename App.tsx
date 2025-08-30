@@ -61,7 +61,7 @@ function MainTabs() {
           height: 60 + insets.bottom,
           borderRadius: 8,
         },
-        tabBarActiveTintColor: '#3498DB',
+        tabBarActiveTintColor: '#B11515',
         tabBarInactiveTintColor: '#7F8C8D',
         tabBarLabelStyle: {
           fontSize: 12,

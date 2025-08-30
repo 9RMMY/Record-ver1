@@ -77,15 +77,16 @@ const ImageOptions = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F8F8f8',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 20,
+    backgroundColor: '#F8F8f8',
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: '#F8F8f8',
   },
   backButton: {
     width: 40,
@@ -109,7 +110,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 20,
+    padding: 24,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -128,7 +129,7 @@ const styles = StyleSheet.create({
   },
   optionsContainer: {
     width: '100%',
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     gap: 20,
   },
 
@@ -148,7 +149,7 @@ const styles = StyleSheet.create({
   },
 
   recordButton: {
-    backgroundColor: '#3498DB',
+    backgroundColor: '#B11515',
   },
   writeButton: {
     backgroundColor: '#ECF0F1',

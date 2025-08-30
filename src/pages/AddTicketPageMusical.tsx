@@ -45,6 +45,10 @@ const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation, route }) => {
   });
 
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showBookingSiteModal, setShowBookingSiteModal] = useState(false);
+  const [customBookingSite, setCustomBookingSite] = useState('');
+  
+  const bookingSiteOptions = ['인터파크', '예스24', '멜론티켓', '직접작성'];
 
   const handleInputChange = (field: keyof typeof formData, value: string) => {
     setFormData(prev => ({
@@ -60,8 +64,25 @@ const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation, route }) => {
     }
   };
 
+  const handleBookingSiteSelect = (site: string) => {
+    if (site === '직접작성') {
+      setCustomBookingSite('');
+    } else {
+      setFormData(prev => ({ ...prev, bookingSite: site }));
+      setShowBookingSiteModal(false);
+    }
+  };
+
+  const handleCustomBookingSiteSubmit = () => {
+    if (customBookingSite.trim()) {
+      setFormData(prev => ({ ...prev, bookingSite: customBookingSite.trim() }));
+      setShowBookingSiteModal(false);
+      setCustomBookingSite('');
+    }
+  };
+
   const handleSubmit = () => {
-    if (!formData.title.trim() || !formData.artist.trim() || !formData.place.trim()) {
+    if (!formData.title.trim() || !formData.artist.trim() || !formData.place.trim() || !formData.bookingSite.trim()) {
       Alert.alert('Error', '모든 항목을 채워주세요');
       return;
     }
@@ -167,6 +188,24 @@ const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation, route }) => {
             )}
           </View>
 
+          {/* 예매처
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>예매처 *</Text>
+            <TouchableOpacity
+              style={styles.dropdownButton}
+              onPress={() => setShowBookingSiteModal(true)}
+            >
+              <Text style={[
+                styles.dropdownButtonText,
+                !formData.bookingSite && styles.dropdownPlaceholder
+              ]}>
+                {formData.bookingSite || '예매처를 선택해주세요'}
+              </Text>
+              <Text style={styles.dropdownArrow}>▼</Text>
+            </TouchableOpacity>
+          </View>
+          */}
+
         </View>
       </ScrollView>
 
@@ -181,6 +220,57 @@ const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation, route }) => {
           </Text>
         </TouchableOpacity>
       </View>
+
+      {/* 예매처 선택 모달 (뮤지컬 only)
+      <Modal
+        visible={showBookingSiteModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowBookingSiteModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>예매처 선택</Text>
+
+            {bookingSiteOptions.map((site, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.modalOption}
+                onPress={() => handleBookingSiteSelect(site)}
+              >
+                <Text style={styles.modalOptionText}>{site}</Text>
+              </TouchableOpacity>
+            ))}
+
+            {formData.bookingSite === '직접작성' || customBookingSite ? (
+              <View style={styles.customInputContainer}>
+                <TextInput
+                  style={styles.customInput}
+                  value={customBookingSite}
+                  onChangeText={setCustomBookingSite}
+                  placeholder="예매처를 직접 입력해주세요"
+                  placeholderTextColor="#BDC3C7"
+                  autoFocus
+                />
+                <TouchableOpacity
+                  style={styles.customSubmitButton}
+                  onPress={handleCustomBookingSiteSubmit}
+                >
+                  <Text style={styles.customSubmitButtonText}>확인</Text>
+                </TouchableOpacity>
+              </View>
+            ) : null}
+
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setShowBookingSiteModal(false)}
+            >
+              <Text style={styles.modalCloseButtonText}>취소</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+      */}
 
     </SafeAreaView>
   );

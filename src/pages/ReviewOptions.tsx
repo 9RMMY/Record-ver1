@@ -32,7 +32,6 @@ const ReviewOptions = () => {
         >
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Review Options</Text>
         <View style={styles.placeholder} />
       </View>
 
@@ -48,10 +47,17 @@ const ReviewOptions = () => {
             onPress={() => handleOptionSelect(true)}
           >
             <Image
-              source={require('../assets/mic.png')} // 로컬 이미지
+              source={require('../assets/mic.png')}
               style={styles.buttonIcon}
             />
-            <Text style={styles.optionButtonText}>음성녹음하기</Text>
+            {/* 텍스트 묶음 */}
+            <View style={styles.textContainer}>
+              <Text style={styles.optionButtonText}>음성녹음하기</Text>
+              <Text style={styles.optionButtonSubText}>
+                마이크를 켤 수 있으면 사용하삼.{"\n"}마이크를 켜고 녹음을 해야겠지
+                {"\n"}AMRD 아무래도라는 뜻
+              </Text>
+            </View>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -59,13 +65,19 @@ const ReviewOptions = () => {
             onPress={() => handleOptionSelect(false)}
           >
             <Image
-              source={require('../assets/mic.png')} // 로컬 이미지
+              source={require('../assets/mic.png')}
               style={styles.buttonIcon}
             />
 
-            <Text style={[styles.optionButtonText, { color: '#000000' }]}>
-              직접 작성하기
-            </Text>
+            <View style={styles.textContainer}>
+              <Text style={[styles.optionButtonText, { color: '#000' }]}>
+                직접 작성하기
+              </Text>
+              <Text style={[styles.optionButtonSubText, { color: '#000' }]}>
+                마이크를 켤 수 있으면 사용하삼.{"\n"}마이크를 켜고 녹음을 해야겠지
+                {"\n"}AMRD 아무래도라는 뜻
+              </Text>
+            </View>
           </TouchableOpacity>
         </View>
       </View>
@@ -76,16 +88,18 @@ const ReviewOptions = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F8F8f8',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 20,
+    backgroundColor: '#F8F8f8',
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: '#F8F8f8',
   },
+
   backButton: {
     width: 40,
     height: 40,
@@ -98,43 +112,42 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: '#2C3E50',
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#2C3E50',
-  },
+
   placeholder: {
     width: 40,
   },
+
   content: {
     flex: 1,
-    padding: 20,
-    alignItems: 'center',
+    padding: 24,
+    alignItems: 'flex-start',
     justifyContent: 'center',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#2C3E50',
-    marginBottom: 10,
-    textAlign: 'center',
+    marginBottom: 4,
+    textAlign: 'left',
   },
   subtitle: {
-    fontSize: 16,
-    color: '#7F8C8D',
     marginBottom: 40,
-    textAlign: 'center',
-  },
-  optionsContainer: {
-    width: '100%',
-    paddingHorizontal: 20,
-    gap: 20,
+    fontSize: 14,
+    color: '#666666',
+    textAlign: 'left',
+    lineHeight: 20,
   },
 
+  optionsContainer: {
+    width: '100%',
+    height: '85%',
+    paddingHorizontal: 0,
+    gap: 20,
+  },
   optionButton: {
     flexDirection: 'row', // 이미지와 텍스트 가로로 배치
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     padding: 16,
     borderRadius: 12,
     backgroundColor: '#FFFFFF',
@@ -147,13 +160,25 @@ const styles = StyleSheet.create({
   },
 
   recordButton: {
-    backgroundColor: '#3498DB',
+    backgroundColor: 'rgba(219, 88, 88, 1)',
+    height: 150,
   },
   writeButton: {
     backgroundColor: '#ECF0F1',
+    height: 150,
+  },
+
+  textContainer: {
+    flexDirection: 'column',
   },
   optionButtonText: {
     fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginBottom: 12,
+  },
+  optionButtonSubText: {
+    fontSize: 12,
     fontWeight: '600',
     color: '#FFFFFF',
   },

@@ -23,6 +23,7 @@ interface AddReviewPageProps {
 
 const AddReviewPage: React.FC<AddReviewPageProps> = ({ navigation, route }) => {
   const [reviewText, setReviewText] = useState('');
+  const [status, setStatus] = useState('공개'); // 기본값 공개
   const ticketData = route?.params?.ticketData;
 
   const handleSubmitReview = () => {
@@ -31,9 +32,12 @@ const AddReviewPage: React.FC<AddReviewPageProps> = ({ navigation, route }) => {
       return;
     }
 
-    // Navigate to AddImage page with review and ticket data
+    // Navigate to AddImage page with review, ticket data, and status
     navigation.navigate('AddImage', { 
-      ticketData,
+      ticketData: {
+        ...ticketData,
+        status, // 공개/비공개 설정 추가
+      },
       reviewData: {
         reviewText,
       }
@@ -75,6 +79,46 @@ const AddReviewPage: React.FC<AddReviewPageProps> = ({ navigation, route }) => {
               {reviewText.length}/500 characters
             </Text>
           </View>
+
+          {/* 공개/비공개 설정 */}
+          <View style={styles.statusContainer}>
+            <Text style={styles.sectionTitle}>공개 설정 *</Text>
+            <View style={styles.statusButtonContainer}>
+              <TouchableOpacity
+                style={[
+                  styles.statusButton,
+                  status === '공개' && styles.statusButtonActive,
+                ]}
+                onPress={() => setStatus('공개')}
+              >
+                <Text
+                  style={[
+                    styles.statusButtonText,
+                    status === '공개' && styles.statusButtonTextActive,
+                  ]}
+                >
+                  공개
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.statusButton,
+                  status === '비공개' && styles.statusButtonActive,
+                ]}
+                onPress={() => setStatus('비공개')}
+              >
+                <Text
+                  style={[
+                    styles.statusButtonText,
+                    status === '비공개' && styles.statusButtonTextActive,
+                  ]}
+                >
+                  비공개
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </ScrollView>
 
         {/* Footer Buttons */}
@@ -109,7 +153,7 @@ const AddReviewPage: React.FC<AddReviewPageProps> = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#F8F8f8',
   },
   flex: {
     flex: 1,
@@ -119,9 +163,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F8F8f8',
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: '#F8F8f8',
   },
   backButton: {
     width: 40,
@@ -184,7 +228,7 @@ const styles = StyleSheet.create({
   },
   reviewContainer: {
     backgroundColor: '#FFFFFF',
-    marginHorizontal: 20,
+    marginHorizontal: 24,
     marginBottom: 20,
     padding: 20,
     borderRadius: 12,
@@ -210,9 +254,9 @@ const styles = StyleSheet.create({
   footer: {
     flexDirection: 'row',
     padding: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F8f8f8',
     borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
+    borderTopColor: '#f8f8f8',
   },
   cancelButton: {
     flex: 1,
@@ -229,7 +273,7 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     flex: 2,
-    backgroundColor: '#3498DB',
+    backgroundColor: '#B11515',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -245,6 +289,40 @@ const styles = StyleSheet.create({
   },
   submitButtonTextDisabled: {
     color: '#7F8C8D',
+  },
+  statusContainer: {
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 24,
+    marginBottom: 20,
+    padding: 20,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  statusButtonContainer: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  statusButton: {
+    flex: 1,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 12,
+    alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+  },
+  statusButtonActive: {
+    backgroundColor: '#B11515',
+    borderColor: '#B11515',
+  },
+  statusButtonText: {
+    fontSize: 16,
+    color: '#2C3E50',
+    fontWeight: '600',
+  },
+  statusButtonTextActive: {
+    color: '#FFFFFF',
   },
 });
 

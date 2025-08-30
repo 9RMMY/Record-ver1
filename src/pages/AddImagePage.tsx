@@ -231,16 +231,16 @@ const AddImagePage: React.FC<AddImagePageProps> = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#F8F8f8',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F8F8f8',
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: '#F8F8f8',
   },
   backButton: {
     width: 40,
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
   },
   skipText: {
     fontSize: 16,
-    color: '#3498DB',
+    color: '#B11515',
     fontWeight: '600',
   },
   content: {
@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
   },
   sectionContainer: {
     backgroundColor: '#FFFFFF',
-    marginHorizontal: 20,
+    marginHorizontal: 24,
     marginBottom: 20,
     padding: 20,
     borderRadius: 12,
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   uploadButton: {
-    backgroundColor: '#3498DB',
+    backgroundColor: '#B11515',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -376,9 +376,9 @@ const styles = StyleSheet.create({
   footer: {
     flexDirection: 'row',
     padding: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F8f8f8',
     borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
+    borderTopColor: '#f8f8f8',
   },
   skipFooterButton: {
     flex: 1,

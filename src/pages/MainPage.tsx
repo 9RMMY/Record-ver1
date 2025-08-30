@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
   filterOption: { paddingHorizontal: 16, paddingVertical: 12 },
   filterOptionSelected: { backgroundColor: '#F2F2F7' },
   filterOptionText: { fontSize: 15, color: '#3C3C43' },
-  filterOptionTextSelected: { color: '#007AFF', fontWeight: '600' },
+  filterOptionTextSelected: { color: '#B11515', fontWeight: '600' },
   subHeader: {
     paddingHorizontal: 20,
     paddingTop: 20,
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   emptyStateAddButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#B11515',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 25,
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#B11515',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
