@@ -51,7 +51,10 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
     <View style={styles.ticketCard}>
       <View style={styles.ticketHeader}>
         <Text style={styles.ticketTitle}>{item.title}</Text>
-        <TouchableOpacity style={styles.deleteButton} onPress={() => handleDeleteTicket(item)}>
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={() => handleDeleteTicket(item)}
+        >
           <Text style={styles.deleteButtonText}>×</Text>
         </TouchableOpacity>
       </View>
@@ -59,25 +62,41 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
       <Text style={styles.ticketInfo}>
         {item.artist} - {item.place}
       </Text>
+
       <Text style={styles.ticketInfo}>
-        공연일: {item.performedAt.toLocaleDateString()}
+        공연일:{' '}
+        {item.performedAt
+          ? new Date(item.performedAt).toLocaleDateString()
+          : '-'}
       </Text>
 
       <View style={styles.statusContainer}>
-        {['공개', '비공개'].map((status) => (
+        {['공개', '비공개'].map(status => (
           <TouchableOpacity
             key={status}
-            style={[styles.statusButton, item.status === status && { backgroundColor: getStatusColor(status as any) }]}
+            style={[
+              styles.statusButton,
+              item.status === status && {
+                backgroundColor: getStatusColor(status as any),
+              },
+            ]}
             onPress={() => handleStatusChange(item, status as any)}
           >
-            <Text style={[styles.statusButtonText, item.status === status && styles.statusButtonTextActive]}>
+            <Text
+              style={[
+                styles.statusButtonText,
+                item.status === status && styles.statusButtonTextActive,
+              ]}
+            >
               {status}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      <Text style={styles.dateText}>업데이트: {item.updatedAt.toLocaleDateString()}</Text>
+      <Text style={styles.dateText}>
+        업데이트: {item.updatedAt.toLocaleDateString()}
+      </Text>
     </View>
   );
 

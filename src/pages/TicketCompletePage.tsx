@@ -45,6 +45,7 @@ const TicketCompletePage: React.FC<TicketCompletePageProps> = ({ navigation, rou
         ...ticketData,
         review: reviewData,
         images: images || [],
+        status: '공개', // Default status for new tickets
       });
     }
 
@@ -69,7 +70,7 @@ const TicketCompletePage: React.FC<TicketCompletePageProps> = ({ navigation, rou
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#F8F9FA" />
-      
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
@@ -87,76 +88,33 @@ const TicketCompletePage: React.FC<TicketCompletePageProps> = ({ navigation, rou
         <View style={styles.ticketCard}>
           {/* Ticket Header */}
           <View style={styles.ticketHeader}>
-            <Text style={styles.ticketHeaderText}>JAMONG</Text>
-            <Text style={styles.ticketHeaderText}>SALGU CLUB</Text>
-            <View style={styles.starsContainer}>
-              {[...Array(8)].map((_, i) => (
-                <Text key={i} style={[styles.star, { 
-                  top: Math.random() * 40,
-                  right: Math.random() * 60 + 10,
-                  fontSize: Math.random() * 8 + 12
-                }]}>★</Text>
-              ))}
-            </View>
+            <Text style={styles.ticketHeaderText}>{ticketData.title}</Text>
           </View>
 
           {/* Main Ticket Content */}
           <View style={styles.ticketMain}>
-            {ticketImage ? (
+            {ticketImage && (
               <ImageBackground
                 source={{ uri: ticketImage }}
-                style={styles.circleContainer}
-                imageStyle={styles.circleImageStyle}
-              >
-                <View style={styles.circleOverlay}>
-                  <Text style={styles.circleText}>Jamong</Text>
-                  <Text style={styles.circleText}>Salgu</Text>
-                  <Text style={styles.circleText}>Club</Text>
-                  <Text style={styles.circleStars}>✦</Text>
-                </View>
-              </ImageBackground>
-            ) : (
-              <View style={styles.circleContainer}>
-                <Text style={styles.circleText}>Jamong</Text>
-                <Text style={styles.circleText}>Salgu</Text>
-                <Text style={styles.circleText}>Club</Text>
-                <Text style={styles.circleStars}>✦</Text>
-              </View>
+              ></ImageBackground>
             )}
           </View>
 
           {/* Ticket Footer */}
           <View style={styles.ticketFooter}>
-            <Text style={styles.footerText}>
-              {ticketData?.title || 'JAMONG SALGU CLUB'}
-            </Text>
+            <Text style={styles.footerText}>{ticketData?.title}</Text>
             <Text style={styles.footerSubtext}>
-              {ticketData?.place || 'TOMORROW'} • {ticketData?.performedAt ? 
-                new Date(ticketData.performedAt).toLocaleDateString('ko-KR', { 
-                  month: 'short', 
-                  day: 'numeric' 
-                }) : 'JAN 31'} • 8PM
+              {ticketData?.place} •{' '}
+              {ticketData?.performedAt
+                ? new Date(ticketData.performedAt).toLocaleDateString('ko-KR', {
+                    month: 'short',
+                    day: 'numeric',
+                  })
+                : 'JAN 31'}{' '}
+              • 8PM
             </Text>
-          </View>
-
-          {/* Decorative Elements */}
-          <View style={styles.decorativeElements}>
-            <Text style={styles.decorativeText}>SECRET CLUB OF THOSE WHO</Text>
-            <Text style={styles.decorativeText}>WANT TO DIE (???) BUT ACTUALLY</Text>
-            <Text style={styles.decorativeText}>WANT TO LIVE (?!?)</Text>
-            <View style={styles.sideText}>
-              <Text style={styles.sideTextContent}>
-                IF YOU WANT TO JOIN, BRING THE TICKET{'\n'}
-                ON THE BACK AND COME THE MUSIC ROOM
-              </Text>
-            </View>
           </View>
         </View>
-      </View>
-
-      {/* Bottom Indicator */}
-      <View style={styles.bottomIndicator}>
-        <View style={styles.indicator} />
       </View>
     </SafeAreaView>
   );
@@ -229,68 +187,13 @@ const styles = StyleSheet.create({
     color: '#2C3E50',
     letterSpacing: 2,
   },
-  starsContainer: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    width: 80,
-    height: 80,
-  },
-  star: {
-    position: 'absolute',
-    color: '#2C3E50',
-    fontWeight: 'bold',
-  },
   ticketMain: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
   },
-  circleContainer: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    backgroundColor: '#FF6B47',
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  circleText: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    fontStyle: 'italic',
-    textShadowColor: 'rgba(0,0,0,0.1)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
-  },
-  circleStars: {
-    fontSize: 20,
-    color: '#FFFFFF',
-    position: 'absolute',
-    bottom: 30,
-    right: 30,
-  },
-  circleImageStyle: {
-    borderRadius: 100,
-  },
-  circleOverlay: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'rgba(255, 107, 71, 0.7)',
-    borderRadius: 100,
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-  },
+
   ticketFooter: {
     padding: 20,
     alignItems: 'center',
@@ -306,41 +209,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#2C3E50',
     textAlign: 'center',
-  },
-  decorativeElements: {
-    position: 'absolute',
-    left: 15,
-    top: 120,
-    transform: [{ rotate: '-90deg' }],
-  },
-  decorativeText: {
-    fontSize: 8,
-    color: '#2C3E50',
-    marginBottom: 2,
-    fontWeight: '500',
-  },
-  sideText: {
-    position: 'absolute',
-    right: -100,
-    bottom: 100,
-    transform: [{ rotate: '90deg' }],
-    width: 200,
-  },
-  sideTextContent: {
-    fontSize: 8,
-    color: '#2C3E50',
-    textAlign: 'center',
-    lineHeight: 12,
-  },
-  bottomIndicator: {
-    alignItems: 'center',
-    paddingBottom: 30,
-  },
-  indicator: {
-    width: 134,
-    height: 5,
-    backgroundColor: '#2C3E50',
-    borderRadius: 2.5,
   },
 });
 

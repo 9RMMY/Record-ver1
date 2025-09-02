@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   Alert,
   Platform,
@@ -15,6 +14,7 @@ import { useAtom } from 'jotai';
 import { addTicketAtom } from '../atoms/ticketAtoms';
 import { Ticket } from '../types/ticket';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface AddTicketPageProps {
   navigation: any;

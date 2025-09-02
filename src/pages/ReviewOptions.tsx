@@ -18,7 +18,7 @@ const ReviewOptions = () => {
 
   const handleOptionSelect = (hasReview: boolean) => {
     navigation.navigate('AddReview', { 
-      ...ticketData,
+      ticketData,
       hasReview
     } as any);
   };
@@ -118,11 +118,10 @@ const styles = StyleSheet.create({
   },
 
   content: {
-    flex: 1,
     padding: 24,
-    alignItems: 'flex-start',
-    justifyContent: 'center',
+    paddingBottom: 40,
   },
+
   title: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -131,7 +130,7 @@ const styles = StyleSheet.create({
     textAlign: 'left',
   },
   subtitle: {
-    marginBottom: 40,
+    marginBottom: 30,
     fontSize: 14,
     color: '#666666',
     textAlign: 'left',
@@ -140,15 +139,14 @@ const styles = StyleSheet.create({
 
   optionsContainer: {
     width: '100%',
-    height: '85%',
-    paddingHorizontal: 0,
     gap: 20,
+    marginBottom: 220,
   },
   optionButton: {
     flexDirection: 'row', // 이미지와 텍스트 가로로 배치
     alignItems: 'center',
     justifyContent: 'flex-start',
-    padding: 16,
+    padding: 24,
     borderRadius: 12,
     backgroundColor: '#FFFFFF',
   },
@@ -161,11 +159,11 @@ const styles = StyleSheet.create({
 
   recordButton: {
     backgroundColor: 'rgba(219, 88, 88, 1)',
-    height: 150,
+    height: 140,
   },
   writeButton: {
     backgroundColor: '#ECF0F1',
-    height: 150,
+    height: 140,
   },
 
   textContainer: {

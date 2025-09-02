@@ -25,6 +25,7 @@ export const addTicketAtom = atom(
       ...newTicket,
       id: Date.now().toString(),
       updatedAt: new Date(),
+      status: newTicket.status || '공개', // Default to '공개' if status is missing
     };
     set(ticketsAtom, [...currentTickets, ticket]);
   }

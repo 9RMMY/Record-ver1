@@ -18,7 +18,6 @@ import AddTicketPage from './src/pages/AddTicketPage';
 import ReviewOptions from './src/pages/ReviewOptions';
 import ImageOptions from './src/pages/ImageOptions';
 import AddReviewPage from './src/pages/AddReviewPage';
-import AddImagePage from './src/pages/AddImagePage';
 import GenerateAIImage from './src/pages/GenerateAIImage';
 import TicketCompletePage from './src/pages/TicketCompletePage';
 import MyPage from './src/pages/MyPage';
@@ -152,13 +151,6 @@ function App(): React.JSX.Element {
         <Stack.Screen 
           name="ImageOptions" 
           component={ImageOptions}
-          options={{
-            presentation: 'modal',
-          }}
-        />
-        <Stack.Screen 
-          name="AddImage" 
-          component={AddImagePage}
           options={{
             presentation: 'modal',
           }}

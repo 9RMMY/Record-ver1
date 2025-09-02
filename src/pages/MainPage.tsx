@@ -61,45 +61,35 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
     setShowFilterDropdown(false);
   };
 
-  // 티켓이 없는 경우 빈 배열 사용
-  const hasTickets = tickets.length > 0;
+  // 표시할 티켓: 없으면 placeholder용 dummy 티켓
+  const displayTickets: Ticket[] =
+    tickets.length > 0
+      ? tickets
+      : [
+          {
+            id: '', // 빈 티켓 표시용
+            title: '',
+            artist: '',
+            place: '',
+            performedAt: undefined,
+            bookingSite: '',
+            status: '',
+            images: [],
+            review: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ];
 
   const renderMainTicket = () => {
-    // 티켓이 없는 경우 빈 상태 표시
-    if (!hasTickets) {
-      return (
-        <View style={styles.mainTicketContainer}>
-          <View style={styles.mainTicketCard}>
-            <View style={styles.emptyStateContainer}>
-              <Text style={styles.emptyStateTitle}>첫 번째 티켓을 추가해보세요!</Text>
-              <Text style={styles.emptyStateSubtitle}>
-                관람한 공연의 소중한 기억을{'\n'}기록해보세요
-              </Text>
-              <TouchableOpacity
-                style={styles.emptyStateAddButton}
-                onPress={() => navigation.navigate('AddTicket', { 
-                  isFirstTicket: true,
-                  fromEmptyState: true 
-                })}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.emptyStateAddButtonText}>+ 티켓 추가하기</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      );
-    }
-    
-
-    // 티켓이 있는 경우 기존 로직
-    const currentTicket = tickets[currentTicketIndex];
+    const currentTicket = displayTickets[currentTicketIndex];
     const isPlaceholder = !currentTicket.id || !currentTicket.performedAt;
 
     return (
       <View style={styles.mainTicketContainer}>
         <TouchableOpacity
-          style={styles.mainTicketCard}
+          disabled={isPlaceholder}
+          style={[styles.mainTicketCard, isPlaceholder && styles.disabledCard]}
           onPress={() => handleTicketPress(currentTicket)}
           activeOpacity={isPlaceholder ? 1 : 0.7}
         >
@@ -110,7 +100,9 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
             />
           ) : (
             <View style={styles.mainTicketPlaceholder}>
-              <Text style={styles.placeholderText}>이미지 없음</Text>
+              <Text style={styles.placeholderText}>
+                {isPlaceholder ? '새 티켓을 추가해보세요!' : '이미지 없음'}
+              </Text>
             </View>
           )}
         </TouchableOpacity>
@@ -136,7 +128,6 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Re:cord</Text>
           <View style={styles.headerRight}>
-
             <TouchableOpacity
               style={styles.filterButton}
               onPress={() => setShowFilterDropdown(!showFilterDropdown)}
@@ -190,12 +181,10 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
         {/* Sub Header */}
         <View style={styles.subHeader}>
           <Text style={styles.monthTitle}>
-            {`${getCurrentMonth()}에 관람한 공연`}
+            {getCurrentMonth()}에 관람한 공연
           </Text>
           <Text style={styles.monthSubtitle}>
-            {hasTickets 
-              ? '한 달의 기록, 옆으로 넘기며 다시 만나보세요!' 
-              : '소중한 공연의 순간들을 기록하고 추억해보세요'}
+            한 달의 기록, 옆으로 넘기며 다시 만나보세요!
           </Text>
         </View>
 
@@ -257,7 +246,7 @@ const styles = StyleSheet.create({
   filterOption: { paddingHorizontal: 16, paddingVertical: 12 },
   filterOptionSelected: { backgroundColor: '#F2F2F7' },
   filterOptionText: { fontSize: 15, color: '#3C3C43' },
-  filterOptionTextSelected: { color: '#B11515', fontWeight: '600' },
+  filterOptionTextSelected: { color: '#007AFF', fontWeight: '600' },
   subHeader: {
     paddingHorizontal: 20,
     paddingTop: 20,
@@ -290,6 +279,9 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
   },
+  disabledCard: {
+    opacity: 0.5, // 비활성화 시 흐리게 표시
+  },
   mainTicketImage: { width: '100%', height: '100%', resizeMode: 'cover' },
   mainTicketPlaceholder: {
     flex: 1,
@@ -310,52 +302,6 @@ const styles = StyleSheet.create({
     borderColor: '#E0E0E0',
   },
   dateButtonText: { fontSize: 14, color: '#333333', fontWeight: '500' },
-  emptyStateContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 30,
-  },
-  emptyStateTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333333',
-    textAlign: 'center',
-    marginBottom: 12,
-  },
-  emptyStateSubtitle: {
-    fontSize: 16,
-    color: '#666666',
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 30,
-  },
-  emptyStateAddButton: {
-    backgroundColor: '#B11515',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 25,
-  },
-  emptyStateAddButtonText: {
-    fontSize: 16,
-    color: '#FFFFFF',
-    fontWeight: '600',
-  },
-  addButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#B11515',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  addButtonText: {
-    fontSize: 20,
-    color: '#FFFFFF',
-    fontWeight: '300',
-    lineHeight: 20,
-  },
 });
 
 export default MainPage;

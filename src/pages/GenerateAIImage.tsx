@@ -69,7 +69,7 @@ const GenerateAIImage: React.FC<GenerateAIImageProps> = ({ navigation, route }) 
   const handleSelectImage = () => {
     if (generatedImage) {
       // 선택된 이미지와 함께 AddImagePage로 돌아가기
-      navigation.navigate('AddImage', {
+      navigation.navigate('ImageOptions', {
         ticketData,
         reviewData,
         images: [...existingImages, generatedImage],
@@ -210,17 +210,6 @@ const GenerateAIImage: React.FC<GenerateAIImageProps> = ({ navigation, route }) 
             </ScrollView>
           </View>
         )}
-
-        {/* Tips Section */}
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>💡 프롬프트 작성 팁</Text>
-          <View style={styles.tipsContainer}>
-            <Text style={styles.tipText}>• 구체적이고 상세한 설명을 해주세요</Text>
-            <Text style={styles.tipText}>• 색상, 분위기, 스타일을 명시해보세요</Text>
-            <Text style={styles.tipText}>• "아름다운", "화려한" 같은 형용사를 활용하세요</Text>
-            <Text style={styles.tipText}>• 원하지 않는 요소는 "~없이"로 제외해주세요</Text>
-          </View>
-        </View>
       </ScrollView>
     </SafeAreaView>
   );
