@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -12,12 +12,14 @@ import {
   Platform,
   Switch,
 } from 'react-native';
+import { voiceManager } from '../utils/voiceUtils';
 
 interface AddReviewPageProps {
   navigation: any;
   route?: {
     params?: {
       ticketData?: any;
+      inputMode?: 'text' | 'voice'; // 리뷰 입력 모드
     };
   };
 }
@@ -25,23 +27,84 @@ interface AddReviewPageProps {
 const AddReviewPage: React.FC<AddReviewPageProps> = ({ navigation, route }) => {
   const [reviewText, setReviewText] = useState('');
   const [isPublic, setIsPublic] = useState(true);
+
+  // 음성 관련
+  const [isRecording, setIsRecording] = useState(false);
+  const isVoiceMode = route?.params?.inputMode === 'voice';
   const ticketData = route?.params?.ticketData;
+
+  useEffect(() => {
+    const setupVoice = async () => {
+      if (!(await voiceManager.isVoiceAvailable())) {
+        console.warn('Voice module is not available');
+        return;
+      }
+
+      await voiceManager.setListeners({
+        onSpeechResults: (event: any) => {
+          const results: string[] | undefined = event?.value;
+          if (results && results.length > 0) {
+            const best = results[0];
+            setReviewText(prev => (prev ? `${prev.trim()} ${best}` : best));
+          }
+        },
+        onSpeechError: (e: any) => {
+          setIsRecording(false);
+          Alert.alert('음성 인식 오류', e?.error?.message ?? '알 수 없는 오류가 발생했어요.');
+        },
+        onSpeechEnd: () => {
+          setIsRecording(false);
+        },
+      });
+    };
+
+    setupVoice();
+
+    return () => {
+      voiceManager.destroy();
+    };
+  }, []);
+
+  const startRecording = async () => {
+    if (!(await voiceManager.isVoiceAvailable())) {
+      Alert.alert('음성 인식 오류', '음성 인식 기능을 사용할 수 없습니다.');
+      return;
+    }
+
+    try {
+      await voiceManager.startRecording('ko-KR');
+      setIsRecording(true);
+    } catch (e: any) {
+      setIsRecording(false);
+      Alert.alert('권한 또는 초기화 오류', e?.message ?? '녹음을 시작할 수 없습니다.');
+    }
+  };
+
+  const stopRecording = async () => {
+    if (!(await voiceManager.isVoiceAvailable())) {
+      setIsRecording(false);
+      return;
+    }
+
+    try {
+      await voiceManager.stopRecording();
+      setIsRecording(false);
+    } catch (e: any) {
+      setIsRecording(false);
+    }
+  };
 
   const handleSubmitReview = () => {
     if (!reviewText.trim()) {
       Alert.alert('Error', 'Please write a review');
       return;
     }
-
-    // Navigate to ImageOptions page with review, ticket data, and status
-    navigation.navigate('ImageOptions', { 
+    navigation.navigate('ImageOptions', {
       ticketData: {
         ...ticketData,
         status: isPublic ? '공개' : '비공개',
       },
-      reviewData: {
-        reviewText,
-      }
+      reviewData: { reviewText },
     });
   };
 
@@ -56,15 +119,14 @@ const AddReviewPage: React.FC<AddReviewPageProps> = ({ navigation, route }) => {
         <View style={styles.placeholder} />
       </View>
 
-      <KeyboardAvoidingView 
-        style={styles.flex} 
+      <KeyboardAvoidingView
+        style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
 
           {/* Review Text Input + 공개/비공개 토글 */}
           <View style={styles.reviewContainer}>
-            {/* 제목 + 토글 */}
             <View style={styles.reviewHeaderRow}>
               <Text style={styles.sectionTitle}>Your Review *</Text>
               <View style={styles.toggleRow}>
@@ -78,7 +140,6 @@ const AddReviewPage: React.FC<AddReviewPageProps> = ({ navigation, route }) => {
               </View>
             </View>
 
-            {/* 입력창 */}
             <TextInput
               style={styles.reviewInput}
               value={reviewText}
@@ -93,22 +154,41 @@ const AddReviewPage: React.FC<AddReviewPageProps> = ({ navigation, route }) => {
             <Text style={styles.characterCount}>
               {reviewText.length}/1000 characters
             </Text>
+
+            {/* 음성 입력: 길게 눌러 말하기 */}
+            {isVoiceMode && (
+              <View style={styles.voiceHint}>
+                <Text style={styles.voiceHintText}>🎤 길게 눌러 말하고, 손을 떼면 텍스트로 들어가요.</Text>
+              </View>
+            )}
+            {isVoiceMode && (
+              <TouchableOpacity
+                style={[styles.micButton, isRecording && styles.micButtonActive]}
+                onPressIn={startRecording}
+                onPressOut={stopRecording}
+                activeOpacity={0.9}
+              >
+                <Text style={[styles.micButtonText, isRecording && { color: '#fff' }]}>
+                  {isRecording ? '말씀하세요… (손을 떼면 완료)' : '🎤 길게 눌러 말하기'}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
         </ScrollView>
 
         {/* Footer Buttons */}
         <View style={styles.footer}>
-          <TouchableOpacity 
-            style={styles.cancelButton} 
+          <TouchableOpacity
+            style={styles.cancelButton}
             onPress={() => navigation.goBack()}
           >
             <Text style={styles.cancelButtonText}>Cancel</Text>
           </TouchableOpacity>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[
               styles.submitButton,
               (!reviewText.trim()) && styles.submitButtonDisabled
-            ]} 
+            ]}
             onPress={handleSubmitReview}
             disabled={!reviewText.trim()}
           >
@@ -173,6 +253,17 @@ const styles = StyleSheet.create({
   submitButtonDisabled: { backgroundColor: '#BDC3C7' },
   submitButtonText: { fontSize: 16, fontWeight: '600', color: '#FFFFFF' },
   submitButtonTextDisabled: { color: '#7F8C8D' },
+
+  // 음성 입력 UI
+  micButton: {
+    marginTop: 16, backgroundColor: '#ECF0F1', padding: 14, borderRadius: 12, alignItems: 'center',
+  },
+  micButtonActive: {
+    backgroundColor: '#B11515',
+  },
+  micButtonText: { fontSize: 16, fontWeight: '600', color: '#2C3E50' },
+  voiceHint: { marginTop: 8, paddingVertical: 8 },
+  voiceHintText: { fontSize: 12, color: '#7F8C8D' },
 });
 
 export default AddReviewPage;

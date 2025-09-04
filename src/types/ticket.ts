@@ -13,6 +13,8 @@ export interface Ticket {
   };
   images?: string[];
   createdAt: Date;
+
+  isPlaceholder?: boolean; // 빈 카드 전용 플래그
 }
 
 export interface TicketFormData {

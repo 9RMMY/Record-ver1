@@ -93,10 +93,15 @@ const TicketCompletePage: React.FC<TicketCompletePageProps> = ({ navigation, rou
 
           {/* Main Ticket Content */}
           <View style={styles.ticketMain}>
-            {ticketImage && (
-              <ImageBackground
+            {ticketImage ? (
+              <Image
                 source={{ uri: ticketImage }}
-              ></ImageBackground>
+                style={styles.ticketImage}
+              />
+            ) : (
+              <View style={styles.ticketPlaceholder}>
+                <Text style={styles.placeholderText}>🎫</Text>
+              </View>
             )}
           </View>
 
@@ -193,7 +198,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
   },
-
+  ticketImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+    borderRadius: 12,
+  },
+  ticketPlaceholder: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 12,
+  },
+  placeholderText: {
+    fontSize: 48,
+    color: 'rgba(255, 255, 255, 0.7)',
+  },
   ticketFooter: {
     padding: 20,
     alignItems: 'center',

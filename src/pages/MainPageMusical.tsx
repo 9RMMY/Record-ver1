@@ -75,6 +75,7 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
             artist: '',
             place: '',
             performedAt: undefined,
+            ///bookingSite: '',
             status: '',
             images: [],
             review: null,
@@ -84,20 +85,17 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
         ];
 
   const renderMainTicket = () => {
-    const currentTicket = displayTickets[currentTicketIndex]; //현재 인덱스 티켓 가져오기
-    const isPlaceholder = !currentTicket.id || !currentTicket.performedAt; //빈 카드인지 확인 (수정 필요)
+    const currentTicket = displayTickets[currentTicketIndex];
+    const isPlaceholder = !currentTicket.id || !currentTicket.performedAt;
 
     return (
       <View style={styles.mainTicketContainer}>
-        {/*카드 클릭*/}
         <TouchableOpacity
-          disabled={isPlaceholder} //카드 클릭 가능 여부
+          disabled={isPlaceholder}
           style={[styles.mainTicketCard, isPlaceholder && styles.disabledCard]}
           onPress={() => handleTicketPress(currentTicket)}
           activeOpacity={isPlaceholder ? 1 : 0.7}
         >
-
-        {/* 티켓 이미지 관련 */}
           {currentTicket.images && currentTicket.images.length > 0 ? (
             <Image
               source={{ uri: currentTicket.images[0] }}
@@ -106,8 +104,7 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
           ) : (
             <View style={styles.mainTicketPlaceholder}>
               <Text style={styles.placeholderText}>
-                {/* 이미지 필수로 수정 */}
-                {isPlaceholder ? '새 티켓을 추가해보세요!' : '이미지 없음'} 
+                {isPlaceholder ? '새 티켓을 추가해보세요!' : '이미지 없음'}
               </Text>
             </View>
           )}

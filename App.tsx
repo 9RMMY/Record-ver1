@@ -13,12 +13,14 @@ import { Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
+
 import MainPage from './src/pages/MainPage';
 import AddTicketPage from './src/pages/AddTicketPage';
 import ReviewOptions from './src/pages/ReviewOptions';
 import ImageOptions from './src/pages/ImageOptions';
 import AddReviewPage from './src/pages/AddReviewPage';
-import GenerateAIImage from './src/pages/GenerateAIImage';
+import AIImageSettings from './src/pages/AIImageSettings';
+import AIImageResults from './src/pages/AIImageResults';
 import TicketCompletePage from './src/pages/TicketCompletePage';
 import MyPage from './src/pages/MyPage';
 import CalenderScreen from './src/pages/CalenderScreen';
@@ -156,8 +158,15 @@ function App(): React.JSX.Element {
           }}
         />
         <Stack.Screen 
-          name="GenerateAIImage" 
-          component={GenerateAIImage}
+          name="AIImageSettings" 
+          component={AIImageSettings}
+          options={{
+            presentation: 'modal',
+          }}
+        />
+        <Stack.Screen 
+          name="AIImageResults" 
+          component={AIImageResults}
           options={{
             presentation: 'modal',
           }}

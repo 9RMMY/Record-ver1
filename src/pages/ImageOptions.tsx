@@ -21,7 +21,7 @@ import {
 
 type RootStackParamList = {
   ImageOptions: { ticketData: any; reviewData: any };
-  GenerateAIImage: { ticketData: any; reviewData: any; images?: string[] };
+  AIImageSettings: { ticketData: any; reviewData: any; images?: string[] };
   TicketComplete: { ticketData: any; reviewData: any; images?: string[] };
 };
 
@@ -40,7 +40,7 @@ const ImageOptions = () => {
 
   // AI 이미지 생성 페이지 이동
   const handleAIImageSelect = () => {
-    navigation.navigate('GenerateAIImage', {
+    navigation.navigate('AIImageSettings', {
       ticketData,
       reviewData,
       images: [],
