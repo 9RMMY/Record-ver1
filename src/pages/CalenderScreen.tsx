@@ -173,11 +173,13 @@ const CalenderScreen = () => {
         </ScrollView>
       </View>
 
-      <TicketDetailModal
-        visible={modalVisible}
-        ticket={selectedTicket}
-        onClose={handleCloseModal}
-      />
+      {selectedTicket && (
+        <TicketDetailModal
+          visible={modalVisible}
+          ticket={selectedTicket}
+          onClose={handleCloseModal}
+        />
+      )}
     </View>
   );
 };

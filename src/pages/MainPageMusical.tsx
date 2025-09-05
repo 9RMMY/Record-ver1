@@ -15,6 +15,7 @@ import { useAtom } from 'jotai';
 import { ticketsAtom } from '../atoms/ticketAtoms';
 import { Ticket } from '../types/ticket';
 import TicketDetailModal from '../components/TicketDetailModal';
+import { isPlaceholderTicket } from '../utils/isPlaceholder';
 
 interface MainPageProps {
   navigation: any;
@@ -74,11 +75,11 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
             title: '',
             artist: '',
             place: '',
-            performedAt: undefined,
-            ///bookingSite: '',
-            status: '',
+            performedAt: undefined as any,
+            bookingSite: '',
+            status: '공개' as const,
             images: [],
-            review: null,
+            review: undefined,
             createdAt: new Date(),
             updatedAt: new Date(),
           },
@@ -86,7 +87,7 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
 
   const renderMainTicket = () => {
     const currentTicket = displayTickets[currentTicketIndex];
-    const isPlaceholder = !currentTicket.id || !currentTicket.performedAt;
+    const isPlaceholder = isPlaceholderTicket(currentTicket);
 
     return (
       <View style={styles.mainTicketContainer}>
@@ -215,18 +216,29 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 16,
     backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+    zIndex: 1,
   },
-  headerTitle: { fontSize: 24, fontWeight: 'bold', color: '#000000' },
+  headerTitle: { fontSize: 24, fontWeight: 'bold', color: '#2C3E50' },
   headerRight: { position: 'relative' },
   filterButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#F8F9FA',
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: '#E0E0E0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
   },
   filterButtonText: { fontSize: 14, color: '#666666', marginRight: 4 },
   filterArrow: { fontSize: 10, color: '#666666' },
@@ -235,15 +247,16 @@ const styles = StyleSheet.create({
     top: 38,
     right: 0,
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    paddingVertical: 6,
+    borderRadius: 16,
+    paddingVertical: 8,
     minWidth: 140,
     borderWidth: 0.5,
     borderColor: '#E5E5EA',
     shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
     zIndex: 1000,
   },
   filterOption: { paddingHorizontal: 16, paddingVertical: 12 },
@@ -255,11 +268,16 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 16,
     backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   monthTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#000000',
+    color: '#2C3E50',
     marginBottom: 8,
   },
   monthSubtitle: { fontSize: 14, color: '#666666', lineHeight: 20 },
@@ -277,10 +295,10 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: '#8FBC8F',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 12,
   },
   disabledCard: {
     opacity: 0.5, // 비활성화 시 흐리게 표시
