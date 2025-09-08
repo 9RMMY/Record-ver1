@@ -82,8 +82,8 @@ const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation, route }) => {
   };
 
   const handleSubmit = () => {
-    if (!formData.title.trim() || !formData.artist.trim() || !formData.place.trim() || !formData.bookingSite.trim()) {
-      Alert.alert('Error', '모든 항목을 채워주세요');
+    if (!formData.title.trim()) {
+      Alert.alert('Error', '제목을 입력해주세요');
       return;
     }
 

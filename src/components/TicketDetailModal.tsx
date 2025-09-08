@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -35,13 +35,30 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
   const [isFlipped, setIsFlipped] = useState(false);
   const flipAnimation = useRef(new Animated.Value(0)).current;
 
+  // ✅ 탭 힌트 opacity 애니메이션
+  const hintOpacity = useRef(new Animated.Value(1)).current;
+
   const getStatusColor = (status: '공개' | '비공개') =>
     status === '공개' ? '#4ECDC4' : '#FF6B6B';
+
+  // 모달 열리거나 카드 뒤집을 때 힌트 fade in/out
+  useEffect(() => {
+    if (visible) {
+      hintOpacity.setValue(1);
+      Animated.timing(hintOpacity, {
+        toValue: 0,
+        duration: 3000,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [visible, isFlipped]);
 
   const handleShare = async () => {
     try {
       await Share.share({
-        message: `🎫 ${ticket.title}\n🎤 ${ticket.artist}\n📍 ${ticket.place}\n📅 ${ticket.performedAt.toLocaleDateString('ko-KR')}`,
+        message: `🎫 ${ticket.title}\n🎤 ${ticket.artist}\n📍 ${
+          ticket.place
+        }\n📅 ${ticket.performedAt.toLocaleDateString('ko-KR')}`,
         title: `${ticket.title} 티켓`,
       });
     } catch {
@@ -109,7 +126,10 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
             <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
               <Text style={styles.actionButtonText}>↗</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton} onPress={handleDelete}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={handleDelete}
+            >
               <Text style={styles.actionButtonText}>⋯</Text>
             </TouchableOpacity>
           </View>
@@ -122,31 +142,55 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
               <View style={styles.flipContainer}>
                 {/* Front Side */}
                 <Animated.View
-                  style={[styles.flipCard, styles.flipCardFront, frontAnimatedStyle]}
+                  style={[
+                    styles.flipCard,
+                    styles.flipCardFront,
+                    frontAnimatedStyle,
+                  ]}
                 >
-                  <Image source={{ uri: ticket.images?.[0] || 'https://via.placeholder.com/300x400?text=No+Image' }} style={styles.posterImage} />
-                  <View style={styles.tapHint}>
+                  <Image
+                    source={{
+                      uri:
+                        ticket.images?.[0] ||
+                        'https://via.placeholder.com/300x400?text=No+Image',
+                    }}
+                    style={styles.posterImage}
+                  />
+                  <Animated.View
+                    style={[styles.tapHint, { opacity: hintOpacity }]}
+                  >
                     <Text style={styles.tapHintText}>탭하여 후기 보기</Text>
-                  </View>
+                  </Animated.View>
                 </Animated.View>
 
                 {/* Back Side */}
                 <Animated.View
-                  style={[styles.flipCard, styles.flipCardBack, backAnimatedStyle]}
+                  style={[
+                    styles.flipCard,
+                    styles.flipCardBack,
+                    backAnimatedStyle,
+                  ]}
                 >
                   <View style={styles.reviewCardContent}>
                     <Text style={styles.reviewCardTitle}>관람 후기</Text>
-                    <ScrollView style={styles.reviewTextContainer} showsVerticalScrollIndicator={false}>
-                      <Text style={styles.reviewText}>{ticket.review?.reviewText || '후기가 없습니다.'}</Text>
+                    <ScrollView
+                      style={styles.reviewTextContainer}
+                      showsVerticalScrollIndicator={false}
+                    >
+                      <Text style={styles.reviewText}>
+                        {ticket.review?.reviewText || '후기가 없습니다.'}
+                      </Text>
                     </ScrollView>
                     <View style={styles.reviewDate}>
                       <Text style={styles.reviewDateText}>
                         {ticket.createdAt?.toLocaleDateString('ko-KR')}
                       </Text>
                     </View>
-                    <View style={styles.tapHint}>
+                    <Animated.View
+                      style={[styles.tapHint, { opacity: hintOpacity }]}
+                    >
                       <Text style={styles.tapHintText}>탭하여 티켓 보기</Text>
-                    </View>
+                    </Animated.View>
                   </View>
                 </Animated.View>
               </View>
@@ -195,7 +239,12 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
 
           {/* Status Badge */}
           <View style={styles.statusSection}>
-            <View style={[styles.statusBadge, { backgroundColor: getStatusColor(ticket.status) }]}>
+            <View
+              style={[
+                styles.statusBadge,
+                { backgroundColor: getStatusColor(ticket.status) },
+              ]}
+            >
               <Text style={styles.statusText}>{ticket.status}</Text>
             </View>
           </View>
@@ -207,14 +256,40 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFF' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 60, paddingBottom: 20, backgroundColor: '#FFF' },
-  backButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F8F9FA', justifyContent: 'center', alignItems: 'center' },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 20,
+    backgroundColor: '#FFF',
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F8F9FA',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   backButtonText: { fontSize: 24, color: '#2C3E50', fontWeight: 'bold' },
   headerActions: { flexDirection: 'row', gap: 12 },
-  actionButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F8F9FA', justifyContent: 'center', alignItems: 'center' },
+  actionButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F8F9FA',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   actionButtonText: { fontSize: 18, color: '#2C3E50', fontWeight: 'bold' },
   content: { flex: 1, backgroundColor: '#F8F9FA' },
-  posterContainer: { alignItems: 'center', paddingVertical: 30, backgroundColor: '#FFF' },
+  posterContainer: {
+    alignItems: 'center',
+    paddingVertical: 30,
+    backgroundColor: '#FFF',
+  },
   flipContainer: {
     width: width * 0.7,
     aspectRatio: 0.7,
@@ -236,23 +311,91 @@ const styles = StyleSheet.create({
   flipCardFront: { backgroundColor: '#FFF' },
   flipCardBack: { backgroundColor: '#FFF' },
   posterImage: { width: '100%', height: '100%', resizeMode: 'cover' },
-  tapHint: { position: 'absolute', bottom: 16, left: 0, right: 0, alignItems: 'center' },
-  tapHintText: { fontSize: 12, color: 'rgba(255,255,255,0.8)', backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, overflow: 'hidden' },
-  reviewCardContent: { flex: 1, padding: 24, justifyContent: 'center', borderRadius: 20, backgroundColor: '#FFF' },
-  reviewCardTitle: { fontSize: 20, fontWeight: 'bold', color: '#2C3E50', textAlign: 'center', marginBottom: 20 },
+  tapHint: {
+    position: 'absolute',
+    bottom: 16,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  tapHintText: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.8)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  reviewCardContent: {
+    flex: 1,
+    padding: 24,
+    justifyContent: 'center',
+    borderRadius: 20,
+    backgroundColor: '#FFF',
+  },
+  reviewCardTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#2C3E50',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
   reviewTextContainer: { flex: 1, maxHeight: 200 },
-  reviewText: { fontSize: 16, color: '#2C3E50', lineHeight: 24, textAlign: 'center' },
+  reviewText: {
+    fontSize: 16,
+    color: '#2C3E50',
+    lineHeight: 24,
+    textAlign: 'center',
+  },
   reviewDate: { alignItems: 'center', marginTop: 16 },
   reviewDateText: { fontSize: 12, color: '#95A5A6' },
-  titleSection: { alignItems: 'center', paddingVertical: 20, backgroundColor: '#FFF' },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#2C3E50', textAlign: 'center', marginBottom: 8 },
+  titleSection: {
+    alignItems: 'center',
+    paddingVertical: 20,
+    backgroundColor: '#FFF',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#2C3E50',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
   date: { fontSize: 16, color: '#7F8C8D' },
-  detailsSection: { backgroundColor: '#FFF', marginTop: 12, paddingHorizontal: 20, paddingVertical: 24 },
-  detailRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F1F2F6' },
+  detailsSection: {
+    backgroundColor: '#FFF',
+    marginTop: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F2F6',
+  },
   detailLabel: { fontSize: 16, color: '#7F8C8D', fontWeight: '500', flex: 1 },
-  detailValue: { fontSize: 16, color: '#2C3E50', fontWeight: '600', flex: 2, textAlign: 'right' },
-  statusSection: { backgroundColor: '#FFF', paddingHorizontal: 20, paddingBottom: 20 },
-  statusBadge: { alignSelf: 'center', paddingHorizontal: 20, paddingVertical: 8, borderRadius: 20 },
+  detailValue: {
+    fontSize: 16,
+    color: '#2C3E50',
+    fontWeight: '600',
+    flex: 2,
+    textAlign: 'right',
+  },
+  statusSection: {
+    backgroundColor: '#FFF',
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  statusBadge: {
+    alignSelf: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
   statusText: { color: '#FFF', fontWeight: 'bold', fontSize: 14 },
 });
 

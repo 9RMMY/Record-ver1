@@ -4,12 +4,16 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   Image,
   Platform,
   ActionSheetIOS,
-  ScrollView
+  ScrollView,
+  Alert,
 } from 'react-native';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import {
@@ -18,6 +22,8 @@ import {
   ImageLibraryOptions,
   Asset,
 } from 'react-native-image-picker';
+import { useAtom } from 'jotai';
+import { addTicketAtom } from '../atoms/ticketAtoms';
 
 type RootStackParamList = {
   ImageOptions: { ticketData: any; reviewData: any };
@@ -35,6 +41,7 @@ const ImageOptions = () => {
   const navigation = useNavigation<ImageOptionsNavigationProp>();
   const route = useRoute<ImageOptionsRouteProp>();
   const { ticketData, reviewData } = route.params;
+  const [, addTicket] = useAtom(addTicketAtom);
 
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
@@ -125,6 +132,39 @@ const ImageOptions = () => {
     });
   };
 
+  // 이미지 없이 완료
+  const handleSkipImages = () => {
+    try {
+      const ticketToSave = {
+        ...ticketData,
+        review: reviewData,
+        createdAt: new Date(),
+        images: [], // 빈 배열로 설정
+      };
+      
+      addTicket(ticketToSave);
+      
+      Alert.alert(
+        '티켓 저장 완료',
+        '티켓이 성공적으로 저장되었습니다.',
+        [
+          {
+            text: '확인',
+            onPress: () => {
+              // Navigate back to main screen (reset navigation stack)
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'MainTabs' as never }],
+              });
+            },
+          },
+        ]
+      );
+    } catch (error) {
+      Alert.alert('오류', '티켓 저장 중 오류가 발생했습니다.');
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
@@ -177,10 +217,10 @@ const ImageOptions = () => {
               style={styles.buttonIcon}
             />
             <View style={styles.textContainer}>
-              <Text style={[styles.optionButtonText, { color: '#000' }]}>
+              <Text style={[styles.optionButtonText, { color: '#000000' }]}>
                 직접 선택하기
               </Text>
-              <Text style={[styles.optionButtonSubText, { color: '#000' }]}>
+              <Text style={[styles.optionButtonSubText, { color: '#8E8E93' }]}>
                 사진 찍기 또는 사진 보관함에서 선택하세요.
               </Text>
             </View>
@@ -204,32 +244,41 @@ const ImageOptions = () => {
             <Text style={styles.nextButtonText}>다음으로</Text>
           </TouchableOpacity>
         )}
+
+        {/* 이미지 스킵 버튼 */}
+        <TouchableOpacity style={styles.skipButton} onPress={handleSkipImages}>
+          <Text style={styles.skipButtonText}>이미지 없이 완료</Text>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F8F8f8' },
+  container: { flex: 1, backgroundColor: '#F2F2F7' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 20,
-    backgroundColor: '#F8F8f8',
-    borderBottomWidth: 1,
-    borderBottomColor: '#F8F8f8',
+    backgroundColor: '#F2F2F7',
+    borderBottomWidth: 0,
   },
   backButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#ECF0F1',
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
   },
-  backButtonText: { fontSize: 20, color: '#2C3E50' },
-  headerTitle: { fontSize: 18, fontWeight: '600', color: '#2C3E50' },
+  backButtonText: { fontSize: 20, color: '#007AFF' },
+  headerTitle: { fontSize: 20, fontWeight: '600', color: '#000000' },
   placeholder: { width: 40 },
 
   scrollView: {
@@ -241,72 +290,91 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#2C3E50',
-    marginBottom: 4,
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#000000',
+    marginBottom: 8,
     textAlign: 'left',
   },
   subtitle: {
     marginBottom: 30,
-    fontSize: 14,
-    color: '#666666',
+    fontSize: 17,
+    color: '#8E8E93',
     textAlign: 'left',
-    lineHeight: 20,
+    lineHeight: 22,
   },
 
-  optionsContainer: { width: '100%', gap: 20,},
+  optionsContainer: { width: '100%', gap: 16 },
   optionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    padding: 24,
-    borderRadius: 12,
+    padding: 20,
+    borderRadius: 16,
     backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  buttonIcon: { width: 100, height: 100, marginRight: 8 },
-  AIImageButton: { backgroundColor: 'rgba(219, 88, 88, 1)', height: 140 },
-  GalleryButton: { backgroundColor: '#ECF0F1', height: 140 },
-  textContainer: { flexDirection: 'column' },
+  buttonIcon: { width: 80, height: 80, marginRight: 16 },
+  AIImageButton: { backgroundColor: '#B11515', height: 120 },
+  GalleryButton: { backgroundColor: '#FFFFFF', height: 120, borderWidth: 1, borderColor: '#E5E5EA' },
+  textContainer: { flexDirection: 'column', flex: 1 },
 
   optionButtonText: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600',
     color: '#FFFFFF',
-    marginBottom: 12,
+    marginBottom: 8,
   },
-  optionButtonSubText: { fontSize: 12, fontWeight: '600', color: '#FFFFFF' },
+  optionButtonSubText: { fontSize: 15, fontWeight: '400', color: '#FFFFFF' },
 
   // 미리보기 컨테이너 스타일 개선
   previewContainer: {
-    marginTop: 20,
+    marginTop: 24,
     alignItems: 'center',
     width: '100%',
   },
   previewText: {
-    fontSize: 14,
-    color: '#333',
-    marginBottom: 12,
-    fontWeight: '500',
+    fontSize: 17,
+    color: '#000000',
+    marginBottom: 16,
+    fontWeight: '600',
   },
   previewImage: {
-    width: 150,
-    height: 150,
-    borderRadius: 12,
+    width: 200,
+    height: 200,
+    borderRadius: 16,
   },
   nextButton: {
-    backgroundColor: '#DB5858',
-    paddingVertical: 14,
-    paddingHorizontal: 30,
+    backgroundColor: '#B11515',
+    paddingVertical: 16,
+    paddingHorizontal: 32,
     borderRadius: 12,
     width: '100%',
     alignItems: 'center',
+    marginTop: 24,
   },
 
   nextButtonText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontWeight: '600',
-    fontSize: 16,
+    fontSize: 17,
+  },
+  skipButton: {
+    backgroundColor: '#8E8E93',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    marginTop: 16,
+    alignItems: 'center',
+  },
+  skipButtonText: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '600',
   },
 });
 

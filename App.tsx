@@ -24,6 +24,7 @@ import AIImageResults from './src/pages/AIImageResults';
 import TicketCompletePage from './src/pages/TicketCompletePage';
 import MyPage from './src/pages/MyPage';
 import CalenderScreen from './src/pages/CalenderScreen';
+import FriendsListPage from './src/pages/FriendsListPage';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();

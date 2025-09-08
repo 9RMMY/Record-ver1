@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -36,16 +36,44 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [currentTicketIndex, setCurrentTicketIndex] = useState(0);
 
-  const resetPosition = () => {
-    Animated.spring(pan, {
-      toValue: { x: 0, y: 0 },
-      useNativeDriver: false,
-    }).start();
-  };
-
   // 애니메이션 값들
   const pan = useRef(new Animated.ValueXY()).current;
   const opacity = useRef(new Animated.Value(1)).current;
+
+  // 카드 위치 리셋 함수
+  const resetCardPosition = () => {
+    Animated.parallel([
+      Animated.spring(pan, {
+        toValue: { x: 0, y: 0 },
+        useNativeDriver: false,
+        tension: 100,
+        friction: 8,
+      }),
+      Animated.spring(opacity, {
+        toValue: 1,
+        useNativeDriver: false,
+      }),
+    ]).start();
+  };
+
+  // 바운스 효과
+  const createBounceEffect = (direction: 'left' | 'right') => {
+    const bounceDistance = direction === 'left' ? -30 : 30;
+
+    Animated.sequence([
+      Animated.timing(pan, {
+        toValue: { x: bounceDistance, y: 0 },
+        duration: 150,
+        useNativeDriver: false,
+      }),
+      Animated.spring(pan, {
+        toValue: { x: 0, y: 0 },
+        tension: 300,
+        friction: 8,
+        useNativeDriver: false,
+      }),
+    ]).start();
+  };
 
   const handleTicketPress = (ticket: Ticket) => {
     if (!ticket.id || !ticket.performedAt) return;
@@ -58,7 +86,6 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
     setSelectedTicket(null);
   };
 
-  // 날짜 관련 함수
   const getCurrentMonth = () => {
     const now = new Date();
     return `${now.getMonth() + 1}월`;
@@ -71,19 +98,38 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
     return `${month}월 ${day}일`;
   };
 
-  // 필터 선택 핸들러
   const handleFilterSelect = (filter: '밴드' | '연극/뮤지컬') => {
     setSelectedFilter(filter);
     setShowFilterDropdown(false);
   };
 
+  const getCurrentMonthNumber = () => {
+    const now = new Date();
+    return now.getMonth();
+  };
+
+  const getCurrentYear = () => {
+    const now = new Date();
+    return now.getFullYear();
+  };
+
   // 실제 티켓만 필터링 (placeholder 제외)
   const realTickets = tickets.filter(ticket => !isPlaceholderTicket(ticket));
 
-  // 표시할 티켓들 (실제 티켓이 없으면 placeholder 하나만)
+  // 현재 월의 티켓만 필터링
+  const currentMonthTickets = realTickets.filter(ticket => {
+    if (!ticket.performedAt) return false;
+    const ticketDate = new Date(ticket.performedAt);
+    return (
+      ticketDate.getMonth() === getCurrentMonthNumber() &&
+      ticketDate.getFullYear() === getCurrentYear()
+    );
+  });
+
+  // 표시할 티켓들 (현재 월 티켓이 없으면 placeholder 하나만)
   const displayTickets: Ticket[] =
-    realTickets.length > 0
-      ? realTickets
+    currentMonthTickets.length > 0
+      ? currentMonthTickets
       : [
           {
             id: '',
@@ -100,72 +146,67 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
           },
         ];
 
-  // 다음/이전 티켓으로 이동
-  const goToNextTicket = () => {
-    if (currentTicketIndex < displayTickets.length - 1) {
-      setCurrentTicketIndex(currentTicketIndex + 1);
-      resetCardPosition();
-    }
-  };
+  const currentTicketIndexRef = useRef(0);
 
-  const goToPrevTicket = () => {
-    if (currentTicketIndex > 0) {
-      setCurrentTicketIndex(currentTicketIndex - 1);
-      resetCardPosition();
-    }
-  };
+  useEffect(() => {
+    currentTicketIndexRef.current = currentTicketIndex;
+  }, [currentTicketIndex]);
 
-  // 카드 위치 리셋
-  const resetCardPosition = () => {
-    Animated.parallel([
-      Animated.spring(pan, {
-        toValue: { x: 0, y: 0 },
-        useNativeDriver: false,
-      }),
-      Animated.spring(opacity, {
-        toValue: 1,
-        useNativeDriver: false,
-      }),
-    ]).start();
-  };
-
-  // 팬 제스처 핸들러
   const panResponder = useRef(
     PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: (_, gestureState) => {
-        // 수평으로 크게 움직일 때만 스와이프 처리
-        return (
-          Math.abs(gestureState.dx) > Math.abs(gestureState.dy) &&
-          Math.abs(gestureState.dx) > 10
-        );
+        return Math.abs(gestureState.dx) > 10;
       },
-      onPanResponderMove: Animated.event([null, { dx: pan.x }], {
-        useNativeDriver: false,
-      }),
+      onPanResponderMove: (_, gestureState) => {
+        pan.setValue({ x: gestureState.dx, y: 0 });
+      },
       onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dx > 50) {
-          // 👉 오른쪽 스와이프
-          if (currentTicketIndex < displayTickets.length - 1) {
-            goToNextTicket(); // 오른쪽으로 넘기면 다음 티켓
+        const swipeThreshold = 80;
+        const velocityThreshold = 0.3;
+        const totalCards = displayTickets.length;
+        const currentIndex = currentTicketIndexRef.current;
+
+        const shouldSwipeRight =
+          gestureState.dx > swipeThreshold ||
+          (gestureState.dx > 30 && gestureState.vx > velocityThreshold);
+        const shouldSwipeLeft =
+          gestureState.dx < -swipeThreshold ||
+          (gestureState.dx < -30 && gestureState.vx < -velocityThreshold);
+
+        if (shouldSwipeRight) {
+          if (currentIndex === 0) {
+            createBounceEffect('left');
           } else {
-            resetPosition();
+            setCurrentTicketIndex(currentIndex - 1);
+            resetCardPosition();
           }
-        } else if (gestureState.dx < -50) {
-          // 👉 왼쪽 스와이프
-          if (currentTicketIndex > 0) {
-            goToPrevTicket(); // 왼쪽으로 넘기면 이전 티켓
+        } else if (shouldSwipeLeft) {
+          if (currentIndex === totalCards - 1) {
+            createBounceEffect('right');
           } else {
-            resetPosition();
+            setCurrentTicketIndex(currentIndex + 1);
+            resetCardPosition();
           }
         } else {
-          resetPosition();
+          resetCardPosition();
         }
       },
     }),
   ).current;
 
-  // 현재 티켓
-  const currentTicket = displayTickets[currentTicketIndex];
+  useEffect(() => {
+    if (currentTicketIndex >= displayTickets.length) {
+      setCurrentTicketIndex(0);
+    }
+  }, [displayTickets.length, currentTicketIndex]);
+
+  useEffect(() => {
+    setCurrentTicketIndex(0);
+    resetCardPosition();
+  }, [selectedFilter]);
+
+  const currentTicket = displayTickets[currentTicketIndex] || displayTickets[0];
   const isPlaceholder = isPlaceholderTicket(currentTicket);
 
   return (
@@ -231,14 +272,21 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
             {getCurrentMonth()}에 관람한 공연
           </Text>
           <Text style={styles.monthSubtitle}>
-            한 달의 기록, 카드를 좌우로 넘기며 다시 만나보세요!
+            한 달의 기록, 옆으로 넘기며 다시 만나보세요 ( ♪˶´・‎ᴗ・ `˶ ♪)
           </Text>
         </View>
 
         {/* Main Content */}
         <View style={styles.contentContainer}>
           <View style={styles.cardContainer}>
-            {/* 스와이프 가능한 카드 */}
+            {displayTickets.length > 1 && !isPlaceholder && (
+              <View style={styles.indicatorContainer}>
+                <Text style={styles.indicatorText}>
+                  {currentTicketIndex + 1} / {displayTickets.length}
+                </Text>
+              </View>
+            )}
+
             <Animated.View
               style={[
                 styles.animatedCard,
@@ -254,6 +302,10 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
                 style={[
                   styles.mainTicketCard,
                   isPlaceholder && styles.disabledCard,
+                  !isPlaceholder &&
+                    (!currentTicket.images ||
+                      currentTicket.images.length === 0) &&
+                    styles.mainTicketCardNoImage,
                 ]}
                 onPress={() => handleTicketPress(currentTicket)}
                 activeOpacity={isPlaceholder ? 1 : 0.7}
@@ -275,7 +327,6 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
               </TouchableOpacity>
             </Animated.View>
 
-            {/* 날짜 버튼 */}
             {!isPlaceholder && currentTicket.performedAt && (
               <View style={styles.dateButtonContainer}>
                 <TouchableOpacity style={styles.dateButton}>
@@ -303,6 +354,7 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   safeArea: { flex: 1 },
+
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -311,15 +363,11 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 16,
     backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
     zIndex: 1,
   },
-  headerTitle: { fontSize: 24, fontWeight: 'bold', color: '#2C3E50' },
+  headerTitle: { fontSize: 22, fontWeight: '700', color: '#000000' },
   headerRight: { position: 'relative' },
+
   filterButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -351,23 +399,18 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.12,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
-    elevation: 8,
     zIndex: 1000,
   },
   filterOption: { paddingHorizontal: 16, paddingVertical: 12 },
   filterOptionSelected: { backgroundColor: '#F2F2F7' },
   filterOptionText: { fontSize: 15, color: '#3C3C43' },
-  filterOptionTextSelected: { color: '#007AFF', fontWeight: '600' },
+  filterOptionTextSelected: { color: '#B11515', fontWeight: '600' },
+
   subHeader: {
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 16,
     backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
   },
   monthTitle: {
     fontSize: 24,
@@ -376,33 +419,31 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   monthSubtitle: { fontSize: 14, color: '#666666', lineHeight: 20 },
-  contentContainer: {
-    flex: 1,
-    paddingTop: 20,
-    paddingHorizontal: 20,
-  },
-  cardContainer: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  animatedCard: {
-    alignItems: 'center',
-  },
+
+  contentContainer: { flex: 1, paddingTop: 30, paddingHorizontal: 20 },
+  cardContainer: { alignItems: 'center', flex: 1 },
+
+  indicatorContainer: { marginBottom: 10 },
+  indicatorText: { fontSize: 14, color: '#666666', fontWeight: '500' },
+
+  animatedCard: { alignItems: 'center' },
   mainTicketCard: {
     width: width - 80,
     height: (width - 80) * 1.3,
     borderRadius: 20,
     overflow: 'hidden',
-    backgroundColor: '#8FBC8F',
+    backgroundColor: '#f2f2f2',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.2,
     shadowRadius: 16,
-    elevation: 12,
   },
-  disabledCard: {
-    opacity: 0.5,
+  mainTicketCardNoImage: {
+    backgroundColor: '#FFEBEE',
+    borderWidth: 0.5,
+    borderColor: '#FF3B30',
   },
+  disabledCard: { opacity: 0.75 },
   mainTicketImage: { width: '100%', height: '100%', resizeMode: 'cover' },
   mainTicketPlaceholder: {
     flex: 1,
@@ -413,6 +454,7 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   placeholderText: { fontSize: 16, color: '#666666', fontWeight: '500' },
+
   dateButtonContainer: { marginTop: 16, alignItems: 'center' },
   dateButton: {
     backgroundColor: '#F8F9FA',
@@ -425,7 +467,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 4,
-    elevation: 3,
   },
   dateButtonText: { fontSize: 14, color: '#2C3E50', fontWeight: '500' },
 });

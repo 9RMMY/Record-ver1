@@ -10,7 +10,10 @@ import {
   Dimensions,
   Animated,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { useAtom } from 'jotai';
 import { ticketsAtom } from '../atoms/ticketAtoms';
 import { Ticket } from '../types/ticket';
@@ -29,6 +32,7 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
   const [tickets] = useAtom(ticketsAtom);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const insets = useSafeAreaInsets();
   
   // 스크롤 애니메이션을 위한 Animated.Value
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -36,7 +40,11 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
   // 등록된 티켓만 필터링하고 최신순으로 정렬
   const realTickets = tickets
     .filter(ticket => !isPlaceholderTicket(ticket))
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    .sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA;
+    });
 
   const handleTicketPress = (ticket: Ticket) => {
     setSelectedTicket(ticket);
@@ -69,41 +77,55 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
     extrapolate: 'clamp',
   });
 
-  const renderTicketCard = ({ item }: { item: Ticket }) => (
-    <TouchableOpacity
-      style={styles.ticketCard}
-      onPress={() => handleTicketPress(item)}
-    >
-      {item.images && item.images.length > 0 ? (
-        <Image source={{ uri: item.images[0] }} style={styles.ticketImage} />
-      ) : (
-        <View style={styles.ticketImagePlaceholder}>
-          <Text style={styles.ticketTitle} numberOfLines={2}>
-            {item.title}
-          </Text>
-          <Text style={styles.ticketArtist} numberOfLines={1}>
-            {item.artist}
-          </Text>
-        </View>
-      )}
-    </TouchableOpacity>
-  );
+  const renderTicketCard = ({ item }: { item: Ticket }) => {
+    const hasImages = item.images && item.images.length > 0;
+    
+    return (
+      <TouchableOpacity
+        style={[
+          styles.ticketCard,
+          !hasImages && styles.ticketCardNoImage
+        ]}
+        onPress={() => handleTicketPress(item)}
+      >
+        {hasImages ? (
+          <Image source={{ uri: item.images![0] }} style={styles.ticketImage} />
+        ) : (
+          <View style={styles.ticketImagePlaceholder}>
+            <Text style={styles.ticketTitle} numberOfLines={2}>
+              {item.title}
+            </Text>
+            <Text style={styles.ticketArtist} numberOfLines={1}>
+              {item.artist}
+            </Text>
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       {/* Animated Header */}
-      <Animated.View style={[styles.header, { backgroundColor: headerOpacity.interpolate({
-        inputRange: [0, 1],
-        outputRange: ['rgba(255, 255, 255, 0)', 'rgba(255, 255, 255, 1)']
-      })}]}>
+      <Animated.View style={[styles.header, { 
+        paddingTop: insets.top,
+        height: HEADER_HEIGHT + insets.top,
+        backgroundColor: headerOpacity.interpolate({
+          inputRange: [0, 1],
+          outputRange: ['rgba(255, 255, 255, 0)', 'rgba(255, 255, 255, 1)']
+        })
+      }]}>
         {/* 왼쪽 앱 타이틀 */}
         <Animated.Text style={[styles.appTitle, { opacity: headerOpacity }]}>
           Re:cord
         </Animated.Text>
         
         {/* 중앙 아이디 (스크롤시 나타남) */}
-        <Animated.View style={[styles.centerIdContainer, { opacity: centerIdOpacity }]}>
-          <Text style={styles.centerId}>9RMMY</Text>
+        <Animated.View style={[styles.centerIdContainer, { 
+          opacity: centerIdOpacity,
+          top: insets.top + 10
+        }]}>
+          <Text style={styles.centerId}>ID1234</Text>
         </Animated.View>
 
         {/* 오른쪽 아이콘들 */}
@@ -127,7 +149,7 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
         scrollEventThrottle={16}
       >
         {/* User Profile Section */}
-        <View style={styles.profileSection}>
+        <View style={[styles.profileSection, { paddingTop: HEADER_HEIGHT + insets.top + 32 }]}>
           <View style={styles.avatarContainer}>
             <Image
               source={{ uri: 'https://example.com/profile.jpg' }}
@@ -142,7 +164,7 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
           </View>
 
           {/* 유저 이름 */}
-          <Text style={styles.username}>9RMMY</Text>
+          <Text style={styles.username}>ID1234</Text>
 
           {/* 유저 통계 */}
           <View style={styles.statsRow}>
@@ -150,10 +172,13 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
               <Text style={styles.statLabel}>tickets</Text>
               <Text style={styles.statValue}>{realTickets.length}개</Text>
             </View>
-            <View style={styles.statBox}>
+            <TouchableOpacity 
+              style={styles.statBox}
+              onPress={() => navigation.navigate('FriendsList')}
+            >
               <Text style={styles.statLabel}>친구들</Text>
               <Text style={styles.statValue}>10명</Text>
-            </View>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -183,13 +208,9 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F8F9FA',
-  },
-  content: {
-    flex: 1,
-  },
+  container: { flex: 1, backgroundColor: '#fff' },
+  
+  content: { flex: 1 },
   header: {
     position: 'absolute',
     top: 0,
@@ -200,25 +221,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 44, // SafeArea를 고려한 패딩
-    zIndex: 1000,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+    paddingTop: 10,
+    zIndex: 10,
   },
   appTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#2C3E50',
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#000000',
     flex: 1,
   },
   centerIdContainer: {
     position: 'absolute',
     left: 0,
     right: 0,
-    top: 44, // SafeArea를 고려한 위치
     alignItems: 'center',
     justifyContent: 'center',
     height: 36,
@@ -243,23 +258,22 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 4,
-    elevation: 3,
   },
   iconText: {
     fontSize: 16,
   },
+
+  //프로필
   profileSection: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 32,
-    paddingTop: HEADER_HEIGHT + 32, // 헤더 높이만큼 추가 패딩
+    paddingTop: 32,
     backgroundColor: '#FFFFFF',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
     shadowRadius: 8,
-    elevation: 6,
-    marginBottom: 8,
   },
   avatarContainer: {
 
@@ -273,7 +287,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 6,
-    elevation: 6,
   },
   statsRow: {
     flexDirection: 'row',
@@ -294,7 +307,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 6,
-    elevation: 4,
   },
   badgeEmoji: {
     fontSize: 14,
@@ -323,6 +335,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#2C3E50',
   },
+
+  //피드
   gridContainer: {
     paddingHorizontal: 20,
     paddingTop: 24,
@@ -348,6 +362,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 12,
     elevation: 8,
+  },
+  ticketCardNoImage: {
+    backgroundColor: '#FFEBEE',
+    borderWidth: 0.5,
+    borderColor: '#FF3B30',
   },
   emptyCard: {
     width: cardWidth,

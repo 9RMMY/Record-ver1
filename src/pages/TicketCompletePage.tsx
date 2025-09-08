@@ -3,13 +3,16 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   Dimensions,
   StatusBar,
   Image,
   ImageBackground,
 } from 'react-native';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { useAtom } from 'jotai';
 import { addTicketAtom } from '../atoms/ticketAtoms';
 

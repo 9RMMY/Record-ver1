@@ -35,16 +35,25 @@ const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation, route }) => {
   const fromEmptyState = route?.params?.fromEmptyState || false;
   const fromAddButton = route?.params?.fromAddButton || false;
 
+  // 공연 시간 초기값을 오늘 오후 7시로 설정
+  const getDefaultPerformanceTime = () => {
+    const defaultDate = new Date();
+    defaultDate.setHours(19, 0, 0, 0); // 오후 7시로 설정
+    return defaultDate;
+  };
+
   const [formData, setFormData] = useState<Omit<Ticket, 'id' | 'updatedAt' | 'status'>>({
     title: '',
     artist: '',
     place: '',
-    performedAt: new Date(),
+    performedAt: getDefaultPerformanceTime(),
     bookingSite: '',
     createdAt: new Date(),
   });
 
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [dateTimeMode, setDateTimeMode] = useState<'date' | 'time'>('date');
 
   const handleInputChange = (field: keyof typeof formData, value: string) => {
     setFormData(prev => ({
@@ -54,15 +63,37 @@ const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation, route }) => {
   };
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
-    setShowDatePicker(Platform.OS === 'ios');
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+      setShowTimePicker(false);
+    }
+    
     if (selectedDate) {
       setFormData(prev => ({ ...prev, performedAt: selectedDate }));
+      
+      // Android에서 날짜 선택 후 시간 선택 모드로 전환
+      if (Platform.OS === 'android' && dateTimeMode === 'date') {
+        setTimeout(() => {
+          setDateTimeMode('time');
+          setShowTimePicker(true);
+        }, 100);
+      }
+    }
+  };
+
+  const showDateTimePicker = () => {
+    if (Platform.OS === 'ios') {
+      setShowDatePicker(true);
+    } else {
+      // Android에서는 먼저 날짜를 선택하고 그 다음 시간을 선택
+      setDateTimeMode('date');
+      setShowDatePicker(true);
     }
   };
 
   const handleSubmit = () => {
-    if (!formData.title.trim() || !formData.artist.trim() || !formData.place.trim()) {
-      Alert.alert('Error', '모든 항목을 채워주세요');
+    if (!formData.title.trim()) {
+      Alert.alert('Error', '제목을 입력해주세요');
       return;
     }
 
@@ -74,7 +105,7 @@ const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation, route }) => {
       title: '',
       artist: '',
       place: '',
-      performedAt: new Date(),
+      performedAt: getDefaultPerformanceTime(),
       bookingSite: '',
       createdAt: new Date(),
     });
@@ -142,25 +173,51 @@ const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation, route }) => {
             />
           </View>
 
-          {/* 공연 날짜 */}
+          {/* 공연 날짜 및 시간 */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>공연 날짜 *</Text>
+            <Text style={styles.label}>공연 날짜 및 시간 *</Text>
             <TouchableOpacity
               style={styles.dateButton}
-              onPress={() => setShowDatePicker(true)}
+              onPress={showDateTimePicker}
             >
               <Text style={styles.dateButtonText}>
                 {formData.performedAt.toLocaleDateString('ko-KR', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',
+                })} {formData.performedAt.toLocaleTimeString('ko-KR', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: true,
                 })}
               </Text>
             </TouchableOpacity>
-            {showDatePicker && (
+            
+            {/* iOS에서는 datetime 모드 사용 */}
+            {showDatePicker && Platform.OS === 'ios' && (
+              <DateTimePicker
+                value={formData.performedAt}
+                mode="datetime"
+                display="default"
+                onChange={handleDateChange}
+              />
+            )}
+            
+            {/* Android에서는 날짜 선택 */}
+            {showDatePicker && Platform.OS === 'android' && dateTimeMode === 'date' && (
               <DateTimePicker
                 value={formData.performedAt}
                 mode="date"
+                display="default"
+                onChange={handleDateChange}
+              />
+            )}
+            
+            {/* Android에서는 시간 선택 */}
+            {showTimePicker && Platform.OS === 'android' && dateTimeMode === 'time' && (
+              <DateTimePicker
+                value={formData.performedAt}
+                mode="time"
                 display="default"
                 onChange={handleDateChange}
               />
@@ -365,7 +422,7 @@ const styles = StyleSheet.create({
   
   submitButton: {
     flex: 1,
-    backgroundColor: '#3498DB',
+    backgroundColor: '#B11515',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -379,7 +436,7 @@ const styles = StyleSheet.create({
   
   nextButton: {
     flex: 1,
-    backgroundColor: '#3498DB',
+    backgroundColor: '#B11515',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',

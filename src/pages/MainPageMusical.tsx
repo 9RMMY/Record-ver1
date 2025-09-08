@@ -93,7 +93,11 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
       <View style={styles.mainTicketContainer}>
         <TouchableOpacity
           disabled={isPlaceholder}
-          style={[styles.mainTicketCard, isPlaceholder && styles.disabledCard]}
+          style={[
+            styles.mainTicketCard, 
+            isPlaceholder && styles.disabledCard,
+            !isPlaceholder && (!currentTicket.images || currentTicket.images.length === 0) && styles.mainTicketCardNoImage,
+          ]}
           onPress={() => handleTicketPress(currentTicket)}
           activeOpacity={isPlaceholder ? 1 : 0.7}
         >
@@ -195,11 +199,13 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
         {/* Main Ticket */}
         <View style={styles.contentContainer}>{renderMainTicket()}</View>
 
-        <TicketDetailModal
-          visible={modalVisible}
-          ticket={selectedTicket}
-          onClose={handleCloseModal}
-        />
+        {selectedTicket && (
+          <TicketDetailModal
+            visible={modalVisible}
+            ticket={selectedTicket}
+            onClose={handleCloseModal}
+          />
+        )}
       </SafeAreaView>
     </View>
   );
@@ -299,6 +305,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 16,
     elevation: 12,
+  },
+  mainTicketCardNoImage: {
+    backgroundColor: '#FFEBEE',
+    borderWidth: 3,
+    borderColor: '#FF3B30',
   },
   disabledCard: {
     opacity: 0.5, // 비활성화 시 흐리게 표시

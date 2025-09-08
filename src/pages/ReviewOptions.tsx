@@ -4,15 +4,22 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   Image,
+  Alert,
 } from 'react-native';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { useAtom } from 'jotai';
+import { addTicketAtom } from '../atoms/ticketAtoms';
 
 type RootStackParamList = {
   ReviewOptions: { ticketData: any };
   AddReview: { ticketData: any; inputMode: 'text' | 'voice' };
+  ImageOptions: { ticketData: any; reviewData: any };
 };
 
 type ReviewOptionsScreenNavigationProp = StackNavigationProp<
@@ -28,11 +35,19 @@ const ReviewOptions = () => {
   const navigation = useNavigation<ReviewOptionsScreenNavigationProp>();
   const route = useRoute<ReviewOptionsScreenRouteProp>();
   const { ticketData } = route.params;
+  const [, addTicket] = useAtom(addTicketAtom);
 
   const handleOptionSelect = (mode: 'text' | 'voice') => {
     navigation.navigate('AddReview', {
       ticketData,
       inputMode: mode,
+    });
+  };
+
+  const handleCompleteWithoutReview = () => {
+    navigation.navigate('ImageOptions', {
+      ticketData,
+      reviewData: null, // 후기 없음을 나타냄
     });
   };
 
@@ -86,76 +101,106 @@ const ReviewOptions = () => {
               style={styles.buttonIcon}
             />
             <View style={styles.textContainer}>
-              <Text style={[styles.optionButtonText, { color: '#000' }]}>
+              <Text style={[styles.optionButtonText, { color: '#000000' }]}>
                 직접 작성하기
               </Text>
-              <Text style={[styles.optionButtonSubText, { color: '#000' }]}>
+              <Text style={[styles.optionButtonSubText, { color: '#8E8E93' }]}>
                 키보드로 후기를 직접 입력할 수 있어요.
               </Text>
             </View>
           </TouchableOpacity>
         </View>
+
+        {/* 후기 스킵 버튼 */}
+        <TouchableOpacity
+          style={styles.skipReviewButton}
+          onPress={handleCompleteWithoutReview}
+        >
+          <Text style={styles.skipReviewButtonText}>후기 건너뛰기</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F8F8f8' },
+  container: { flex: 1, backgroundColor: '#F2F2F7' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 20,
-    backgroundColor: '#F8F8f8',
-    borderBottomWidth: 1,
-    borderBottomColor: '#F8F8f8',
+    backgroundColor: '#F2F2F7',
+    borderBottomWidth: 0,
   },
   backButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#ECF0F1',
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
   },
-  backButtonText: { fontSize: 20, color: '#2C3E50' },
+  backButtonText: { fontSize: 20, color: '#007AFF' },
   placeholder: { width: 40 },
   content: { padding: 24, paddingBottom: 40 },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#2C3E50',
-    marginBottom: 4,
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#000000',
+    marginBottom: 8,
     textAlign: 'left',
   },
   subtitle: {
     marginBottom: 30,
-    fontSize: 14,
-    color: '#666666',
+    fontSize: 17,
+    color: '#8E8E93',
     textAlign: 'left',
-    lineHeight: 20,
+    lineHeight: 22,
   },
-  optionsContainer: { width: '100%', gap: 20, marginBottom: 220 },
+  optionsContainer: { width: '100%', gap: 16, marginBottom: 220 },
   optionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    padding: 24,
-    borderRadius: 12,
+    padding: 20,
+    borderRadius: 16,
     backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  buttonIcon: { width: 100, height: 100, marginRight: 8 },
-  recordButton: { backgroundColor: 'rgba(219, 88, 88, 1)', height: 140 },
-  writeButton: { backgroundColor: '#ECF0F1', height: 140 },
-  textContainer: { flexDirection: 'column' },
+  buttonIcon: { width: 80, height: 80, marginRight: 16 },
+  recordButton: { backgroundColor: '#B11515', height: 120 },
+  writeButton: { backgroundColor: '#FFFFFF', height: 120, borderWidth: 1, borderColor: '#E5E5EA' },
+  textContainer: { flexDirection: 'column', flex: 1 },
   optionButtonText: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600',
     color: '#FFFFFF',
-    marginBottom: 12,
+    marginBottom: 8,
   },
-  optionButtonSubText: { fontSize: 12, fontWeight: '600', color: '#FFFFFF' },
+  optionButtonSubText: { fontSize: 15, fontWeight: '400', color: '#FFFFFF' },
+  skipReviewButton: {
+    backgroundColor: '#8E8E93',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  skipReviewButtonText: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '600',
+  },
 });
 
 export default ReviewOptions;
