@@ -149,7 +149,7 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
         scrollEventThrottle={16}
       >
         {/* User Profile Section */}
-        <View style={[styles.profileSection, { paddingTop: HEADER_HEIGHT + insets.top + 32 }]}>
+        <View style={[styles.profileSection, { paddingTop: HEADER_HEIGHT + 32}]}>
           <View style={styles.avatarContainer}>
             <Image
               source={{ uri: 'https://example.com/profile.jpg' }}
@@ -268,7 +268,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 32,
-    paddingTop: 32,
     backgroundColor: '#FFFFFF',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },

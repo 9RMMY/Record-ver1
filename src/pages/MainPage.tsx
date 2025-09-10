@@ -234,7 +234,8 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
                 <TouchableOpacity
                   style={[
                     styles.filterOption,
-                    selectedFilter === '밴드' && styles.filterOptionSelected,
+                    selectedFilter === '밴드' &&
+                      styles.filterOptionSelectedBand,
                   ]}
                   onPress={() => handleFilterSelect('밴드')}
                 >
@@ -252,7 +253,7 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
                   style={[
                     styles.filterOption,
                     selectedFilter === '연극/뮤지컬' &&
-                      styles.filterOptionSelected,
+                      styles.filterOptionSelectedMusical,
                   ]}
                   onPress={() => handleFilterSelect('연극/뮤지컬')}
                 >
@@ -390,14 +391,14 @@ const styles = StyleSheet.create({
   },
   filterButtonText: { fontSize: 14, color: '#666666', marginRight: 4 },
   filterArrow: { fontSize: 10, color: '#666666' },
+
   filterDropdown: {
     position: 'absolute',
     top: 38,
     right: 0,
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
-    paddingVertical: 8,
-    minWidth: 140,
+    minWidth: 110,
     borderWidth: 0.5,
     borderColor: '#E5E5EA',
     shadowColor: '#000',
@@ -407,8 +408,17 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   filterOption: { paddingHorizontal: 16, paddingVertical: 12 },
-  filterOptionSelected: { backgroundColor: '#F2F2F7' },
-  filterOptionText: { fontSize: 15, color: '#3C3C43' },
+  filterOptionSelectedBand: {
+    backgroundColor: '#F2F2F7',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+  },
+  filterOptionSelectedMusical: {
+    backgroundColor: '#F2F2F7',
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
+  },
+  filterOptionText: { fontSize: 15, color: '#3C3C43', textAlign: 'center' },
   filterOptionTextSelected: { color: '#B11515', fontWeight: '600' },
 
   subHeader: {

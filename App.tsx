@@ -25,6 +25,8 @@ import TicketCompletePage from './src/pages/TicketCompletePage';
 import MyPage from './src/pages/MyPage';
 import CalenderScreen from './src/pages/CalenderScreen';
 import FriendsListPage from './src/pages/FriendsListPage';
+import ReceivedRequestsPage from './src/pages/ReceivedRequestsPage';
+import SentRequestsPage from './src/pages/SentRequestsPage';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -128,56 +130,78 @@ function App(): React.JSX.Element {
       <Stack.Navigator
         screenOptions={{
           headerShown: false,
-        }}>
+        }}
+      >
         <Stack.Screen name="MainTabs" component={MainTabs} />
-        <Stack.Screen 
-          name="AddTicket" 
+        <Stack.Screen
+          name="AddTicket"
           component={AddTicketPage}
           options={{
             presentation: 'modal',
           }}
         />
-        <Stack.Screen 
-          name="ReviewOptions" 
+        <Stack.Screen
+          name="ReviewOptions"
           component={ReviewOptions}
           options={{
             presentation: 'modal',
           }}
         />
-        <Stack.Screen 
-          name="AddReview" 
+        <Stack.Screen
+          name="AddReview"
           component={AddReviewPage}
           options={{
             presentation: 'modal',
           }}
         />
-        <Stack.Screen 
-          name="ImageOptions" 
+        <Stack.Screen
+          name="ImageOptions"
           component={ImageOptions}
           options={{
             presentation: 'modal',
           }}
         />
-        <Stack.Screen 
-          name="AIImageSettings" 
+        <Stack.Screen
+          name="AIImageSettings"
           component={AIImageSettings}
           options={{
             presentation: 'modal',
           }}
         />
-        <Stack.Screen 
-          name="AIImageResults" 
+        <Stack.Screen
+          name="AIImageResults"
           component={AIImageResults}
           options={{
             presentation: 'modal',
           }}
         />
-        <Stack.Screen 
-          name="TicketComplete" 
+        <Stack.Screen
+          name="TicketComplete"
           component={TicketCompletePage}
           options={{
             presentation: 'fullScreenModal',
             gestureEnabled: false,
+          }}
+        />
+        <Stack.Screen
+          name="FriendsList"
+          component={FriendsListPage}
+          options={{
+            presentation: 'modal',
+          }}
+        />
+        <Stack.Screen
+          name="ReceivedRequests"
+          component={ReceivedRequestsPage}
+          options={{
+            presentation: 'modal',
+          }}
+        />
+        <Stack.Screen
+          name="SentRequests"
+          component={SentRequestsPage}
+          options={{
+            presentation: 'modal',
           }}
         />
       </Stack.Navigator>
