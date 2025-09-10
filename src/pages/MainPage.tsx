@@ -117,14 +117,19 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
   const realTickets = tickets.filter(ticket => !isPlaceholderTicket(ticket));
 
   // 현재 월의 티켓만 필터링
-  const currentMonthTickets = realTickets.filter(ticket => {
-    if (!ticket.performedAt) return false;
-    const ticketDate = new Date(ticket.performedAt);
-    return (
-      ticketDate.getMonth() === getCurrentMonthNumber() &&
-      ticketDate.getFullYear() === getCurrentYear()
-    );
-  });
+  const currentMonthTickets = realTickets
+    .filter(ticket => {
+      const ticketDate = new Date(ticket.performedAt);
+      return (
+        ticketDate.getMonth() === getCurrentMonthNumber() &&
+        ticketDate.getFullYear() === getCurrentYear()
+      );
+    })
+    .sort((a, b) => {
+      return (
+        new Date(a.performedAt).getTime() - new Date(b.performedAt).getTime()
+      );
+    });
 
   // 표시할 티켓들 (현재 월 티켓이 없으면 placeholder 하나만)
   const displayTickets: Ticket[] =
