@@ -181,6 +181,7 @@ const FriendProfilePage: React.FC<Props> = ({ navigation, route }) => {
           <Text style={styles.sectionTitle}>공연 일정</Text>
           <View style={styles.calendarContainer}>
             <Calendar
+              current={selectedDate.toString()}
               onDayPress={handleDayPress}
               markedDates={{
                 ...markedDates,
@@ -188,38 +189,29 @@ const FriendProfilePage: React.FC<Props> = ({ navigation, route }) => {
                   ...markedDates[selectedDate],
                   selected: true,
                   selectedColor: '#B11515',
-                  customStyles: {
-                    container: {
-                      backgroundColor: '#B11515',
-                      borderRadius: 16,
-                    },
-                    text: {
-                      color: 'white',
-                      fontWeight: '700',
-                    },
-                  },
                 },
-              } as any}
-              theme={{
-                backgroundColor: '#2C2C2E',
-                calendarBackground: '#2C2C2E',
-                textSectionTitleColor: '#FFFFFF',
-                selectedDayBackgroundColor: '#B11515',
-                selectedDayTextColor: '#FFFFFF',
-                todayTextColor: '#B11515',
-                dayTextColor: '#FFFFFF',
-                textDisabledColor: '#555555',
-                dotColor: '#B11515',
-                selectedDotColor: '#FFFFFF',
-                arrowColor: '#B11515',
-                monthTextColor: '#FFFFFF',
-                textDayFontWeight: '300' as const,
-                textMonthFontWeight: 'bold' as const,
-                textDayHeaderFontWeight: '300' as const,
-                textDayFontSize: 14,
-                textMonthFontSize: 16,
-                textDayHeaderFontSize: 12,
               }}
+              theme={{
+                backgroundColor: '#ffffff',
+                calendarBackground: '#ffffff',
+                textSectionTitleColor: '#000000',
+                selectedDayBackgroundColor: '#B11515',
+                selectedDayTextColor: '#ffffff',
+                todayTextColor: '#B11515',
+                dayTextColor: '#000000',
+                textDisabledColor: '#8E8E93',
+                dotColor: '#B11515',
+                selectedDotColor: '#ffffff',
+                arrowColor: '#000000',
+                monthTextColor: '#000000',
+                textDayFontWeight: '400',
+                textMonthFontWeight: '600',
+                textDayHeaderFontWeight: '500',
+                textDayFontSize: 17,
+                textMonthFontSize: 20,
+                textDayHeaderFontSize: 15,
+              }}
+              style={styles.calendar}
             />
             
             {selectedDate && performanceData[selectedDate] && (
@@ -312,10 +304,10 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    marginBottom: 15,
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#000000',
+    marginBottom: 16,
   },
   statsGrid: {
     flexDirection: 'row',
@@ -341,31 +333,44 @@ const styles = StyleSheet.create({
   calendarSection: {
     paddingHorizontal: 20,
     paddingVertical: 20,
+    marginBottom: 20,
   },
   calendarContainer: {
-    backgroundColor: '#2C2C2E',
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 20,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  calendar: {
+    borderRadius: 16,
   },
   eventDetails: {
     marginTop: 20,
-    backgroundColor: '#3A3A3C',
-    borderRadius: 10,
-    padding: 15,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   eventTitle: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600',
-    color: '#FFFFFF',
-    marginBottom: 10,
+    color: '#000000',
+    marginBottom: 4,
   },
   eventInfo: {
     gap: 8,
   },
   eventInfoText: {
-    fontSize: 14,
-    color: '#E5E5EA',
+    fontSize: 15,
+    color: '#8E8E93',
   },
 });
 
