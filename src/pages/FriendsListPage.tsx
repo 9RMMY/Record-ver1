@@ -148,7 +148,10 @@ const FriendsListPage: React.FC<FriendsListPageProps> = ({ navigation }) => {
           </Text>
           {friends.map(friend => (
             <View key={friend.id} style={styles.friendItem}>
-              <View style={styles.friendInfo}>
+              <TouchableOpacity 
+                style={styles.friendInfo}
+                onPress={() => navigation.navigate('FriendProfile', { friend })}
+              >
                 <Image
                   source={{ uri: friend.avatar }}
                   style={styles.friendAvatar}
@@ -157,7 +160,7 @@ const FriendsListPage: React.FC<FriendsListPageProps> = ({ navigation }) => {
                   <Text style={styles.friendName}>{friend.name}</Text>
                   <Text style={styles.friendUsername}>{friend.username}</Text>
                 </View>
-              </View>
+              </TouchableOpacity>
               <TouchableOpacity
                 style={styles.menuButtonLeft}
                 onPress={() => handleDeleteFriend(friend.id)}

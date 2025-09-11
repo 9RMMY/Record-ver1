@@ -27,6 +27,7 @@ import CalenderScreen from './src/pages/CalenderScreen';
 import FriendsListPage from './src/pages/FriendsListPage';
 import SentRequestsPage from './src/pages/SentRequestsPage';
 import AddFriendPage from './src/pages/AddFriendPage';
+import FriendProfilePage from './src/pages/FriendProfilePage';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -200,6 +201,13 @@ function App(): React.JSX.Element {
         <Stack.Screen
           name="AddFriend"
           component={AddFriendPage}
+          options={{
+            presentation: 'modal',
+          }}
+        />
+        <Stack.Screen
+          name="FriendProfile"
+          component={FriendProfilePage as React.ComponentType}
           options={{
             presentation: 'modal',
           }}
