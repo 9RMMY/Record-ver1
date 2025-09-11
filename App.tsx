@@ -26,6 +26,7 @@ import MyPage from './src/pages/MyPage';
 import CalenderScreen from './src/pages/CalenderScreen';
 import FriendsListPage from './src/pages/FriendsListPage';
 import SentRequestsPage from './src/pages/SentRequestsPage';
+import AddFriendPage from './src/pages/AddFriendPage';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -192,6 +193,13 @@ function App(): React.JSX.Element {
         <Stack.Screen
           name="SentRequests"
           component={SentRequestsPage}
+          options={{
+            presentation: 'modal',
+          }}
+        />
+        <Stack.Screen
+          name="AddFriend"
+          component={AddFriendPage}
           options={{
             presentation: 'modal',
           }}

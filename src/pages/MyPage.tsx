@@ -132,9 +132,12 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
 
         {/* 오른쪽 아이콘들 */}
         <Animated.View style={[styles.headerIcons, { opacity: headerIconsOpacity }]}>
-          <TouchableOpacity style={styles.iconButton}>
-            <Text style={styles.iconText}>👤+</Text>
-          </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={() => navigation.navigate('AddFriend')}
+        >
+          <Text style={styles.iconText}>👥+</Text>
+        </TouchableOpacity>
           <TouchableOpacity style={styles.iconButton}>
             <Text style={styles.iconText}>⚙️</Text>
           </TouchableOpacity>
