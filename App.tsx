@@ -25,7 +25,6 @@ import TicketCompletePage from './src/pages/TicketCompletePage';
 import MyPage from './src/pages/MyPage';
 import CalenderScreen from './src/pages/CalenderScreen';
 import FriendsListPage from './src/pages/FriendsListPage';
-import ReceivedRequestsPage from './src/pages/ReceivedRequestsPage';
 import SentRequestsPage from './src/pages/SentRequestsPage';
 
 const Stack = createNativeStackNavigator();
@@ -186,13 +185,6 @@ function App(): React.JSX.Element {
         <Stack.Screen
           name="FriendsList"
           component={FriendsListPage}
-          options={{
-            presentation: 'modal',
-          }}
-        />
-        <Stack.Screen
-          name="ReceivedRequests"
-          component={ReceivedRequestsPage}
           options={{
             presentation: 'modal',
           }}

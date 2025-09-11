@@ -19,6 +19,7 @@ import { ticketsAtom } from '../atoms/ticketAtoms';
 import { Ticket } from '../types/ticket';
 import { isPlaceholderTicket } from '../utils/isPlaceholder';
 import TicketDetailModal from '../components/TicketDetailModal';
+import { friendsAtom } from '../atoms/friendsAtoms';
 
 interface MyPageProps {
   navigation: any;
@@ -30,6 +31,7 @@ const HEADER_HEIGHT = 80; // 헤더 높이 정의
 
 const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
   const [tickets] = useAtom(ticketsAtom);
+  const [friends] = useAtom(friendsAtom); 
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const insets = useSafeAreaInsets();
@@ -177,7 +179,7 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
               onPress={() => navigation.navigate('FriendsList')}
             >
               <Text style={styles.statLabel}>친구들</Text>
-              <Text style={styles.statValue}>10명</Text>
+              <Text style={styles.statValue}>{friends.length}명</Text>
             </TouchableOpacity>
           </View>
         </View>

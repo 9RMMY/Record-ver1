@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -20,7 +21,7 @@ interface SentRequestsPageProps {
 }
 
 const SentRequestsPage: React.FC<SentRequestsPageProps> = ({ navigation }) => {
-  const [requestsCount] = useState(1);
+  const [requestsCount, setRequestsCount] = useState(1);
 
   // 더미 보낸 친구 요청 데이터
   const [sentRequests, setSentRequests] = useState<SentRequest[]>([
@@ -32,31 +33,9 @@ const SentRequestsPage: React.FC<SentRequestsPageProps> = ({ navigation }) => {
     },
   ]);
 
-  // 친구 목록 데이터 (하단에 표시)
-  const friends: SentRequest[] = [
-    {
-      id: '2',
-      name: '9RMMY',
-      username: '@9rmmy',
-      avatar: '👩🏻‍💼',
-    },
-    {
-      id: '3',
-      name: '9RMMY',
-      username: '@9rmmy',
-      avatar: '👩🏻‍💼',
-    },
-    {
-      id: '4',
-      name: '9RMMY',
-      username: '@9rmmy',
-      avatar: '👩🏻‍💼',
-    },
-  ];
-
   const handleCancelRequest = (requestId: string) => {
-    // 친구 요청 취소 로직
     setSentRequests(prev => prev.filter(req => req.id !== requestId));
+    setRequestsCount(prev => prev - 1);
     console.log('Friend request cancelled:', requestId);
   };
 
@@ -70,23 +49,11 @@ const SentRequestsPage: React.FC<SentRequestsPageProps> = ({ navigation }) => {
         >
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.addFriendButton}
-          onPress={() => navigation.navigate('AddFriend')}
-        >
-          <Text style={styles.addFriendIcon}>👥+</Text>
-        </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* 친구 요청 섹션 */}
-        <TouchableOpacity
-          style={styles.sectionHeader}
-          onPress={() => navigation.navigate('ReceivedRequests')}
-        >
-          <Text style={styles.sectionTitle}>친구 요청 ({requestsCount})</Text>
-          <Text style={styles.sectionArrow}>보낸 요청 ›</Text>
-        </TouchableOpacity>
+        {/* 보낸 요청 섹션 */}
+        <Text style={styles.sectionTitle}>보낸 요청 ({requestsCount})</Text>
 
         {/* 보낸 요청 목록 */}
         {sentRequests.map((request) => (
@@ -100,34 +67,15 @@ const SentRequestsPage: React.FC<SentRequestsPageProps> = ({ navigation }) => {
                 <Text style={styles.requestHandle}>{request.username}</Text>
               </View>
             </View>
-            
+
             <TouchableOpacity
               style={styles.cancelButton}
               onPress={() => handleCancelRequest(request.id)}
             >
-              <Text style={styles.cancelButtonText}>수락</Text>
+              <Text style={styles.cancelButtonText}>취소</Text>
             </TouchableOpacity>
           </View>
         ))}
-
-        {/* 친구들 섹션 */}
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>친구들 ({friends.length})</Text>
-          
-          {friends.map((friend) => (
-            <View key={friend.id} style={styles.friendItem}>
-              <View style={styles.friendInfo}>
-                <View style={styles.avatar}>
-                  <Text style={styles.avatarText}>{friend.avatar}</Text>
-                </View>
-                <View style={styles.friendDetails}>
-                  <Text style={styles.friendName}>{friend.name}</Text>
-                  <Text style={styles.friendHandle}>{friend.username}</Text>
-                </View>
-              </View>
-            </View>
-          ))}
-        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -136,7 +84,7 @@ const SentRequestsPage: React.FC<SentRequestsPageProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#1C1C1E', // FriendsListPage와 동일
   },
   header: {
     flexDirection: 'row',
@@ -144,62 +92,45 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    backgroundColor: '#1C1C1E',
   },
   backButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F8F9FA',
     justifyContent: 'center',
     alignItems: 'center',
   },
   backButtonText: {
-    fontSize: 20,
-    color: '#2C3E50',
-    fontWeight: 'bold',
+    fontSize: 18,
+    color: '#FFFFFF',
+    fontWeight: 'normal',
   },
   addFriendButton: {
     padding: 10,
   },
   addFriendIcon: {
     fontSize: 20,
+    color: '#FFFFFF',
   },
   content: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  sectionContainer: {
-    paddingTop: 20,
+    backgroundColor: '#1C1C1E',
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#2C3E50',
-  },
-  sectionArrow: {
-    fontSize: 14,
-    color: '#7F8C8D',
+    fontWeight: '400',
+    color: '#FFFFFF',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
   },
   requestItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: '#2C2C2E', // FriendsListPage 톤 맞춤
   },
   requestInfo: {
     flexDirection: 'row',
@@ -210,7 +141,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#E3F2FD',
+    backgroundColor: '#3A3A3C', // Dark mode 스타일 맞춤
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 15,
@@ -223,50 +154,24 @@ const styles = StyleSheet.create({
   },
   requestName: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#2C3E50',
+    fontWeight: '400',
+    color: '#FFFFFF',
     marginBottom: 2,
   },
   requestHandle: {
     fontSize: 14,
-    color: '#7F8C8D',
+    color: '#8E8E93',
   },
   cancelButton: {
-    backgroundColor: '#FFB3BA',
+    backgroundColor: '#FF3B30', // FriendsListPage 빨강톤으로 통일
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingVertical: 6,
+    borderRadius: 16,
   },
   cancelButtonText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#D63384',
-  },
-  friendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  friendInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  friendDetails: {
-    flex: 1,
-  },
-  friendName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#2C3E50',
-    marginBottom: 2,
-  },
-  friendHandle: {
-    fontSize: 14,
-    color: '#7F8C8D',
+    fontWeight: '400',
+    color: '#FFFFFF',
   },
 });
 
