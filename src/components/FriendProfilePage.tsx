@@ -9,7 +9,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Calendar, CalendarList, Agenda } from 'react-native-calendars';
+import { Calendar } from 'react-native-calendars';
+import TicketDetailModal from './TicketDetailModal';
+import { Ticket } from '../types/ticket';
 
 type RootStackParamList = {
   FriendProfile: {
@@ -80,9 +82,28 @@ const getMarkedDates = (): MarkedDates => {
 
 type Props = NativeStackScreenProps<RootStackParamList, 'FriendProfile'>;
 
+// Convert performance data to Ticket format
+const convertToTicket = (date: string, performance: PerformanceInfo): Ticket => {
+  const [year, month, day] = date.split('-').map(Number);
+  const [hours, minutes] = performance.time.split(':').map(Number);
+  const performedAt = new Date(year, month - 1, day, hours, minutes);
+  
+  return {
+    id: `friend-${date}`,
+    title: performance.title,
+    performedAt,
+    status: '공개',
+    place: performance.location,
+    artist: '친구와 함께',
+    createdAt: new Date(),
+  };
+};
+
 const FriendProfilePage: React.FC<Props> = ({ navigation, route }) => {
   const { friend } = route.params;
   const [selectedDate, setSelectedDate] = React.useState<keyof PerformanceData>('2025-09-15');
+  const [isModalVisible, setIsModalVisible] = React.useState(false);
+  const [selectedTicket, setSelectedTicket] = React.useState<Ticket | null>(null);
   const markedDates = getMarkedDates();
   
   // Set the first performance date as selected by default
@@ -93,8 +114,22 @@ const FriendProfilePage: React.FC<Props> = ({ navigation, route }) => {
     }
   }, []);
   
+  const handleEventPress = (date: string | number) => {
+    const dateStr = date.toString();
+    setSelectedDate(dateStr as keyof PerformanceData);
+    const performance = performanceData[dateStr as keyof PerformanceData];
+    if (performance) {
+      setSelectedTicket(convertToTicket(dateStr, performance));
+      setIsModalVisible(true);
+    }
+  };
+  
+  const handleCloseModal = () => {
+    setIsModalVisible(false);
+  };
+  
   const handleDayPress = (day: { dateString: string }) => {
-    setSelectedDate(day.dateString);
+    setSelectedDate(day.dateString as keyof PerformanceData);
   };
 
   return (
@@ -188,13 +223,25 @@ const FriendProfilePage: React.FC<Props> = ({ navigation, route }) => {
             />
             
             {selectedDate && performanceData[selectedDate] && (
-              <View style={styles.eventDetails}>
+              <TouchableOpacity 
+                style={styles.eventDetails}
+                onPress={() => handleEventPress(selectedDate)}
+                activeOpacity={0.8}
+              >
                 <Text style={styles.eventTitle}>{performanceData[selectedDate].title}</Text>
                 <View style={styles.eventInfo}>
                   <Text style={styles.eventInfoText}>⏰ {performanceData[selectedDate].time}</Text>
                   <Text style={styles.eventInfoText}>📍 {performanceData[selectedDate].location}</Text>
                 </View>
-              </View>
+              </TouchableOpacity>
+            )}
+            
+            {selectedTicket && (
+              <TicketDetailModal 
+                visible={isModalVisible} 
+                ticket={selectedTicket} 
+                onClose={handleCloseModal} 
+              />
             )}
           </View>
         </View>
