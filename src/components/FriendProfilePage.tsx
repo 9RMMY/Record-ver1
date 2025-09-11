@@ -12,6 +12,8 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Calendar } from 'react-native-calendars';
 import TicketDetailModal from './TicketDetailModal';
 import { Ticket } from '../types/ticket';
+import { useAtom } from 'jotai';
+import { ticketsAtom } from '../atoms/ticketAtoms';
 
 type RootStackParamList = {
   FriendProfile: {
@@ -35,7 +37,6 @@ type MarkedDates = {
   [date: string]: MarkedDate;
 };
 
-// Types for performance data
 interface PerformanceInfo {
   title: string;
   time: string;
@@ -46,48 +47,49 @@ type PerformanceData = {
   [date: string]: PerformanceInfo;
 };
 
-// Sample performance data
 const performanceData: PerformanceData = {
   '2025-09-15': {
     title: '오페라 - 라 트라비아타',
     time: '19:30',
-    location: '서울 예술의전당 오페라극장'
+    location: '서울 예술의전당 오페라극장',
   },
   '2025-09-22': {
     title: '뮤지컬 - 레미제라블',
     time: '14:00',
-    location: '블루스퀘어 인터파크홀'
+    location: '블루스퀘어 인터파크홀',
   },
   '2025-10-05': {
     title: '콘서트 - 클래식 갈라쇼',
     time: '20:00',
-    location: '롯데콘서트홀'
-  }
+    location: '롯데콘서트홀',
+  },
 };
 
-// Generate marked dates for the calendar
 const getMarkedDates = (): MarkedDates => {
   const marked: MarkedDates = {};
-  
+
   Object.keys(performanceData).forEach(date => {
     marked[date] = {
       selected: true,
       selectedColor: '#B11515',
-      dotColor: '#FFFFFF'
+      dotColor: '#FFFFFF',
     };
   });
-  
+
   return marked;
 };
 
 type Props = NativeStackScreenProps<RootStackParamList, 'FriendProfile'>;
 
 // Convert performance data to Ticket format
-const convertToTicket = (date: string, performance: PerformanceInfo): Ticket => {
+const convertToTicket = (
+  date: string,
+  performance: PerformanceInfo,
+): Ticket => {
   const [year, month, day] = date.split('-').map(Number);
   const [hours, minutes] = performance.time.split(':').map(Number);
   const performedAt = new Date(year, month - 1, day, hours, minutes);
-  
+
   return {
     id: `friend-${date}`,
     title: performance.title,
@@ -101,11 +103,19 @@ const convertToTicket = (date: string, performance: PerformanceInfo): Ticket => 
 
 const FriendProfilePage: React.FC<Props> = ({ navigation, route }) => {
   const { friend } = route.params;
-  const [selectedDate, setSelectedDate] = React.useState<keyof PerformanceData>('2025-09-15');
+  const [tickets] = useAtom(ticketsAtom);
+  const [selectedDate, setSelectedDate] =
+    React.useState<keyof PerformanceData>('2025-09-15');
   const [isModalVisible, setIsModalVisible] = React.useState(false);
-  const [selectedTicket, setSelectedTicket] = React.useState<Ticket | null>(null);
+  const [selectedTicket, setSelectedTicket] = React.useState<Ticket | null>(
+    null,
+  );
   const markedDates = getMarkedDates();
   
+  // Get friend's tickets (for now, using all tickets as sample data)
+  // In a real app, you would filter by friend.id or have a separate friend tickets atom
+  const friendTickets = tickets.filter(ticket => ticket.status === '공개');
+
   // Set the first performance date as selected by default
   React.useEffect(() => {
     const dates = Object.keys(performanceData);
@@ -113,7 +123,7 @@ const FriendProfilePage: React.FC<Props> = ({ navigation, route }) => {
       setSelectedDate(dates[0]);
     }
   }, []);
-  
+
   const handleEventPress = (date: string | number) => {
     const dateStr = date.toString();
     setSelectedDate(dateStr as keyof PerformanceData);
@@ -123,17 +133,18 @@ const FriendProfilePage: React.FC<Props> = ({ navigation, route }) => {
       setIsModalVisible(true);
     }
   };
-  
+
   const handleCloseModal = () => {
     setIsModalVisible(false);
   };
-  
+
   const handleDayPress = (day: { dateString: string }) => {
     setSelectedDate(day.dateString as keyof PerformanceData);
   };
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* 헤더 */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
@@ -148,32 +159,16 @@ const FriendProfilePage: React.FC<Props> = ({ navigation, route }) => {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* 프로필 정보 섹션 */}
         <View style={styles.profileSection}>
-          <Image
-            source={{ uri: friend.avatar }}
-            style={styles.profileAvatar}
-          />
+          <Image source={{ uri: friend.avatar }} style={styles.profileAvatar} />
+
+          {/* 뱃지 - 실제 티켓 수 반영 */}
+          <View style={styles.badgeWrapper}>
+            <Text style={styles.badgeEmoji}>🎟️</Text>
+            <Text style={styles.badgeText}>{friendTickets.length}</Text>
+          </View>
+
           <Text style={styles.profileName}>{friend.name}</Text>
           <Text style={styles.profileUsername}>{friend.username}</Text>
-        </View>
-
-
-        {/* 통계 섹션 */}
-        <View style={styles.statsSection}>
-          <Text style={styles.sectionTitle}>활동 통계</Text>
-          <View style={styles.statsGrid}>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>12</Text>
-              <Text style={styles.statLabel}>관람한 공연</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>8</Text>
-              <Text style={styles.statLabel}>작성한 리뷰</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>5</Text>
-              <Text style={styles.statLabel}>함께한 공연</Text>
-            </View>
-          </View>
         </View>
 
         {/* 캘린더 섹션 */}
@@ -213,26 +208,32 @@ const FriendProfilePage: React.FC<Props> = ({ navigation, route }) => {
               }}
               style={styles.calendar}
             />
-            
+
             {selectedDate && performanceData[selectedDate] && (
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.eventDetails}
                 onPress={() => handleEventPress(selectedDate)}
                 activeOpacity={0.8}
               >
-                <Text style={styles.eventTitle}>{performanceData[selectedDate].title}</Text>
+                <Text style={styles.eventTitle}>
+                  {performanceData[selectedDate].title}
+                </Text>
                 <View style={styles.eventInfo}>
-                  <Text style={styles.eventInfoText}>⏰ {performanceData[selectedDate].time}</Text>
-                  <Text style={styles.eventInfoText}>📍 {performanceData[selectedDate].location}</Text>
+                  <Text style={styles.eventInfoText}>
+                    일시 {performanceData[selectedDate].time}
+                  </Text>
+                  <Text style={styles.eventInfoText}>
+                    장소 {performanceData[selectedDate].location}
+                  </Text>
                 </View>
               </TouchableOpacity>
             )}
-            
+
             {selectedTicket && (
-              <TicketDetailModal 
-                visible={isModalVisible} 
-                ticket={selectedTicket} 
-                onClose={handleCloseModal} 
+              <TicketDetailModal
+                visible={isModalVisible}
+                ticket={selectedTicket}
+                onClose={handleCloseModal}
               />
             )}
           </View>
@@ -284,11 +285,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   profileAvatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     marginBottom: 15,
+    backgroundColor: '#EEE',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
   },
+
   profileName: {
     fontSize: 24,
     fontWeight: '600',
@@ -299,6 +306,30 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#8E8E93',
   },
+
+  badgeWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    height: 32,
+    paddingHorizontal: 12,
+    top: -32,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+  },
+  badgeEmoji: {
+    fontSize: 14,
+    marginRight: 4,
+  },
+  badgeText: {
+    color: '#FF3B30',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+
   statsSection: {
     paddingHorizontal: 20,
     paddingVertical: 20,
@@ -306,7 +337,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#000000',
+    color: '#ffffffff',
     marginBottom: 16,
   },
   statsGrid: {
