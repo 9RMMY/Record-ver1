@@ -1,11 +1,18 @@
 // atoms/friendsAtoms.ts
 import { atom } from 'jotai';
+import { Ticket } from '../types/ticket';
 
 export interface Friend {
   id: string;
   name: string;
   username: string;
   avatar: string;
+}
+
+// 친구별 티켓 데이터를 관리하는 타입
+export interface FriendTickets {
+  friendId: string;
+  tickets: Ticket[];
 }
 
 export const friendsAtom = atom<Friend[]>([
@@ -26,5 +33,51 @@ export const friendsAtom = atom<Friend[]>([
     name: '이스',
     username: 'cknvsp',
     avatar: 'https://via.placeholder.com/50/708090/FFFFFF?text=이',
+  },
+]);
+
+// 친구별 티켓 데이터를 관리하는 atom
+export const friendTicketsAtom = atom<FriendTickets[]>([
+  // 예시 데이터 - 실제로는 서버에서 가져와야 함
+  {
+    friendId: '1',
+    tickets: [
+      {
+        id: 'friend1-ticket1',
+        title: '콘서트 - 인디 밴드 라이브',
+        performedAt: new Date('2025-09-10T19:00:00'),
+        status: '공개',
+        place: '홍대 롤링홀',
+        artist: '라쿠나',
+        createdAt: new Date('2025-08-01T10:00:00'),
+      },
+      {
+        id: 'friend1-ticket2',
+        title: '뮤지컬 - 캣츠',
+        performedAt: new Date('2025-09-12T14:00:00'),
+        status: '공개',
+        place: '블루스퀘어 인터파크홀',
+        artist: '뮤지컬 배우들',
+        createdAt: new Date('2025-08-05T10:00:00'),
+      },
+    ],
+  },
+  {
+    friendId: '2',
+    tickets: [
+      {
+        id: 'friend2-ticket1',
+        title: '오페라 - 라 보엠',
+        performedAt: new Date('2025-09-18T19:30:00'),
+        status: '공개',
+        place: '예술의전당 오페라극장',
+        artist: '친구와 함께',
+        createdAt: new Date('2025-08-10T10:00:00'),
+      },
+    ],
+  },
+  {
+    friendId: '3',
+    tickets: [], // 티켓이 없는 친구
   },
 ]);

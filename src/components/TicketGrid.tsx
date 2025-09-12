@@ -81,7 +81,8 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   gridRow: {
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
+    gap: 10,
   },
   ticketCard: {
     width: cardWidth,
