@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -28,6 +29,13 @@ const SentRequestsPage: React.FC<SentRequestsPageProps> = ({ navigation }) => {
       name: '9RMMY',
       username: '@9rmmy',
       avatar: '👩🏻‍💼',
+      isCancelled: false,
+    },
+    {
+      id: '2',
+      name: 'Alice',
+      username: '@alice',
+      avatar: '👩🏻‍🎤',
       isCancelled: false,
     },
   ]);
@@ -62,7 +70,13 @@ const SentRequestsPage: React.FC<SentRequestsPageProps> = ({ navigation }) => {
         {/* 보낸 요청 목록 */}
         {sentRequests.map(request => (
           <View key={request.id} style={styles.requestItem}>
-            <View style={styles.requestInfo}>
+            {/* 프로필 클릭 가능 */}
+            <TouchableOpacity
+              style={styles.requestInfo}
+              onPress={() =>
+                navigation.navigate('FriendProfile', { friend: request })
+              }
+            >
               <View style={styles.avatar}>
                 <Text style={styles.avatarText}>{request.avatar}</Text>
               </View>
@@ -70,7 +84,7 @@ const SentRequestsPage: React.FC<SentRequestsPageProps> = ({ navigation }) => {
                 <Text style={styles.requestName}>{request.name}</Text>
                 <Text style={styles.requestHandle}>{request.username}</Text>
               </View>
-            </View>
+            </TouchableOpacity>
 
             <TouchableOpacity
               style={[

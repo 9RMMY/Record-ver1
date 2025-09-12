@@ -83,10 +83,6 @@ const FriendsListPage: React.FC<FriendsListPageProps> = ({ navigation }) => {
     setFriendRequests(friendRequests.filter(r => r.id !== requestId));
   };
 
-  const handleFriendMenu = (friendId: string) => {
-    console.log('친구 메뉴 클릭:', friendId);
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -122,7 +118,13 @@ const FriendsListPage: React.FC<FriendsListPageProps> = ({ navigation }) => {
 
           {friendRequests.map(request => (
             <View key={request.id} style={styles.friendItem}>
-              <View style={styles.friendInfo}>
+              {/* 프로필 클릭 가능 */}
+              <TouchableOpacity
+                style={styles.friendInfo}
+                onPress={() =>
+                  navigation.navigate('FriendProfile', { friend: request })
+                }
+              >
                 <Image
                   source={{ uri: request.avatar }}
                   style={styles.friendAvatar}
@@ -131,7 +133,8 @@ const FriendsListPage: React.FC<FriendsListPageProps> = ({ navigation }) => {
                   <Text style={styles.friendName}>{request.name}</Text>
                   <Text style={styles.friendUsername}>{request.username}</Text>
                 </View>
-              </View>
+              </TouchableOpacity>
+
               {/* 수락 / 거절 버튼 */}
               <View style={styles.requestButtons}>
                 <TouchableOpacity

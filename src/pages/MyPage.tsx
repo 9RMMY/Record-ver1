@@ -2,7 +2,6 @@ import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
-  FlatList,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
@@ -19,14 +18,13 @@ import { ticketsAtom } from '../atoms/ticketAtoms';
 import { Ticket } from '../types/ticket';
 import { isPlaceholderTicket } from '../utils/isPlaceholder';
 import TicketDetailModal from '../components/TicketDetailModal';
+import TicketGrid from '../components/TicketGrid';
 import { friendsAtom } from '../atoms/friendsAtoms';
 
 interface MyPageProps {
   navigation: any;
 }
 
-const { width } = Dimensions.get('window');
-const cardWidth = (width - 48) / 3; // 3 columns with padding
 const HEADER_HEIGHT = 80; // 헤더 높이 정의
 
 const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
@@ -79,32 +77,6 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
     extrapolate: 'clamp',
   });
 
-  const renderTicketCard = ({ item }: { item: Ticket }) => {
-    const hasImages = item.images && item.images.length > 0;
-    
-    return (
-      <TouchableOpacity
-        style={[
-          styles.ticketCard,
-          !hasImages && styles.ticketCardNoImage
-        ]}
-        onPress={() => handleTicketPress(item)}
-      >
-        {hasImages ? (
-          <Image source={{ uri: item.images![0] }} style={styles.ticketImage} />
-        ) : (
-          <View style={styles.ticketImagePlaceholder}>
-            <Text style={styles.ticketTitle} numberOfLines={2}>
-              {item.title}
-            </Text>
-            <Text style={styles.ticketArtist} numberOfLines={1}>
-              {item.artist}
-            </Text>
-          </View>
-        )}
-      </TouchableOpacity>
-    );
-  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -188,17 +160,10 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
         </View>
 
         {/* Ticket Grid */}
-        <View style={styles.gridContainer}>
-          <FlatList
-            data={realTickets}
-            renderItem={renderTicketCard}
-            keyExtractor={(_, index) => index.toString()}
-            numColumns={3}
-            scrollEnabled={false}
-            contentContainerStyle={styles.gridContent}
-            columnWrapperStyle={styles.gridRow}
-          />
-        </View>
+        <TicketGrid
+          tickets={realTickets}
+          onTicketPress={handleTicketPress}
+        />
       </Animated.ScrollView>
 
       {selectedTicket && (
@@ -340,74 +305,6 @@ const styles = StyleSheet.create({
     color: '#2C3E50',
   },
 
-  //피드
-  gridContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    paddingBottom: 20,
-  },
-  gridContent: {
-    paddingBottom: 24,
-  },
-  gridRow: {
-    justifyContent: 'flex-start',
-    marginBottom: 4,
-    gap: 8,
-  },
-  ticketCard: {
-    width: cardWidth,
-    height: cardWidth * 1.4,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    marginBottom: 16,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  ticketCardNoImage: {
-    backgroundColor: '#FFEBEE',
-    borderWidth: 0.5,
-    borderColor: '#FF3B30',
-  },
-  emptyCard: {
-    width: cardWidth,
-    height: cardWidth * 1.4,
-    borderRadius: 16,
-    marginBottom: 16,
-    backgroundColor: '#F2F2F2',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  ticketImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  ticketImagePlaceholder: {
-    flex: 1,
-    padding: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F8F9FA',
-  },
-  ticketTitle: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#2C3E50',
-    textAlign: 'center',
-    marginBottom: 4,
-  },
-  ticketArtist: {
-    fontSize: 10,
-    color: '#7F8C8D',
-    textAlign: 'center',
-  },
 });
 
 export default MyPage;

@@ -1,43 +1,56 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
-  ScrollView,
   Image,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import PagerView from 'react-native-pager-view';
 import TicketDetailModal from './TicketDetailModal';
 import CustomCalendar from './CustomCalendar';
 import EventsList from './EventsList';
+import TicketGrid from './TicketGrid';
 import { Ticket } from '../types/ticket';
 import { useAtom } from 'jotai';
 import { ticketsAtom } from '../atoms/ticketAtoms';
+import { isPlaceholderTicket } from '../utils/isPlaceholder';
 
-type RootStackParamList = {
-  FriendProfile: {
-    friend: {
-      id: string;
-      name: string;
-      username: string;
-      avatar: string;
-    };
-  };
-};
+// ================== 더미 티켓 ==================
+const dummyTickets: Ticket[] = [
+  {
+    id: 'dummy-1',
+    title: '콘서트 - 인디 밴드 라이브',
+    performedAt: new Date('2025-09-10T19:00:00'),
+    status: '공개',
+    place: '홍대 롤링홀',
+    artist: '라쿠나',
+    createdAt: new Date('2025-08-01T10:00:00'),
+  },
+  {
+    id: 'dummy-2',
+    title: '뮤지컬 - 캣츠',
+    performedAt: new Date('2025-09-12T14:00:00'),
+    status: '공개',
+    place: '블루스퀘어 인터파크홀',
+    artist: '뮤지컬 배우들',
+    createdAt: new Date('2025-08-05T10:00:00'),
+  },
+  {
+    id: 'dummy-3',
+    title: '오페라 - 라 보엠',
+    performedAt: new Date('2025-09-18T19:30:00'),
+    status: '공개',
+    place: '예술의전당 오페라극장',
+    artist: '친구와 함께',
+    createdAt: new Date('2025-08-10T10:00:00'),
+  },
+];
 
-type MarkedDate = {
-  selected: boolean;
-  marked?: boolean;
-  selectedColor: string;
-  dotColor?: string;
-};
-
-type MarkedDates = {
-  [date: string]: MarkedDate;
-};
-
+// ================== 퍼포먼스 데이터 ==================
 interface PerformanceInfo {
   title: string;
   time: string;
@@ -66,23 +79,21 @@ const performanceData: PerformanceData = {
   },
 };
 
-const getMarkedDates = (): MarkedDates => {
-  const marked: MarkedDates = {};
-
-  Object.keys(performanceData).forEach(date => {
-    marked[date] = {
-      selected: true,
-      selectedColor: '#B11515',
-      dotColor: '#FFFFFF',
+// ================== 네비게이션 타입 ==================
+type RootStackParamList = {
+  FriendProfile: {
+    friend: {
+      id: string;
+      name: string;
+      username: string;
+      avatar: string;
     };
-  });
-
-  return marked;
+  };
 };
 
 type Props = NativeStackScreenProps<RootStackParamList, 'FriendProfile'>;
 
-// Convert performance data to Ticket format
+// ================== 퍼포먼스 → 티켓 변환 함수 ==================
 const convertToTicket = (
   date: string,
   performance: PerformanceInfo,
@@ -102,6 +113,8 @@ const convertToTicket = (
   };
 };
 
+const { width } = Dimensions.get('window');
+
 const FriendProfilePage: React.FC<Props> = ({ navigation, route }) => {
   const { friend } = route.params;
   const [tickets] = useAtom(ticketsAtom);
@@ -112,23 +125,37 @@ const FriendProfilePage: React.FC<Props> = ({ navigation, route }) => {
   const [selectedTicket, setSelectedTicket] = React.useState<Ticket | null>(
     null,
   );
-  
-  // Get friend's tickets (for now, using all tickets as sample data)
-  // In a real app, you would filter by friend.id or have a separate friend tickets atom
-  const friendTickets = tickets.filter(ticket => ticket.status === '공개');
-  
-  // Convert performance data to tickets for the calendar
-  const performanceTickets: Ticket[] = Object.entries(performanceData).map(([date, performance]) => 
-    convertToTicket(date, performance)
+  const [currentPage, setCurrentPage] = React.useState(0);
+
+  const pagerRef = useRef<PagerView>(null); // PagerView ref
+
+  // 친구 티켓 (Atom에 데이터 없으면 더미 티켓 사용)
+  const friendTickets =
+    tickets.length > 0
+      ? tickets.filter(ticket => ticket.status === '공개')
+      : dummyTickets;
+
+  // 퍼포먼스 → 티켓 변환
+  const performanceTickets: Ticket[] = Object.entries(performanceData).map(
+    ([date, performance]) => convertToTicket(date, performance),
   );
-  
-  // Combine friend tickets with performance tickets
+
+  // 친구 티켓 + 퍼포먼스 티켓 합치기
   const allFriendTickets = [...friendTickets, ...performanceTickets];
-  
-  // Format date to YYYY-MM-DD
+
+  // 실제 티켓만 피드에 표시
+  const realFriendTickets = allFriendTickets
+    .filter(ticket => !isPlaceholderTicket(ticket))
+    .sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA;
+    });
+
+  // 날짜 형식 변환
   const formatDate = (date: Date) => date.toISOString().split('T')[0];
-  
-  // Get events for selected date
+
+  // 선택된 날짜 이벤트
   const selectedEvents = allFriendTickets.filter(
     ticket => formatDate(new Date(ticket.performedAt)) === selectedDate,
   );
@@ -147,6 +174,17 @@ const FriendProfilePage: React.FC<Props> = ({ navigation, route }) => {
     setSelectedDate(day.dateString);
   };
 
+  // 탭 클릭 시 페이지 이동
+  const handleTabPress = (pageIndex: number) => {
+    setCurrentPage(pageIndex);
+    pagerRef.current?.setPage(pageIndex);
+  };
+
+  // 스와이프 시 currentPage 업데이트
+  const handlePageSelected = (e: any) => {
+    setCurrentPage(e.nativeEvent.position);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {/* 헤더 */}
@@ -161,54 +199,77 @@ const FriendProfilePage: React.FC<Props> = ({ navigation, route }) => {
         <View style={styles.placeholder} />
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* 프로필 정보 섹션 */}
+      {/* 프로필 + 탭 + 페이지뷰 */}
+      <View style={styles.mainContent}>
+        {/* 프로필 */}
         <View style={styles.profileSection}>
           <Image source={{ uri: friend.avatar }} style={styles.profileAvatar} />
-
-          {/* 뱃지 - 실제 티켓 수 반영 */}
           <View style={styles.badgeWrapper}>
             <Text style={styles.badgeEmoji}>🎟️</Text>
             <Text style={styles.badgeText}>{friendTickets.length}</Text>
           </View>
-
           <Text style={styles.profileName}>{friend.name}</Text>
           <Text style={styles.profileUsername}>{friend.username}</Text>
         </View>
 
-        {/* 캘린더 섹션 */}
-        <View style={styles.calendarSection}>
-          <Text style={styles.sectionTitle}>공연 일정</Text>
-          
-          <CustomCalendar
-            selectedDate={selectedDate}
-            tickets={allFriendTickets}
-            onDayPress={handleDayPress}
-          />
-          
-          <EventsList
-            selectedEvents={selectedEvents}
-            onTicketPress={handleTicketPress}
-          />
-
-          {selectedTicket && (
-            <TicketDetailModal
-              visible={isModalVisible}
-              ticket={selectedTicket}
-              onClose={handleCloseModal}
-            />
-          )}
+        {/* 탭 */}
+        <View style={styles.tabContainer}>
+          <TouchableOpacity
+            style={[styles.tabButton, currentPage === 0 && styles.activeTab]}
+            onPress={() => handleTabPress(0)}
+          >
+            <Text style={[styles.tabText, currentPage === 0 && styles.activeTabText]}>
+              피드
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tabButton, currentPage === 1 && styles.activeTab]}
+            onPress={() => handleTabPress(1)}
+          >
+            <Text style={[styles.tabText, currentPage === 1 && styles.activeTabText]}>
+              캘린더
+            </Text>
+          </TouchableOpacity>
         </View>
-      </ScrollView>
+
+        {/* PagerView */}
+        <PagerView
+          ref={pagerRef}
+          style={styles.pager}
+          initialPage={0}
+          onPageSelected={handlePageSelected}
+        >
+          <View key="feed" style={styles.pageContainer}>
+            <TicketGrid tickets={realFriendTickets} onTicketPress={handleTicketPress} />
+          </View>
+          <View key="calendar" style={styles.pageContainer}>
+            <CustomCalendar
+              selectedDate={selectedDate}
+              tickets={allFriendTickets}
+              onDayPress={handleDayPress}
+            />
+            <EventsList
+              selectedEvents={selectedEvents}
+              onTicketPress={handleTicketPress}
+            />
+          </View>
+        </PagerView>
+      </View>
+
+      {/* 모달 */}
+      {selectedTicket && (
+        <TicketDetailModal
+          visible={isModalVisible}
+          ticket={selectedTicket}
+          onClose={handleCloseModal}
+        />
+      )}
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#1C1C1E',
-  },
+  container: { flex: 1, backgroundColor: '#1C1C1E' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -217,57 +278,15 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     backgroundColor: '#1C1C1E',
   },
-  backButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  backButtonText: {
-    fontSize: 18,
-    color: '#FFFFFF',
-    fontWeight: 'normal',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
-  placeholder: {
-    width: 40,
-  },
-  content: {
-    flex: 1,
-    backgroundColor: '#1C1C1E',
-  },
-  profileSection: {
-    alignItems: 'center',
-    paddingVertical: 30,
-    paddingHorizontal: 20,
-  },
-  profileAvatar: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    marginBottom: 15,
-    backgroundColor: '#EEE',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-  },
-
-  profileName: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    marginBottom: 5,
-  },
-  profileUsername: {
-    fontSize: 16,
-    color: '#8E8E93',
-  },
-
+  backButton: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
+  backButtonText: { fontSize: 18, color: '#FFFFFF', fontWeight: 'normal' },
+  headerTitle: { fontSize: 18, fontWeight: '600', color: '#FFFFFF' },
+  placeholder: { width: 40 },
+  mainContent: { flex: 1 },
+  profileSection: { alignItems: 'center', paddingVertical: 20, paddingHorizontal: 20 },
+  profileAvatar: { width: 120, height: 120, borderRadius: 60, marginBottom: 10, backgroundColor: '#EEE' },
+  profileName: { fontSize: 24, fontWeight: '600', color: '#FFFFFF', marginBottom: 5 },
+  profileUsername: { fontSize: 16, color: '#8E8E93' },
   badgeWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -275,58 +294,17 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     height: 32,
     paddingHorizontal: 12,
-    top: -32,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
+    top: -20,
   },
-  badgeEmoji: {
-    fontSize: 14,
-    marginRight: 4,
-  },
-  badgeText: {
-    color: '#FF3B30',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-
-  statsSection: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#ffffffff',
-    marginBottom: 16,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    backgroundColor: '#2C2C2E',
-    borderRadius: 12,
-    paddingVertical: 20,
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statNumber: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    marginBottom: 5,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#8E8E93',
-    textAlign: 'center',
-  },
-  calendarSection: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    marginBottom: 20,
-  },
+  badgeEmoji: { fontSize: 14, marginRight: 4 },
+  badgeText: { color: '#FF3B30', fontSize: 12, fontWeight: 'bold' },
+  tabContainer: { flexDirection: 'row', paddingHorizontal: 20, paddingTop: 10, paddingBottom: 10 },
+  tabButton: { flex: 1, paddingVertical: 12, alignItems: 'center', borderBottomWidth: 2, borderBottomColor: 'transparent' },
+  activeTab: { borderBottomColor: '#B11515' },
+  tabText: { fontSize: 16, fontWeight: '500', color: '#8E8E93' },
+  activeTabText: { color: '#B11515', fontWeight: '600' },
+  pager: { flex: 1 },
+  pageContainer: { flex: 1, paddingHorizontal: 20 },
 });
 
 export default FriendProfilePage;
