@@ -107,9 +107,19 @@ const FriendsListPage: React.FC<FriendsListPageProps> = ({ navigation }) => {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* 친구 요청 섹션 */}
         <View style={styles.friendsSection}>
-          <Text style={styles.friendsSectionTitle}>
-            친구 요청 ({friendRequestsCount})
-          </Text>
+          <View style={styles.friendsSectionHeader}>
+            <Text style={styles.friendsSectionTitle}>
+              친구 요청 ({friendRequestsCount})
+            </Text>
+
+            <TouchableOpacity
+              style={styles.sentFriendButton}
+              onPress={() => navigation.navigate('SentRequests')}
+            >
+              <Text style={styles.sentFriendText}>보낸 요청 +</Text>
+            </TouchableOpacity>
+          </View>
+
           {friendRequests.map(request => (
             <View key={request.id} style={styles.friendItem}>
               <View style={styles.friendInfo}>
@@ -148,9 +158,11 @@ const FriendsListPage: React.FC<FriendsListPageProps> = ({ navigation }) => {
           </Text>
           {friends.map(friend => (
             <View key={friend.id} style={styles.friendItem}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.friendInfo}
-                onPress={() => navigation.navigate('FriendProfile', { friend })}
+                onPress={() =>
+                  navigation.navigate('FriendProfile', { friend })
+                }
               >
                 <Image
                   source={{ uri: friend.avatar }}
@@ -197,12 +209,31 @@ const styles = StyleSheet.create({
   content: { flex: 1, backgroundColor: '#1C1C1E' },
 
   friendsSection: { paddingTop: 10, backgroundColor: '#1C1C1E' },
+  friendsSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+  },
   friendsSectionTitle: {
     fontSize: 16,
     fontWeight: '400',
     color: '#FFFFFF',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+  },
+
+  sentFriendButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    backgroundColor: '#2C2C2E',
+  },
+  sentFriendText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 
   friendItem: {
@@ -225,7 +256,6 @@ const styles = StyleSheet.create({
   friendUsername: { fontSize: 14, color: '#8E8E93' },
 
   menuButtonLeft: { marginRight: 10 },
-  menuButton: { padding: 10 },
   menuIcon: { fontSize: 20, color: '#8E8E93', fontWeight: 'bold' },
 
   requestButtons: { flexDirection: 'row' },

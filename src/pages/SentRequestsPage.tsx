@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -14,6 +13,7 @@ interface SentRequest {
   name: string;
   username: string;
   avatar: string;
+  isCancelled: boolean; // 요청 취소 여부
 }
 
 interface SentRequestsPageProps {
@@ -21,8 +21,6 @@ interface SentRequestsPageProps {
 }
 
 const SentRequestsPage: React.FC<SentRequestsPageProps> = ({ navigation }) => {
-  const [requestsCount, setRequestsCount] = useState(1);
-
   // 더미 보낸 친구 요청 데이터
   const [sentRequests, setSentRequests] = useState<SentRequest[]>([
     {
@@ -30,13 +28,17 @@ const SentRequestsPage: React.FC<SentRequestsPageProps> = ({ navigation }) => {
       name: '9RMMY',
       username: '@9rmmy',
       avatar: '👩🏻‍💼',
+      isCancelled: false,
     },
   ]);
 
-  const handleCancelRequest = (requestId: string) => {
-    setSentRequests(prev => prev.filter(req => req.id !== requestId));
-    setRequestsCount(prev => prev - 1);
-    console.log('Friend request cancelled:', requestId);
+  // 요청 상태 토글
+  const handleToggleRequest = (requestId: string) => {
+    setSentRequests(prev =>
+      prev.map(req =>
+        req.id === requestId ? { ...req, isCancelled: !req.isCancelled } : req
+      )
+    );
   };
 
   return (
@@ -53,10 +55,12 @@ const SentRequestsPage: React.FC<SentRequestsPageProps> = ({ navigation }) => {
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* 보낸 요청 섹션 */}
-        <Text style={styles.sectionTitle}>보낸 요청 ({requestsCount})</Text>
+        <Text style={styles.sectionTitle}>
+          보낸 요청 ({sentRequests.filter(r => !r.isCancelled).length})
+        </Text>
 
         {/* 보낸 요청 목록 */}
-        {sentRequests.map((request) => (
+        {sentRequests.map(request => (
           <View key={request.id} style={styles.requestItem}>
             <View style={styles.requestInfo}>
               <View style={styles.avatar}>
@@ -69,10 +73,15 @@ const SentRequestsPage: React.FC<SentRequestsPageProps> = ({ navigation }) => {
             </View>
 
             <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={() => handleCancelRequest(request.id)}
+              style={[
+                styles.toggleButton,
+                request.isCancelled ? styles.requestButton : styles.cancelButton,
+              ]}
+              onPress={() => handleToggleRequest(request.id)}
             >
-              <Text style={styles.cancelButtonText}>취소</Text>
+              <Text style={styles.toggleButtonText}>
+                {request.isCancelled ? '요청' : '취소'}
+              </Text>
             </TouchableOpacity>
           </View>
         ))}
@@ -84,12 +93,11 @@ const SentRequestsPage: React.FC<SentRequestsPageProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1C1C1E', // FriendsListPage와 동일
+    backgroundColor: '#1C1C1E',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 15,
     backgroundColor: '#1C1C1E',
@@ -104,13 +112,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#FFFFFF',
     fontWeight: 'normal',
-  },
-  addFriendButton: {
-    padding: 10,
-  },
-  addFriendIcon: {
-    fontSize: 20,
-    color: '#FFFFFF',
   },
   content: {
     flex: 1,
@@ -130,7 +131,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#2C2C2E', // FriendsListPage 톤 맞춤
+    borderBottomColor: '#2C2C2E',
   },
   requestInfo: {
     flexDirection: 'row',
@@ -141,7 +142,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#3A3A3C', // Dark mode 스타일 맞춤
+    backgroundColor: '#3A3A3C',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 15,
@@ -162,13 +163,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#8E8E93',
   },
-  cancelButton: {
-    backgroundColor: '#FF3B30', // FriendsListPage 빨강톤으로 통일
+  toggleButton: {
     paddingHorizontal: 16,
     paddingVertical: 6,
     borderRadius: 16,
   },
-  cancelButtonText: {
+  cancelButton: {
+    backgroundColor: '#FF3B30',
+  },
+  requestButton: {
+    backgroundColor: '#0A84FF',
+  },
+  toggleButtonText: {
     fontSize: 14,
     fontWeight: '400',
     color: '#FFFFFF',

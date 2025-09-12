@@ -9,8 +9,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Calendar } from 'react-native-calendars';
 import TicketDetailModal from './TicketDetailModal';
+import CustomCalendar from './CustomCalendar';
+import EventsList from './EventsList';
 import { Ticket } from '../types/ticket';
 import { useAtom } from 'jotai';
 import { ticketsAtom } from '../atoms/ticketAtoms';
@@ -104,42 +105,46 @@ const convertToTicket = (
 const FriendProfilePage: React.FC<Props> = ({ navigation, route }) => {
   const { friend } = route.params;
   const [tickets] = useAtom(ticketsAtom);
-  const [selectedDate, setSelectedDate] =
-    React.useState<keyof PerformanceData>('2025-09-15');
+  const [selectedDate, setSelectedDate] = React.useState(
+    new Date().toISOString().split('T')[0],
+  );
   const [isModalVisible, setIsModalVisible] = React.useState(false);
   const [selectedTicket, setSelectedTicket] = React.useState<Ticket | null>(
     null,
   );
-  const markedDates = getMarkedDates();
   
   // Get friend's tickets (for now, using all tickets as sample data)
   // In a real app, you would filter by friend.id or have a separate friend tickets atom
   const friendTickets = tickets.filter(ticket => ticket.status === '공개');
+  
+  // Convert performance data to tickets for the calendar
+  const performanceTickets: Ticket[] = Object.entries(performanceData).map(([date, performance]) => 
+    convertToTicket(date, performance)
+  );
+  
+  // Combine friend tickets with performance tickets
+  const allFriendTickets = [...friendTickets, ...performanceTickets];
+  
+  // Format date to YYYY-MM-DD
+  const formatDate = (date: Date) => date.toISOString().split('T')[0];
+  
+  // Get events for selected date
+  const selectedEvents = allFriendTickets.filter(
+    ticket => formatDate(new Date(ticket.performedAt)) === selectedDate,
+  );
 
-  // Set the first performance date as selected by default
-  React.useEffect(() => {
-    const dates = Object.keys(performanceData);
-    if (dates.length > 0) {
-      setSelectedDate(dates[0]);
-    }
-  }, []);
-
-  const handleEventPress = (date: string | number) => {
-    const dateStr = date.toString();
-    setSelectedDate(dateStr as keyof PerformanceData);
-    const performance = performanceData[dateStr as keyof PerformanceData];
-    if (performance) {
-      setSelectedTicket(convertToTicket(dateStr, performance));
-      setIsModalVisible(true);
-    }
+  const handleTicketPress = (ticket: Ticket) => {
+    setSelectedTicket(ticket);
+    setIsModalVisible(true);
   };
 
   const handleCloseModal = () => {
     setIsModalVisible(false);
+    setSelectedTicket(null);
   };
 
   const handleDayPress = (day: { dateString: string }) => {
-    setSelectedDate(day.dateString as keyof PerformanceData);
+    setSelectedDate(day.dateString);
   };
 
   return (
@@ -174,69 +179,25 @@ const FriendProfilePage: React.FC<Props> = ({ navigation, route }) => {
         {/* 캘린더 섹션 */}
         <View style={styles.calendarSection}>
           <Text style={styles.sectionTitle}>공연 일정</Text>
-          <View style={styles.calendarContainer}>
-            <Calendar
-              current={selectedDate.toString()}
-              onDayPress={handleDayPress}
-              markedDates={{
-                ...markedDates,
-                [selectedDate]: {
-                  ...markedDates[selectedDate],
-                  selected: true,
-                  selectedColor: '#B11515',
-                },
-              }}
-              theme={{
-                backgroundColor: '#ffffff',
-                calendarBackground: '#ffffff',
-                textSectionTitleColor: '#000000',
-                selectedDayBackgroundColor: '#B11515',
-                selectedDayTextColor: '#ffffff',
-                todayTextColor: '#B11515',
-                dayTextColor: '#000000',
-                textDisabledColor: '#8E8E93',
-                dotColor: '#B11515',
-                selectedDotColor: '#ffffff',
-                arrowColor: '#000000',
-                monthTextColor: '#000000',
-                textDayFontWeight: '400',
-                textMonthFontWeight: '600',
-                textDayHeaderFontWeight: '500',
-                textDayFontSize: 17,
-                textMonthFontSize: 20,
-                textDayHeaderFontSize: 15,
-              }}
-              style={styles.calendar}
+          
+          <CustomCalendar
+            selectedDate={selectedDate}
+            tickets={allFriendTickets}
+            onDayPress={handleDayPress}
+          />
+          
+          <EventsList
+            selectedEvents={selectedEvents}
+            onTicketPress={handleTicketPress}
+          />
+
+          {selectedTicket && (
+            <TicketDetailModal
+              visible={isModalVisible}
+              ticket={selectedTicket}
+              onClose={handleCloseModal}
             />
-
-            {selectedDate && performanceData[selectedDate] && (
-              <TouchableOpacity
-                style={styles.eventDetails}
-                onPress={() => handleEventPress(selectedDate)}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.eventTitle}>
-                  {performanceData[selectedDate].title}
-                </Text>
-                <View style={styles.eventInfo}>
-                  <Text style={styles.eventInfoText}>
-                    일시 {performanceData[selectedDate].time}
-                  </Text>
-                  <Text style={styles.eventInfoText}>
-                    장소 {performanceData[selectedDate].location}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            )}
-
-            {selectedTicket && (
-              <TicketDetailModal
-                visible={isModalVisible}
-                ticket={selectedTicket}
-                onClose={handleCloseModal}
-              />
-            )}
-          </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -365,43 +326,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 20,
     marginBottom: 20,
-  },
-  calendarContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  calendar: {
-    borderRadius: 16,
-  },
-  eventDetails: {
-    marginTop: 20,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  eventTitle: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#000000',
-    marginBottom: 4,
-  },
-  eventInfo: {
-    gap: 8,
-  },
-  eventInfoText: {
-    fontSize: 15,
-    color: '#8E8E93',
   },
 });
 
