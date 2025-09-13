@@ -204,6 +204,7 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
             visible={modalVisible}
             ticket={selectedTicket}
             onClose={handleCloseModal}
+            isMine={true}
           />
         )}
       </SafeAreaView>

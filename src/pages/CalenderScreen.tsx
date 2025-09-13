@@ -70,6 +70,7 @@ const CalenderScreen = () => {
           visible={modalVisible}
           ticket={selectedTicket}
           onClose={handleCloseModal}
+          isMine={true}
         />
       )}
     </SafeAreaView>

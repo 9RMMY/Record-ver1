@@ -95,7 +95,10 @@ type RootStackParamList = {
 type Props = NativeStackScreenProps<RootStackParamList, 'FriendProfile'>;
 
 // ================== 퍼포먼스 → 티켓 변환 함수 ==================
-const convertToTicket = (date: string, performance: PerformanceInfo): Ticket => {
+const convertToTicket = (
+  date: string,
+  performance: PerformanceInfo,
+): Ticket => {
   const [year, month, day] = date.split('-').map(Number);
   const [hours, minutes] = performance.time.split(':').map(Number);
   const performedAt = new Date(year, month - 1, day, hours, minutes);
@@ -116,20 +119,27 @@ const { width } = Dimensions.get('window');
 const FriendProfilePage: React.FC<Props> = ({ navigation, route }) => {
   const { friend } = route.params;
   const [allFriendTicketsData] = useAtom(friendTicketsAtom);
-  const [selectedDate, setSelectedDate] = React.useState(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = React.useState(
+    new Date().toISOString().split('T')[0],
+  );
   const [isModalVisible, setIsModalVisible] = React.useState(false);
-  const [selectedTicket, setSelectedTicket] = React.useState<Ticket | null>(null);
+  const [selectedTicket, setSelectedTicket] = React.useState<Ticket | null>(
+    null,
+  );
   const [currentPage, setCurrentPage] = React.useState(0);
 
   const pagerRef = useRef<PagerView>(null);
 
   // 현재 친구의 티켓 데이터 가져오기
-  const currentFriendTickets = allFriendTicketsData.find(data => data.friendId === friend.id)?.tickets || [];
-  const friendTickets = currentFriendTickets.length > 0 ? currentFriendTickets : dummyTickets;
+  const currentFriendTickets =
+    allFriendTicketsData.find(data => data.friendId === friend.id)?.tickets ||
+    [];
+  const friendTickets =
+    currentFriendTickets.length > 0 ? currentFriendTickets : dummyTickets;
 
   // 퍼포먼스 → 티켓 변환
-  const performanceTickets: Ticket[] = Object.entries(performanceData).map(([date, performance]) =>
-    convertToTicket(date, performance)
+  const performanceTickets: Ticket[] = Object.entries(performanceData).map(
+    ([date, performance]) => convertToTicket(date, performance),
   );
 
   const allFriendTickets = [...friendTickets, ...performanceTickets];
@@ -145,7 +155,7 @@ const FriendProfilePage: React.FC<Props> = ({ navigation, route }) => {
   const formatDate = (date: Date) => date.toISOString().split('T')[0];
 
   const selectedEvents = allFriendTickets.filter(
-    ticket => formatDate(new Date(ticket.performedAt)) === selectedDate
+    ticket => formatDate(new Date(ticket.performedAt)) === selectedDate,
   );
 
   const handleTicketPress = (ticket: Ticket) => {
@@ -175,7 +185,10 @@ const FriendProfilePage: React.FC<Props> = ({ navigation, route }) => {
     <SafeAreaView style={styles.container}>
       {/* 헤더 */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>프로필</Text>
@@ -200,13 +213,27 @@ const FriendProfilePage: React.FC<Props> = ({ navigation, route }) => {
             style={[styles.tabButton, currentPage === 0 && styles.activeTab]}
             onPress={() => handleTabPress(0)}
           >
-            <Text style={[styles.tabText, currentPage === 0 && styles.activeTabText]}>피드</Text>
+            <Text
+              style={[
+                styles.tabText,
+                currentPage === 0 && styles.activeTabText,
+              ]}
+            >
+              피드
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.tabButton, currentPage === 1 && styles.activeTab]}
             onPress={() => handleTabPress(1)}
           >
-            <Text style={[styles.tabText, currentPage === 1 && styles.activeTabText]}>캘린더</Text>
+            <Text
+              style={[
+                styles.tabText,
+                currentPage === 1 && styles.activeTabText,
+              ]}
+            >
+              캘린더
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -218,7 +245,10 @@ const FriendProfilePage: React.FC<Props> = ({ navigation, route }) => {
         >
           {/* 피드 탭 */}
           <View key="feed" style={styles.pageContainer}>
-            <TicketGrid tickets={realFriendTickets} onTicketPress={handleTicketPress} />
+            <TicketGrid
+              tickets={realFriendTickets}
+              onTicketPress={handleTicketPress}
+            />
           </View>
 
           {/* 캘린더 탭 */}
@@ -229,7 +259,10 @@ const FriendProfilePage: React.FC<Props> = ({ navigation, route }) => {
                 tickets={allFriendTickets}
                 onDayPress={handleDayPress}
               />
-              <EventsList selectedEvents={selectedEvents} onTicketPress={handleTicketPress} />
+              <EventsList
+                selectedEvents={selectedEvents}
+                onTicketPress={handleTicketPress}
+              />
             </ScrollView>
           </View>
         </PagerView>
@@ -237,34 +270,97 @@ const FriendProfilePage: React.FC<Props> = ({ navigation, route }) => {
 
       {/* 티켓 모달 */}
       {selectedTicket && (
-        <TicketDetailModal visible={isModalVisible} ticket={selectedTicket} onClose={handleCloseModal} />
+        <TicketDetailModal
+          visible={isModalVisible}
+          ticket={selectedTicket}
+          onClose={handleCloseModal}
+          isMine={false}
+        />
       )}
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#1C1C1E' },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 15, backgroundColor: '#1C1C1E' },
-  backButton: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
-  backButtonText: { fontSize: 18, color: '#FFFFFF', fontWeight: 'normal' },
-  headerTitle: { fontSize: 18, fontWeight: '600', color: '#FFFFFF' },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E9ECEF',
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F8F9FA',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  backButtonText: { fontSize: 20, color: '#2C3E50' },
+  headerTitle: { fontSize: 18, fontWeight: '600', color: '#2C3E50' },
   placeholder: { width: 40 },
   mainContent: { flex: 1 },
-  profileSection: { alignItems: 'center', paddingVertical: 20, paddingHorizontal: 20 },
-  profileAvatar: { width: 120, height: 120, borderRadius: 60, marginBottom: 10, backgroundColor: '#EEE' },
-  profileName: { fontSize: 24, fontWeight: '600', color: '#FFFFFF', marginBottom: 5 },
-  profileUsername: { fontSize: 16, color: '#8E8E93' },
-  badgeWrapper: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 16, height: 32, paddingHorizontal: 12, top: -20 },
+  profileSection: {
+    alignItems: 'center',
+    paddingVertical: 32,
+    paddingHorizontal: 20,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+  },
+  profileAvatar: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    marginBottom: 10,
+    backgroundColor: '#EEE',
+  },
+  profileName: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#2C3E50',
+    marginBottom: 5,
+  },
+  profileUsername: { fontSize: 16, color: '#6C757D' },
+  badgeWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    height: 32,
+    paddingHorizontal: 12,
+    top: -20,
+  },
   badgeEmoji: { fontSize: 14, marginRight: 4 },
   badgeText: { color: '#FF3B30', fontSize: 12, fontWeight: 'bold' },
-  tabContainer: { flexDirection: 'row', paddingHorizontal: 20, paddingTop: 10, paddingBottom: 10 },
-  tabButton: { flex: 1, paddingVertical: 12, alignItems: 'center', borderBottomWidth: 2, borderBottomColor: 'transparent' },
+  tabContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 10,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E9ECEF',
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
   activeTab: { borderBottomColor: '#B11515' },
-  tabText: { fontSize: 16, fontWeight: '500', color: '#8E8E93' },
+  tabText: { fontSize: 16, fontWeight: '500', color: '#6C757D' },
   activeTabText: { color: '#B11515', fontWeight: '600' },
   pager: { flex: 1 },
-  pageContainer: { flex: 1, paddingHorizontal: 20 },
+  pageContainer: { flex: 1, paddingHorizontal: 20, backgroundColor: '#F8F9FA' },
 });
 
 export default FriendProfilePage;

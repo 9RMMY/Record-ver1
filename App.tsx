@@ -28,6 +28,9 @@ import FriendsListPage from './src/pages/FriendsListPage';
 import SentRequestsPage from './src/pages/SentRequestsPage';
 import AddFriendPage from './src/pages/AddFriendPage';
 import FriendProfilePage from './src/components/FriendProfilePage';
+import SettingsPage from './src/pages/SettingsPage';
+import PersonalInfoEditPage from './src/pages/PersonalInfoEditPage';
+import HistoryPage from './src/pages/HistoryPage';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -208,6 +211,27 @@ function App(): React.JSX.Element {
         <Stack.Screen
           name="FriendProfile"
           component={FriendProfilePage}
+          options={{
+            presentation: 'modal',
+          }}
+        />
+        <Stack.Screen
+          name="Settings"
+          component={SettingsPage}
+          options={{
+            presentation: 'modal',
+          }}
+        />
+        <Stack.Screen
+          name="PersonalInfoEdit"
+          component={PersonalInfoEditPage}
+          options={{
+            presentation: 'modal',
+          }}
+        />
+        <Stack.Screen
+          name="History"
+          component={HistoryPage}
           options={{
             presentation: 'modal',
           }}

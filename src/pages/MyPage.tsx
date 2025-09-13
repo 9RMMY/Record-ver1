@@ -110,7 +110,10 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
         >
           <Text style={styles.iconText}>👥+</Text>
         </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
+          <TouchableOpacity 
+            style={styles.iconButton}
+            onPress={() => navigation.navigate('Settings')}
+          >
             <Text style={styles.iconText}>⚙️</Text>
           </TouchableOpacity>
         </Animated.View>
@@ -171,6 +174,7 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
           visible={modalVisible}
           ticket={selectedTicket}
           onClose={handleCloseModal}
+          isMine={true}
         />
       )}
     </SafeAreaView>

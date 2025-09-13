@@ -22,6 +22,7 @@ interface TicketDetailModalProps {
   visible: boolean;
   ticket: Ticket;
   onClose: () => void;
+  isMine?: boolean; // 내 티켓인지 친구 티켓인지 구분
 }
 
 const { width } = Dimensions.get('window');
@@ -30,6 +31,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
   visible,
   ticket,
   onClose,
+  isMine = true, // 기본값은 내 티켓으로 설정
 }) => {
   const [, deleteTicket] = useAtom(deleteTicketAtom);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -126,12 +128,14 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
             <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
               <Text style={styles.actionButtonText}>↗</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={handleDelete}
-            >
-              <Text style={styles.actionButtonText}>⋯</Text>
-            </TouchableOpacity>
+            {isMine && (
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={handleDelete}
+              >
+                <Text style={styles.actionButtonText}>⋯</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
 
