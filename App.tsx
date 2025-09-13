@@ -9,7 +9,7 @@ import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Text, View } from 'react-native';
+import { Text, View, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
@@ -23,7 +23,7 @@ import AIImageSettings from './src/pages/AIImageSettings';
 import AIImageResults from './src/pages/AIImageResults';
 import TicketCompletePage from './src/pages/TicketCompletePage';
 import MyPage from './src/pages/MyPage';
-import CalenderScreen from './src/pages/CalenderScreen';
+import CalendarScreen from './src/pages/CalendarScreen';
 import FriendsListPage from './src/pages/FriendsListPage';
 import SentRequestsPage from './src/pages/SentRequestsPage';
 import AddFriendPage from './src/pages/AddFriendPage';
@@ -75,51 +75,68 @@ function MainTabs() {
           fontSize: 12,
           fontWeight: '600',
         },
-      }}>
-      <Tab.Screen 
-        name="Home" 
+      }}
+    >
+      <Tab.Screen
+        name="Home"
         component={MainPage}
         options={{
-          tabBarLabel: 'Home',
+          tabBarLabel: '홈',
           tabBarIcon: ({ color }: { color: string }) => (
             <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ color, fontSize: 20 }}>🏠</Text>
+              <Image
+                source={require('./src/assets/ticket_icon.png')}
+                style={{ width: 24, height: 24, tintColor: color }}
+                resizeMode="contain"
+              />
             </View>
           ),
         }}
       />
-      <Tab.Screen 
-        name="Add Tickets" 
+      <Tab.Screen
+        name="Add Tickets"
         component={AddTicketTabWrapper}
         options={{
-          tabBarLabel: 'Add Tickets',
+          tabBarLabel: '티켓 추가',
           tabBarIcon: ({ color }: { color: string }) => (
             <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ color, fontSize: 20 }}>⊕</Text>
+              <Image
+                source={require('./src/assets/add_icon.png')}
+                style={{ width: 24, height: 24, tintColor: color }}
+                resizeMode="contain"
+              />
             </View>
           ),
         }}
       />
-      <Tab.Screen 
-        name="CalenderScreen" 
-        component={CalenderScreen}
+      <Tab.Screen
+        name="CalendarScreen"
+        component={CalendarScreen}
         options={{
-          tabBarLabel: 'Calender',
+          tabBarLabel: '캘린더',
           tabBarIcon: ({ color }: { color: string }) => (
             <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ color, fontSize: 20 }}>📆</Text>
+              <Image
+                source={require('./src/assets/calendar_icon.png')}
+                style={{ width: 24, height: 24, tintColor: color }}
+                resizeMode="contain"
+              />
             </View>
           ),
         }}
       />
-      <Tab.Screen 
-        name="MyTickets" 
+      <Tab.Screen
+        name="MyTickets"
         component={MyPage}
         options={{
-          tabBarLabel: 'My Tickets',
+          tabBarLabel: '내 티켓',
           tabBarIcon: ({ color }: { color: string }) => (
             <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ color, fontSize: 20 }}>📋</Text>
+              <Image
+                source={require('./src/assets/user_icon.png')}
+                style={{ width: 24, height: 24, tintColor: color }}
+                resizeMode="contain"
+              />
             </View>
           ),
         }}

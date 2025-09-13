@@ -9,12 +9,13 @@ import TicketDetailModal from '../components/TicketDetailModal';
 import CalendarHeader from '../components/CalendarHeader';
 import CustomCalendar from '../components/CustomCalendar';
 import EventsList from '../components/EventsList';
+import { Colors } from '../styles/designSystem';
 
-interface CalenderProps {
+interface CalendarProps {
   navigation: any;
 }
 
-const CalenderScreen = () => {
+const CalendarScreen = () => {
   const navigation = useNavigation();
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split('T')[0],
@@ -80,8 +81,8 @@ const CalenderScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.systemBackground,
   },
 });
 
-export default CalenderScreen;
+export default CalendarScreen;

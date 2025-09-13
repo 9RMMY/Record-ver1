@@ -18,6 +18,7 @@ import { ticketsAtom } from '../atoms/ticketAtoms';
 import { Ticket } from '../types/ticket';
 import TicketDetailModal from '../components/TicketDetailModal';
 import { isPlaceholderTicket } from '../utils/isPlaceholder';
+import { Colors, Typography, Spacing, BorderRadius, Shadows, ComponentStyles } from '../styles/designSystem';
 
 interface MainPageProps {
   navigation: any;
@@ -359,132 +360,167 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  container: { flex: 1, backgroundColor: Colors.systemBackground },
   safeArea: { flex: 1 },
 
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 16,
-    backgroundColor: '#FFFFFF',
+    paddingHorizontal: Spacing.screenPadding,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.lg,
+    backgroundColor: Colors.systemBackground,
     zIndex: 1,
   },
-  headerTitle: { fontSize: 22, fontWeight: '700', color: '#000000' },
+  headerTitle: { 
+    ...Typography.title2, 
+    fontWeight: '700', 
+    color: Colors.label 
+  },
   headerRight: { position: 'relative' },
 
   filterButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8F9FA',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 16,
+    backgroundColor: Colors.secondarySystemBackground,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.xl,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
+    borderColor: Colors.systemGray5,
+    ...Shadows.small,
   },
-  filterButtonText: { fontSize: 14, color: '#666666', marginRight: 4 },
-  filterArrow: { fontSize: 10, color: '#666666' },
+  filterButtonText: { 
+    ...Typography.subheadline, 
+    color: Colors.secondaryLabel, 
+    marginRight: Spacing.xs 
+  },
+  filterArrow: { 
+    fontSize: 10, 
+    color: Colors.secondaryLabel 
+  },
 
   filterDropdown: {
     position: 'absolute',
     top: 38,
     right: 0,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    backgroundColor: Colors.systemBackground,
+    borderRadius: BorderRadius.xl,
     minWidth: 110,
     borderWidth: 0.5,
-    borderColor: '#E5E5EA',
-    shadowColor: '#000',
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
+    borderColor: Colors.systemGray5,
+    ...Shadows.large,
     zIndex: 1000,
   },
-  filterOption: { paddingHorizontal: 16, paddingVertical: 12 },
+  filterOption: { 
+    paddingHorizontal: Spacing.lg, 
+    paddingVertical: Spacing.md 
+  },
   filterOptionSelectedBand: {
-    backgroundColor: '#F2F2F7',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    backgroundColor: Colors.secondarySystemBackground,
+    borderTopLeftRadius: BorderRadius.xl,
+    borderTopRightRadius: BorderRadius.xl,
   },
   filterOptionSelectedMusical: {
-    backgroundColor: '#F2F2F7',
-    borderBottomLeftRadius: 16,
-    borderBottomRightRadius: 16,
+    backgroundColor: Colors.secondarySystemBackground,
+    borderBottomLeftRadius: BorderRadius.xl,
+    borderBottomRightRadius: BorderRadius.xl,
   },
-  filterOptionText: { fontSize: 15, color: '#3C3C43', textAlign: 'center' },
-  filterOptionTextSelected: { color: '#B11515', fontWeight: '600' },
+  filterOptionText: { 
+    ...Typography.subheadline, 
+    color: Colors.label, 
+    textAlign: 'center' 
+  },
+  filterOptionTextSelected: { 
+    color: Colors.primary, 
+    fontWeight: '600' 
+  },
 
   subHeader: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 16,
-    backgroundColor: '#FFFFFF',
+    paddingHorizontal: Spacing.screenPadding,
+    paddingTop: Spacing.xl,
+    paddingBottom: Spacing.lg,
+    backgroundColor: Colors.systemBackground,
   },
   monthTitle: {
-    fontSize: 24,
+    ...Typography.title1,
     fontWeight: 'bold',
-    color: '#2C3E50',
-    marginBottom: 8,
+    color: Colors.label,
+    marginBottom: Spacing.sm,
   },
-  monthSubtitle: { fontSize: 14, color: '#666666', lineHeight: 20 },
+  monthSubtitle: { 
+    ...Typography.subheadline, 
+    color: Colors.secondaryLabel, 
+    lineHeight: 20 
+  },
 
-  contentContainer: { flex: 1, paddingTop: 30, paddingHorizontal: 20 },
+  contentContainer: { 
+    flex: 1, 
+    paddingTop: Spacing.xxxl, 
+    paddingHorizontal: Spacing.screenPadding 
+  },
   cardContainer: { alignItems: 'center', flex: 1 },
 
-  indicatorContainer: { marginBottom: 10 },
-  indicatorText: { fontSize: 14, color: '#666666', fontWeight: '500' },
+  indicatorContainer: { marginBottom: Spacing.md },
+  indicatorText: { 
+    ...Typography.subheadline, 
+    color: Colors.secondaryLabel, 
+    fontWeight: '500' 
+  },
 
   animatedCard: { alignItems: 'center' },
   mainTicketCard: {
     width: width - 80,
     height: (width - 80) * 1.3,
-    borderRadius: 20,
+    borderRadius: BorderRadius.xxl,
     overflow: 'hidden',
-    backgroundColor: '#f2f2f2',
-    shadowColor: '#000',
+    backgroundColor: Colors.systemGray6,
+    shadowColor: Colors.label,
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 8,
   },
   mainTicketCardNoImage: {
     backgroundColor: '#FFEBEE',
     borderWidth: 0.5,
-    borderColor: '#FF3B30',
+    borderColor: Colors.systemRed,
   },
   disabledCard: { opacity: 0.75 },
   mainTicketImage: { width: '100%', height: '100%', resizeMode: 'cover' },
   mainTicketPlaceholder: {
     flex: 1,
-    backgroundColor: '#ebebeb',
+    backgroundColor: Colors.systemGray6,
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
     height: '100%',
   },
-  placeholderText: { fontSize: 16, color: '#666666', fontWeight: '500' },
-
-  dateButtonContainer: { marginTop: 16, alignItems: 'center' },
-  dateButton: {
-    backgroundColor: '#F8F9FA',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
+  placeholderText: { 
+    ...Typography.callout, 
+    color: Colors.secondaryLabel, 
+    fontWeight: '500' 
   },
-  dateButtonText: { fontSize: 14, color: '#2C3E50', fontWeight: '500' },
+
+  dateButtonContainer: { 
+    marginTop: Spacing.lg, 
+    alignItems: 'center' 
+  },
+  dateButton: {
+    backgroundColor: Colors.secondarySystemBackground,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.xxl,
+    borderWidth: 1,
+    borderColor: Colors.systemGray5,
+    ...Shadows.small,
+  },
+  dateButtonText: { 
+    ...Typography.subheadline, 
+    color: Colors.label, 
+    fontWeight: '500' 
+  },
 });
 
 export default MainPage;

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../styles/designSystem';
 
 interface CalendarHeaderProps {
   totalTickets: number;
@@ -27,14 +28,14 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({ totalTickets }) => {
 const styles = StyleSheet.create({
   // Header
   header: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: '#fff',
+    paddingHorizontal: Spacing.screenPadding,
+    paddingVertical: Spacing.lg,
+    backgroundColor: Colors.systemBackground,
   },
   appTitle: {
-    fontSize: 22,
+    ...Typography.title2,
     fontWeight: '700',
-    color: '#000000',
+    color: Colors.label,
   },
 
   // Title Section
@@ -42,32 +43,29 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 24,
-    backgroundColor: '#fff',
+    paddingHorizontal: Spacing.screenPadding,
+    paddingVertical: Spacing.sectionSpacing,
+    backgroundColor: Colors.systemBackground,
   },
   calendarTitle: {
-    fontSize: 28,
+    ...Typography.title1,
     fontWeight: '700',
-    color: '#000000',
+    color: Colors.label,
   },
 
   // Ticket count
   ticketCountBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    backgroundColor: Colors.systemBackground,
+    borderRadius: BorderRadius.xl,
     height: 32,
-    paddingHorizontal: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
+    paddingHorizontal: Spacing.md,
+    ...Shadows.medium,
   },
   ticketCountText: {
-    color: '#FF3B30',
-    fontSize: 15,
+    color: Colors.primary,
+    ...Typography.subheadline,
     fontWeight: 'bold',
   },
 });

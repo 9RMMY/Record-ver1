@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ticket } from '../types/ticket';
+import { Colors, Typography, Spacing, BorderRadius, Shadows, ComponentStyles } from '../styles/designSystem';
 
 interface EventCardProps {
   ticket: Ticket;
@@ -26,32 +27,26 @@ const EventCard: React.FC<EventCardProps> = ({ ticket, onPress }) => {
 
 const styles = StyleSheet.create({
   eventCard: {
+    ...ComponentStyles.card,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    padding: Spacing.xl,
   },
   eventContent: {
     flex: 1,
   },
   eventTitle: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#000000',
-    marginBottom: 4,
+    ...Typography.headline,
+    color: Colors.label,
+    marginBottom: Spacing.xs,
   },
   eventDetails: {
-    fontSize: 15,
-    color: '#8E8E93',
+    ...Typography.subheadline,
+    color: Colors.systemGray,
   },
   chevron: {
     fontSize: 32,
-    color: '#C7C7CC',
+    color: Colors.systemGray3,
     fontWeight: '300',
   },
 });

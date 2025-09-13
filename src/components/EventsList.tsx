@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { Ticket } from '../types/ticket';
 import EventCard from './EventCard';
+import { Colors, Typography, Spacing } from '../styles/designSystem';
 
 interface EventsListProps {
   selectedEvents: Ticket[];
@@ -35,27 +36,27 @@ const EventsList: React.FC<EventsListProps> = ({ selectedEvents, onTicketPress }
 const styles = StyleSheet.create({
   eventsContainer: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: Spacing.screenPadding,
   },
   eventSection: {
-    marginBottom: 24,
+    marginBottom: Spacing.sectionSpacing,
   },
   eventDateTitle: {
-    fontSize: 20,
+    ...Typography.title3,
     fontWeight: '700',
-    color: '#000000',
-    marginTop: 12,
-    marginBottom: 16,
+    color: Colors.label,
+    marginTop: Spacing.md,
+    marginBottom: Spacing.lg,
   },
   noEvents: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 40,
+    padding: Spacing.xxxl + Spacing.sm,
   },
   noEventsText: {
-    fontSize: 17,
-    color: '#8E8E93',
+    ...Typography.body,
+    color: Colors.systemGray,
     textAlign: 'center',
   },
 });

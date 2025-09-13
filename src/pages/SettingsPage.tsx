@@ -6,11 +6,14 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
+  Image,
 } from 'react-native';
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
+import { useAtom } from 'jotai';
+import { userProfileAtom } from '../atoms/userAtoms';
 
 interface SettingsPageProps {
   navigation: any;
@@ -18,6 +21,7 @@ interface SettingsPageProps {
 
 const SettingsPage: React.FC<SettingsPageProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
+  const [userProfile] = useAtom(userProfileAtom);
 
   const handleLogout = () => {
     Alert.alert(
@@ -111,11 +115,29 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ navigation }) => {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* User Info Section */}
         <View style={styles.userSection}>
-          <View style={styles.userAvatar}>
-            <Text style={styles.avatarText}>👤</Text>
-          </View>
-          <Text style={styles.userId}>ID1234</Text>
-          <Text style={styles.userEmail}>user@example.com</Text>
+          <TouchableOpacity 
+            style={styles.userAvatarContainer}
+            onPress={() => navigation.navigate('PersonalInfoEdit')}
+          >
+            {userProfile.profileImage ? (
+              <Image source={{ uri: userProfile.profileImage }} style={styles.userAvatar} />
+            ) : (
+              <View style={styles.userAvatar}>
+                <Text style={styles.avatarText}>👤</Text>
+              </View>
+            )}
+            <View style={styles.editProfileOverlay}>
+              <Text style={styles.editProfileText}>✏️</Text>
+            </View>
+          </TouchableOpacity>
+          <Text style={styles.userName}>{userProfile.name}</Text>
+          <Text style={styles.userId}>{userProfile.userId}</Text>
+          <Text style={styles.userEmail}>{userProfile.email}</Text>
+          {userProfile.isAccountPrivate && (
+            <View style={styles.privateAccountBadge}>
+              <Text style={styles.privateAccountText}>🔒 비공개 계정</Text>
+            </View>
+          )}
         </View>
 
         {/* Settings Options */}
@@ -197,6 +219,10 @@ const styles = StyleSheet.create({
     paddingVertical: 32,
     marginBottom: 24,
   },
+  userAvatarContainer: {
+    position: 'relative',
+    marginBottom: 16,
+  },
   userAvatar: {
     width: 80,
     height: 80,
@@ -204,20 +230,55 @@ const styles = StyleSheet.create({
     backgroundColor: '#E9ECEF',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
   },
   avatarText: {
     fontSize: 32,
   },
-  userId: {
-    fontSize: 20,
-    fontWeight: '600',
+  editProfileOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#B11515',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  editProfileText: {
+    fontSize: 12,
+  },
+  userName: {
+    fontSize: 22,
+    fontWeight: '700',
     color: '#2C3E50',
+    marginBottom: 4,
+  },
+  userId: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#495057',
     marginBottom: 4,
   },
   userEmail: {
     fontSize: 14,
     color: '#6C757D',
+    marginBottom: 8,
+  },
+  privateAccountBadge: {
+    backgroundColor: '#FFF3CD',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#FFEAA7',
+  },
+  privateAccountText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#856404',
   },
   optionsContainer: {
     backgroundColor: '#FFFFFF',

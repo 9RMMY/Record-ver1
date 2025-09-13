@@ -7,11 +7,16 @@ import {
   ScrollView,
   TextInput,
   Alert,
+  Image,
+  Switch,
 } from 'react-native';
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
+import { launchImageLibrary, ImagePickerResponse } from 'react-native-image-picker';
+import { useAtom } from 'jotai';
+import { userProfileAtom } from '../atoms/userAtoms';
 
 interface PersonalInfoEditPageProps {
   navigation: any;
@@ -19,15 +24,44 @@ interface PersonalInfoEditPageProps {
 
 const PersonalInfoEditPage: React.FC<PersonalInfoEditPageProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
+  const [userProfile, setUserProfile] = useAtom(userProfileAtom);
   
-  // 현재 사용자 정보 (실제로는 상태 관리나 API에서 가져와야 함)
-  const [userId, setUserId] = useState('ID1234');
-  const [email, setEmail] = useState('user@example.com');
+  // Local state for form fields
+  const [profileImage, setProfileImage] = useState<string | null>(userProfile.profileImage);
+  const [name, setName] = useState(userProfile.name);
+  const [userId, setUserId] = useState(userProfile.userId);
+  const [email, setEmail] = useState(userProfile.email);
+  const [isAccountPrivate, setIsAccountPrivate] = useState(userProfile.isAccountPrivate);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
+  const handleProfileImagePick = () => {
+    const options = {
+      mediaType: 'photo' as const,
+      includeBase64: false,
+      maxHeight: 2000,
+      maxWidth: 2000,
+    };
+
+    launchImageLibrary(options, (response: ImagePickerResponse) => {
+      if (response.didCancel || response.errorMessage) {
+        return;
+      }
+
+      if (response.assets && response.assets[0]) {
+        setProfileImage(response.assets[0].uri || null);
+      }
+    });
+  };
+
   const handleSave = () => {
+    // 이름 유효성 검사
+    if (!name.trim()) {
+      Alert.alert('오류', '이름을 입력해주세요.');
+      return;
+    }
+
     // 비밀번호 변경 시 유효성 검사
     if (newPassword && newPassword !== confirmPassword) {
       Alert.alert('오류', '새 비밀번호가 일치하지 않습니다.');
@@ -46,6 +80,15 @@ const PersonalInfoEditPage: React.FC<PersonalInfoEditPageProps> = ({ navigation 
       return;
     }
 
+    // Update the global user profile state
+    setUserProfile({
+      profileImage,
+      name: name.trim(),
+      userId,
+      email,
+      isAccountPrivate,
+    });
+
     Alert.alert(
       '저장 완료',
       '개인정보가 성공적으로 수정되었습니다.',
@@ -61,6 +104,15 @@ const PersonalInfoEditPage: React.FC<PersonalInfoEditPageProps> = ({ navigation 
   const editFields = [
     {
       id: 1,
+      title: '이름',
+      value: name,
+      onChangeText: setName,
+      placeholder: '이름을 입력하세요',
+      keyboardType: 'default' as const,
+      secureTextEntry: false,
+    },
+    {
+      id: 2,
       title: '아이디',
       value: userId,
       onChangeText: setUserId,
@@ -69,7 +121,7 @@ const PersonalInfoEditPage: React.FC<PersonalInfoEditPageProps> = ({ navigation 
       secureTextEntry: false,
     },
     {
-      id: 2,
+      id: 3,
       title: '이메일',
       value: email,
       onChangeText: setEmail,
@@ -126,6 +178,34 @@ const PersonalInfoEditPage: React.FC<PersonalInfoEditPageProps> = ({ navigation 
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Profile Picture Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>프로필 사진</Text>
+          <View style={styles.profileImageContainer}>
+            <TouchableOpacity
+              style={styles.profileImageWrapper}
+              onPress={handleProfileImagePick}
+            >
+              {profileImage ? (
+                <Image source={{ uri: profileImage }} style={styles.profileImage} />
+              ) : (
+                <View style={styles.defaultProfileImage}>
+                  <Text style={styles.defaultProfileImageText}>👤</Text>
+                </View>
+              )}
+              <View style={styles.editImageOverlay}>
+                <Text style={styles.editImageText}>📷</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.changeImageButton}
+              onPress={handleProfileImagePick}
+            >
+              <Text style={styles.changeImageButtonText}>사진 변경</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
         {/* Basic Info Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>기본 정보</Text>
@@ -144,6 +224,29 @@ const PersonalInfoEditPage: React.FC<PersonalInfoEditPageProps> = ({ navigation 
                 />
               </View>
             ))}
+          </View>
+        </View>
+
+        {/* Privacy Settings Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>계정 설정</Text>
+          <View style={styles.privacyContainer}>
+            <View style={styles.privacyItem}>
+              <View style={styles.privacyLeft}>
+                <Text style={styles.privacyTitle}>계정 공개 설정</Text>
+                <Text style={styles.privacyDescription}>
+                  {isAccountPrivate 
+                    ? '비공개 계정입니다. 승인된 사용자만 프로필을 볼 수 있습니다.' 
+                    : '공개 계정입니다. 모든 사용자가 프로필을 볼 수 있습니다.'}
+                </Text>
+              </View>
+              <Switch
+                value={isAccountPrivate}
+                onValueChange={setIsAccountPrivate}
+                trackColor={{ false: '#E9ECEF', true: '#B11515' }}
+                thumbColor={isAccountPrivate ? '#FFFFFF' : '#FFFFFF'}
+              />
+            </View>
           </View>
         </View>
 
@@ -287,6 +390,83 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6C757D',
     marginBottom: 4,
+  },
+  profileImageContainer: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  profileImageWrapper: {
+    position: 'relative',
+    marginBottom: 16,
+  },
+  profileImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+  },
+  defaultProfileImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#E9ECEF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  defaultProfileImageText: {
+    fontSize: 40,
+  },
+  editImageOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#B11515',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  editImageText: {
+    fontSize: 16,
+  },
+  changeImageButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#DEE2E6',
+  },
+  changeImageButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#495057',
+  },
+  privacyContainer: {
+    marginTop: 16,
+  },
+  privacyItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+  },
+  privacyLeft: {
+    flex: 1,
+    marginRight: 16,
+  },
+  privacyTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#2C3E50',
+    marginBottom: 4,
+  },
+  privacyDescription: {
+    fontSize: 14,
+    color: '#6C757D',
+    lineHeight: 20,
   },
 });
 

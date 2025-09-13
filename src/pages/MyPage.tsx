@@ -20,6 +20,7 @@ import { isPlaceholderTicket } from '../utils/isPlaceholder';
 import TicketDetailModal from '../components/TicketDetailModal';
 import TicketGrid from '../components/TicketGrid';
 import { friendsAtom } from '../atoms/friendsAtoms';
+import { Colors, Typography, Spacing, BorderRadius, Shadows, ComponentStyles } from '../styles/designSystem';
 
 interface MyPageProps {
   navigation: any;
@@ -182,7 +183,7 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: Colors.systemBackground },
   
   content: { flex: 1 },
   header: {
@@ -194,14 +195,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingHorizontal: Spacing.screenPadding,
+    paddingTop: Spacing.md,
     zIndex: 10,
   },
   appTitle: {
-    fontSize: 22,
+    ...Typography.title2,
     fontWeight: '700',
-    color: '#000000',
+    color: Colors.label,
     flex: 1,
   },
   centerIdContainer: {
@@ -213,40 +214,34 @@ const styles = StyleSheet.create({
     height: 36,
   },
   centerId: {
-    fontSize: 16,
+    ...Typography.callout,
     fontWeight: 'bold',
-    color: '#2C3E50',
+    color: Colors.label,
   },
   headerIcons: {
     flexDirection: 'row',
-    gap: 12,
+    gap: Spacing.md,
   },
   iconButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(248, 249, 250, 0.8)',
+    borderRadius: BorderRadius.round,
+    backgroundColor: `${Colors.secondarySystemBackground}CC`,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
+    ...Shadows.small,
   },
   iconText: {
-    fontSize: 16,
+    ...Typography.callout,
   },
 
   //프로필
   profileSection: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 32,
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
+    paddingVertical: Spacing.xxxl,
+    backgroundColor: Colors.systemBackground,
+    ...Shadows.large,
   },
   avatarContainer: {
 
@@ -255,58 +250,55 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: '#EEE',
-    shadowColor: '#000',
+    backgroundColor: Colors.systemGray5,
+    shadowColor: Colors.label,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
   },
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 12,
+    marginTop: Spacing.md,
     gap: 40,
   },
   badgeWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    backgroundColor: Colors.systemBackground,
+    borderRadius: BorderRadius.xl,
     height: 32,
-    paddingHorizontal: 12,
+    paddingHorizontal: Spacing.md,
     top: -16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
+    ...Shadows.medium,
   },
   badgeEmoji: {
-    fontSize: 14,
-    marginRight: 4,
+    ...Typography.footnote,
+    marginRight: Spacing.xs,
   },
   badgeText: {
-    color: '#FF3B30',
-    fontSize: 12,
+    color: Colors.primary,
+    ...Typography.caption1,
     fontWeight: 'bold',
   },
   statBox: {
     alignItems: 'center',
   },
   statLabel: {
-    fontSize: 14,
-    color: '#7F8C8D',
-    marginBottom: 4,
+    ...Typography.subheadline,
+    color: Colors.secondaryLabel,
+    marginBottom: Spacing.xs,
   },
   statValue: {
-    fontSize: 16,
+    ...Typography.callout,
     fontWeight: 'bold',
-    color: '#2C3E50',
+    color: Colors.label,
   },
   username: {
-    fontSize: 24,
+    ...Typography.title1,
     fontWeight: 'bold',
-    color: '#2C3E50',
+    color: Colors.label,
   },
 
 });

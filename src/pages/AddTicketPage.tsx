@@ -15,6 +15,7 @@ import { addTicketAtom } from '../atoms/ticketAtoms';
 import { Ticket } from '../types/ticket';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Colors, Typography, Spacing, BorderRadius, Shadows, ComponentStyles } from '../styles/designSystem';
 
 interface AddTicketPageProps {
   navigation: any;
@@ -244,70 +245,63 @@ const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation, route }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F8F9FA' },
+  container: { flex: 1, backgroundColor: Colors.secondarySystemBackground },
 
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 20,
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+    padding: Spacing.screenPadding,
+    backgroundColor: Colors.systemBackground,
+    ...Shadows.small,
     zIndex: 1,
   },
   backButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F8F9FA',
+    borderRadius: BorderRadius.round,
+    backgroundColor: Colors.secondarySystemBackground,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
+    ...Shadows.small,
   },
-  backButtonText: { fontSize: 20, color: '#2C3E50', fontWeight: 'bold' },
+  backButtonText: { 
+    ...Typography.title3, 
+    color: Colors.label, 
+    fontWeight: 'bold' 
+  },
 
-  headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#2C3E50' },
+  headerTitle: { 
+    ...Typography.title3, 
+    fontWeight: 'bold', 
+    color: Colors.label 
+  },
 
   placeholder: { width: 40 },
   content: { flex: 1 },
-  formContainer: { padding: 24 },
-  inputGroup: { marginBottom: 24 },
-  label: { fontSize: 16, fontWeight: '600', color: '#2C3E50', marginBottom: 8 },
+  formContainer: { padding: Spacing.sectionSpacing },
+  inputGroup: { marginBottom: Spacing.sectionSpacing },
+  label: { 
+    ...Typography.callout, 
+    fontWeight: '600', 
+    color: Colors.label, 
+    marginBottom: Spacing.sm 
+  },
   input: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    color: '#2C3E50',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    ...ComponentStyles.input,
   },
   dateButton: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.systemBackground,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    borderColor: Colors.systemGray5,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.inputPadding,
+    ...Shadows.small,
   },
-  dateButtonText: { fontSize: 16, color: '#2C3E50' },
+  dateButtonText: { 
+    ...Typography.body, 
+    color: Colors.label 
+  },
   /*
   dropdownButton: {
     backgroundColor: '#FFFFFF',
@@ -400,73 +394,62 @@ const styles = StyleSheet.create({
 
   footer: {
     flexDirection: 'row',
-    padding: 20,
-    backgroundColor: '#FFFFFF',
+    padding: Spacing.screenPadding,
+    backgroundColor: Colors.systemBackground,
     borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
-    shadowColor: '#000',
+    borderTopColor: Colors.systemGray5,
+    shadowColor: Colors.label,
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 4,
   },
   resetButton: {
+    ...ComponentStyles.secondaryButton,
     flex: 1,
-    backgroundColor: '#ECF0F1',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    marginRight: 8,
+    marginRight: Spacing.sm,
   },
-  resetButtonText: { fontSize: 16, fontWeight: '600', color: '#7F8C8D' },
+  resetButtonText: { 
+    ...Typography.callout, 
+    fontWeight: '600', 
+    color: Colors.secondaryLabel 
+  },
   
   submitButton: {
+    ...ComponentStyles.primaryButton,
     flex: 1,
-    backgroundColor: '#B11515',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    marginLeft: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 6,
+    marginLeft: Spacing.sm,
   },
   
   nextButton: {
+    ...ComponentStyles.primaryButton,
     flex: 1,
-    backgroundColor: '#B11515',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 6,
   },
-  submitButtonText: { fontSize: 16, fontWeight: '600', color: '#FFFFFF' },
+  submitButtonText: { 
+    ...Typography.callout, 
+    fontWeight: '600', 
+    color: Colors.systemBackground 
+  },
 
 
   contextMessage: {
-    backgroundColor: '#F8f8f8',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    marginTop: 8,
+    backgroundColor: Colors.secondarySystemBackground,
+    paddingHorizontal: Spacing.sectionSpacing,
+    paddingVertical: Spacing.lg,
+    marginTop: Spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: '#f8f8f8',
+    borderBottomColor: Colors.systemGray5,
   },
   contextTitle: {
-    fontSize: 24,
+    ...Typography.title1,
     fontWeight: 'bold',
-    color: '#2C3E50',
-    marginBottom: 4,
+    color: Colors.label,
+    marginBottom: Spacing.xs,
     textAlign: 'left',
   },
   contextSubtitle: {
-    fontSize: 14,
-    color: '#666666',
+    ...Typography.subheadline,
+    color: Colors.secondaryLabel,
     textAlign: 'left',
     lineHeight: 20,
   },

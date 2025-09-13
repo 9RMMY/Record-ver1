@@ -9,6 +9,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { Ticket } from '../types/ticket';
+import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../styles/designSystem';
 
 interface TicketGridProps {
   tickets: Ticket[];
@@ -73,34 +74,30 @@ const TicketGrid: React.FC<TicketGridProps> = ({ tickets, onTicketPress }) => {
 const styles = StyleSheet.create({
   gridContainer: {
     flex: 1,
-    paddingTop: 24,
-    paddingBottom: 20,
+    paddingTop: Spacing.sectionSpacing,
+    paddingBottom: Spacing.xl,
   },
   gridContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 24,
+    paddingHorizontal: Spacing.screenPadding,
+    paddingBottom: Spacing.sectionSpacing,
   },
   gridRow: {
     justifyContent: 'flex-start',
-    gap: 10,
+    gap: Spacing.md,
   },
   ticketCard: {
     width: cardWidth,
     height: cardWidth * 1.4,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    marginBottom: 16,
+    backgroundColor: Colors.systemBackground,
+    borderRadius: BorderRadius.xl,
+    marginBottom: Spacing.lg,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
+    ...Shadows.large,
   },
   ticketCardNoImage: {
     backgroundColor: '#FFEBEE',
     borderWidth: 0.5,
-    borderColor: '#FF3B30',
+    borderColor: Colors.systemRed,
   },
   ticketImage: {
     width: '100%',
@@ -109,21 +106,21 @@ const styles = StyleSheet.create({
   },
   ticketImagePlaceholder: {
     flex: 1,
-    padding: 12,
+    padding: Spacing.md,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8F9FA',
+    backgroundColor: Colors.secondarySystemBackground,
   },
   ticketTitle: {
-    fontSize: 12,
+    ...Typography.caption1,
     fontWeight: 'bold',
-    color: '#2C3E50',
+    color: Colors.label,
     textAlign: 'center',
-    marginBottom: 4,
+    marginBottom: Spacing.xs,
   },
   ticketArtist: {
-    fontSize: 10,
-    color: '#7F8C8D',
+    ...Typography.caption2,
+    color: Colors.secondaryLabel,
     textAlign: 'center',
   },
   emptyContainer: {
@@ -133,8 +130,8 @@ const styles = StyleSheet.create({
     paddingVertical: 60,
   },
   emptyText: {
-    fontSize: 16,
-    color: '#8E8E93',
+    ...Typography.callout,
+    color: Colors.systemGray,
     textAlign: 'center',
   },
 });
