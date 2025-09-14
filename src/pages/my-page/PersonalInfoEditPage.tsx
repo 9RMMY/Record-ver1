@@ -22,39 +22,54 @@ interface PersonalInfoEditPageProps {
   navigation: any;
 }
 
+// 개인정보 수정
 const PersonalInfoEditPage: React.FC<PersonalInfoEditPageProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const [userProfile, setUserProfile] = useAtom(userProfileAtom);
   
-  // Local state for form fields
+  // 프로필 수정 폼의 각 입력 필드와 연결된 로컬 상태 
+  // useState로 선언한 값들은 해당 컴포넌트 안에서만 유효함
+  // 컴포넌트가 사라지면 이 값들도 없어짐
+
+  //현재 프로필 이미지의 경로
   const [profileImage, setProfileImage] = useState<string | null>(userProfile.profileImage);
+  //사용자 닉네임
   const [name, setName] = useState(userProfile.name);
+  //사용자 아이디
   const [userId, setUserId] = useState(userProfile.userId);
+  //사용자 이메일
   const [email, setEmail] = useState(userProfile.email);
+  //계정 공개여부
   const [isAccountPrivate, setIsAccountPrivate] = useState(userProfile.isAccountPrivate);
+  //비밀번호 관련
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
+  //프로필 이미지 변경
   const handleProfileImagePick = () => {
+    //사진 선택 시 제한
     const options = {
-      mediaType: 'photo' as const,
+      mediaType: 'photo' as const, //사진만 선택 가능하도록
       includeBase64: false,
       maxHeight: 2000,
       maxWidth: 2000,
     };
-
+    //프로필 이미지 접근(갤러리열고, 선택한 결과를 콜백)
     launchImageLibrary(options, (response: ImagePickerResponse) => {
+      //사용자가 취소했더나 에러 발생 시, 아무 동작도 하지 않음.
       if (response.didCancel || response.errorMessage) {
         return;
       }
-
+      //선택된 이미지가 있을 때, 실행
       if (response.assets && response.assets[0]) {
+        //선택한 이미지의 uri를 profileImage에 저장
         setProfileImage(response.assets[0].uri || null);
       }
     });
   };
 
+  // 저장 관리
   const handleSave = () => {
     // 이름 유효성 검사
     if (!name.trim()) {
@@ -80,7 +95,7 @@ const PersonalInfoEditPage: React.FC<PersonalInfoEditPageProps> = ({ navigation 
       return;
     }
 
-    // Update the global user profile state
+    // props로 전송
     setUserProfile({
       profileImage,
       name: name.trim(),
@@ -101,6 +116,7 @@ const PersonalInfoEditPage: React.FC<PersonalInfoEditPageProps> = ({ navigation 
     );
   };
 
+  // 수정 필드
   const editFields = [
     {
       id: 1,
@@ -130,7 +146,8 @@ const PersonalInfoEditPage: React.FC<PersonalInfoEditPageProps> = ({ navigation 
       secureTextEntry: false,
     },
   ];
-
+  
+  // 비밀번호 필드
   const passwordFields = [
     {
       id: 1,
@@ -160,7 +177,7 @@ const PersonalInfoEditPage: React.FC<PersonalInfoEditPageProps> = ({ navigation 
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
+      {/* 헤더 */}
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <TouchableOpacity
           style={styles.backButton}
@@ -178,7 +195,7 @@ const PersonalInfoEditPage: React.FC<PersonalInfoEditPageProps> = ({ navigation 
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Profile Picture Section */}
+        {/* 프로필 이미지 섹션 */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>프로필 사진</Text>
           <View style={styles.profileImageContainer}>
@@ -206,7 +223,7 @@ const PersonalInfoEditPage: React.FC<PersonalInfoEditPageProps> = ({ navigation 
           </View>
         </View>
 
-        {/* Basic Info Section */}
+        {/* 기본 정보 섹션 */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>기본 정보</Text>
           <View style={styles.fieldContainer}>
@@ -227,7 +244,7 @@ const PersonalInfoEditPage: React.FC<PersonalInfoEditPageProps> = ({ navigation 
           </View>
         </View>
 
-        {/* Privacy Settings Section */}
+        {/* 계정 설정 섹션 */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>계정 설정</Text>
           <View style={styles.privacyContainer}>
@@ -250,7 +267,7 @@ const PersonalInfoEditPage: React.FC<PersonalInfoEditPageProps> = ({ navigation 
           </View>
         </View>
 
-        {/* Password Section */}
+        {/* 비밀번호 섹션 */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>비밀번호 변경</Text>
           <Text style={styles.sectionSubtitle}>
@@ -273,7 +290,7 @@ const PersonalInfoEditPage: React.FC<PersonalInfoEditPageProps> = ({ navigation 
           </View>
         </View>
 
-        {/* Password Guidelines */}
+        {/* 비밀번호 가이드라인 */}
         <View style={styles.guidelinesContainer}>
           <Text style={styles.guidelinesTitle}>비밀번호 설정 가이드</Text>
           <Text style={styles.guidelineText}>• 8자 이상 입력해주세요</Text>

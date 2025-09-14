@@ -23,6 +23,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const [userProfile] = useAtom(userProfileAtom);
 
+  //로그아웃
   const handleLogout = () => {
     Alert.alert(
       '로그아웃',
@@ -44,6 +45,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ navigation }) => {
     );
   };
 
+  //회원탈퇴
   const handleDeleteAccount = () => {
     Alert.alert(
       '회원 탈퇴',
@@ -65,6 +67,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ navigation }) => {
     );
   };
 
+  //설정 페이지 리스트
   const settingsOptions = [
     {
       id: 1,
@@ -97,10 +100,11 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ navigation }) => {
       textColor: '#FF3B30',
     },
   ];
+  
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
+      {/* 헤더 */}
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <TouchableOpacity
           style={styles.backButton}
@@ -111,10 +115,12 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ navigation }) => {
         <Text style={styles.headerTitle}>설정</Text>
         <View style={styles.placeholder} />
       </View>
-
+      
+      {/* 화면 구성 */}
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* User Info Section */}
+        {/* 사용자 프로필 */}
         <View style={styles.userSection}>
+          {/* 사용자 프로필 수정 */}
           <TouchableOpacity 
             style={styles.userAvatarContainer}
             onPress={() => navigation.navigate('PersonalInfoEdit')}
@@ -126,6 +132,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ navigation }) => {
                 <Text style={styles.avatarText}>👤</Text>
               </View>
             )}
+            
             <View style={styles.editProfileOverlay}>
               <Text style={styles.editProfileText}>✏️</Text>
             </View>
@@ -133,6 +140,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ navigation }) => {
           <Text style={styles.userName}>{userProfile.name}</Text>
           <Text style={styles.userId}>{userProfile.userId}</Text>
           <Text style={styles.userEmail}>{userProfile.email}</Text>
+          
+          {/* 공개/비공개 계정 설정 */}
           {userProfile.isAccountPrivate && (
             <View style={styles.privateAccountBadge}>
               <Text style={styles.privateAccountText}>🔒 비공개 계정</Text>
@@ -140,7 +149,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ navigation }) => {
           )}
         </View>
 
-        {/* Settings Options */}
+        {/* 설정 리스트 */}
         <View style={styles.optionsContainer}>
           {settingsOptions.map((option) => (
             <TouchableOpacity
@@ -166,7 +175,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ navigation }) => {
           ))}
         </View>
 
-        {/* App Version */}
+        {/* 앱 버젼 */}
         <View style={styles.versionContainer}>
           <Text style={styles.versionText}>버전 1.0.0</Text>
         </View>
