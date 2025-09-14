@@ -23,7 +23,7 @@ import {
   Asset,
 } from 'react-native-image-picker';
 import { useAtom } from 'jotai';
-import { addTicketAtom } from '../atoms/ticketAtoms';
+import { addTicketAtom } from '../../atoms/ticketAtoms';
 
 type RootStackParamList = {
   ImageOptions: { ticketData: any; reviewData: any };
@@ -196,7 +196,7 @@ const ImageOptions = () => {
             onPress={handleAIImageSelect}
           >
             <Image
-              source={require('../assets/mic.png')}
+              source={require('../../assets/mic.png')}
               style={styles.buttonIcon}
             />
             <View style={styles.textContainer}>
@@ -213,7 +213,7 @@ const ImageOptions = () => {
             onPress={handleGalleryOrCameraSelect}
           >
             <Image
-              source={require('../assets/mic.png')}
+              source={require('../../assets/mic.png')}
               style={styles.buttonIcon}
             />
             <View style={styles.textContainer}>

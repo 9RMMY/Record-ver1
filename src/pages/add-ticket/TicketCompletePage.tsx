@@ -14,7 +14,7 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 import { useAtom } from 'jotai';
-import { addTicketAtom } from '../atoms/ticketAtoms';
+import { addTicketAtom } from '../../atoms/ticketAtoms';
 
 interface TicketCompletePageProps {
   navigation: any;

@@ -15,7 +15,7 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import { voiceManager } from '../utils/voiceUtils';
+import { voiceManager } from '../../utils/voiceUtils';
 
 interface AddReviewPageProps {
   navigation: any;

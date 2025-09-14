@@ -3,13 +3,13 @@ import { View, StyleSheet, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useAtom } from 'jotai';
-import { ticketsAtom } from '../atoms/ticketAtoms';
-import { Ticket } from '../types/ticket';
-import TicketDetailModal from '../components/TicketDetailModal';
-import CalendarHeader from '../components/CalendarHeader';
-import CustomCalendar from '../components/CustomCalendar';
-import EventsList from '../components/EventsList';
-import { Colors } from '../styles/designSystem';
+import { ticketsAtom } from '../../atoms/ticketAtoms';
+import { Ticket } from '../../types/ticket';
+import TicketDetailModal from '../../components/TicketDetailModal';
+import CalendarHeader from '../../components/CalendarHeader';
+import CustomCalendar from '../../components/CustomCalendar';
+import EventsList from '../../components/EventsList';
+import { Colors } from '../../styles/designSystem';
 
 interface CalendarProps {
   navigation: any;

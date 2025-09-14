@@ -14,7 +14,7 @@ import {
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useAtom } from 'jotai';
-import { addTicketAtom } from '../atoms/ticketAtoms';
+import { addTicketAtom } from '../../atoms/ticketAtoms';
 
 type RootStackParamList = {
   ReviewOptions: { ticketData: any };
@@ -79,7 +79,7 @@ const ReviewOptions = () => {
             onPress={() => handleOptionSelect('voice')}
           >
             <Image
-              source={require('../assets/mic.png')}
+              source={require('../../assets/mic.png')}
               style={styles.buttonIcon}
             />
             <View style={styles.textContainer}>
@@ -97,7 +97,7 @@ const ReviewOptions = () => {
             onPress={() => handleOptionSelect('text')}
           >
             <Image
-              source={require('../assets/mic.png')}
+              source={require('../../assets/mic.png')}
               style={styles.buttonIcon}
             />
             <View style={styles.textContainer}>

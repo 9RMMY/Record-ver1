@@ -5,16 +5,17 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   Alert,
   Platform,
   Modal,
 } from 'react-native';
 import { useAtom } from 'jotai';
-import { addTicketAtom } from '../atoms/ticketAtoms';
-import { Ticket } from '../types/ticket';
+import { addTicketAtom } from '../../atoms/ticketAtoms';
+import { Ticket } from '../../types/ticket';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Colors, Typography, Spacing, BorderRadius, Shadows, ComponentStyles } from '../../styles/designSystem';
 
 interface AddTicketPageProps {
   navigation: any;
@@ -35,20 +36,25 @@ const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation, route }) => {
   const fromEmptyState = route?.params?.fromEmptyState || false;
   const fromAddButton = route?.params?.fromAddButton || false;
 
+  // 공연 시간 초기값을 오늘 오후 7시로 설정
+  const getDefaultPerformanceTime = () => {
+    const defaultDate = new Date();
+    defaultDate.setHours(19, 0, 0, 0); // 오후 7시로 설정
+    return defaultDate;
+  };
+
   const [formData, setFormData] = useState<Omit<Ticket, 'id' | 'updatedAt' | 'status'>>({
     title: '',
     artist: '',
     place: '',
-    performedAt: new Date(),
+    performedAt: getDefaultPerformanceTime(),
     bookingSite: '',
     createdAt: new Date(),
   });
 
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showBookingSiteModal, setShowBookingSiteModal] = useState(false);
-  const [customBookingSite, setCustomBookingSite] = useState('');
-  
-  const bookingSiteOptions = ['인터파크', '예스24', '멜론티켓', '직접작성'];
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [dateTimeMode, setDateTimeMode] = useState<'date' | 'time'>('date');
 
   const handleInputChange = (field: keyof typeof formData, value: string) => {
     setFormData(prev => ({
@@ -58,26 +64,31 @@ const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation, route }) => {
   };
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
-    setShowDatePicker(Platform.OS === 'ios');
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+      setShowTimePicker(false);
+    }
+    
     if (selectedDate) {
       setFormData(prev => ({ ...prev, performedAt: selectedDate }));
+      
+      // Android에서 날짜 선택 후 시간 선택 모드로 전환
+      if (Platform.OS === 'android' && dateTimeMode === 'date') {
+        setTimeout(() => {
+          setDateTimeMode('time');
+          setShowTimePicker(true);
+        }, 100);
+      }
     }
   };
 
-  const handleBookingSiteSelect = (site: string) => {
-    if (site === '직접작성') {
-      setCustomBookingSite('');
+  const showDateTimePicker = () => {
+    if (Platform.OS === 'ios') {
+      setShowDatePicker(true);
     } else {
-      setFormData(prev => ({ ...prev, bookingSite: site }));
-      setShowBookingSiteModal(false);
-    }
-  };
-
-  const handleCustomBookingSiteSubmit = () => {
-    if (customBookingSite.trim()) {
-      setFormData(prev => ({ ...prev, bookingSite: customBookingSite.trim() }));
-      setShowBookingSiteModal(false);
-      setCustomBookingSite('');
+      // Android에서는 먼저 날짜를 선택하고 그 다음 시간을 선택
+      setDateTimeMode('date');
+      setShowDatePicker(true);
     }
   };
 
@@ -95,7 +106,7 @@ const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation, route }) => {
       title: '',
       artist: '',
       place: '',
-      performedAt: new Date(),
+      performedAt: getDefaultPerformanceTime(),
       bookingSite: '',
       createdAt: new Date(),
     });
@@ -163,22 +174,38 @@ const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation, route }) => {
             />
           </View>
 
-          {/* 공연 날짜 */}
+          {/* 공연 날짜 및 시간 */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>공연 날짜 *</Text>
+            <Text style={styles.label}>공연 날짜 및 시간 *</Text>
             <TouchableOpacity
               style={styles.dateButton}
-              onPress={() => setShowDatePicker(true)}
+              onPress={showDateTimePicker}
             >
               <Text style={styles.dateButtonText}>
                 {formData.performedAt.toLocaleDateString('ko-KR', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',
+                })} {formData.performedAt.toLocaleTimeString('ko-KR', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: true,
                 })}
               </Text>
             </TouchableOpacity>
-            {showDatePicker && (
+            
+            {/* iOS에서는 datetime 모드 사용 */}
+            {showDatePicker && Platform.OS === 'ios' && (
+              <DateTimePicker
+                value={formData.performedAt}
+                mode="datetime"
+                display="default"
+                onChange={handleDateChange}
+              />
+            )}
+            
+            {/* Android에서는 날짜 선택 */}
+            {showDatePicker && Platform.OS === 'android' && dateTimeMode === 'date' && (
               <DateTimePicker
                 value={formData.performedAt}
                 mode="date"
@@ -186,25 +213,17 @@ const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation, route }) => {
                 onChange={handleDateChange}
               />
             )}
+            
+            {/* Android에서는 시간 선택 */}
+            {showTimePicker && Platform.OS === 'android' && dateTimeMode === 'time' && (
+              <DateTimePicker
+                value={formData.performedAt}
+                mode="time"
+                display="default"
+                onChange={handleDateChange}
+              />
+            )}
           </View>
-
-          {/* 예매처
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>예매처 *</Text>
-            <TouchableOpacity
-              style={styles.dropdownButton}
-              onPress={() => setShowBookingSiteModal(true)}
-            >
-              <Text style={[
-                styles.dropdownButtonText,
-                !formData.bookingSite && styles.dropdownPlaceholder
-              ]}>
-                {formData.bookingSite || '예매처를 선택해주세요'}
-              </Text>
-              <Text style={styles.dropdownArrow}>▼</Text>
-            </TouchableOpacity>
-          </View>
-          */}
 
         </View>
       </ScrollView>
@@ -221,131 +240,68 @@ const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation, route }) => {
         </TouchableOpacity>
       </View>
 
-      {/* 예매처 선택 모달 (뮤지컬 only)
-      <Modal
-        visible={showBookingSiteModal}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setShowBookingSiteModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>예매처 선택</Text>
-
-            {bookingSiteOptions.map((site, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.modalOption}
-                onPress={() => handleBookingSiteSelect(site)}
-              >
-                <Text style={styles.modalOptionText}>{site}</Text>
-              </TouchableOpacity>
-            ))}
-
-            {formData.bookingSite === '직접작성' || customBookingSite ? (
-              <View style={styles.customInputContainer}>
-                <TextInput
-                  style={styles.customInput}
-                  value={customBookingSite}
-                  onChangeText={setCustomBookingSite}
-                  placeholder="예매처를 직접 입력해주세요"
-                  placeholderTextColor="#BDC3C7"
-                  autoFocus
-                />
-                <TouchableOpacity
-                  style={styles.customSubmitButton}
-                  onPress={handleCustomBookingSiteSubmit}
-                >
-                  <Text style={styles.customSubmitButtonText}>확인</Text>
-                </TouchableOpacity>
-              </View>
-            ) : null}
-
-            <TouchableOpacity
-              style={styles.modalCloseButton}
-              onPress={() => setShowBookingSiteModal(false)}
-            >
-              <Text style={styles.modalCloseButtonText}>취소</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-      */}
-
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F8F9FA' },
+  container: { flex: 1, backgroundColor: Colors.secondarySystemBackground },
 
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 20,
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+    padding: Spacing.screenPadding,
+    backgroundColor: Colors.systemBackground,
+    ...Shadows.small,
     zIndex: 1,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
   },
-  
   backButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F8F9FA',
+    borderRadius: BorderRadius.round,
+    backgroundColor: Colors.secondarySystemBackground,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
+    ...Shadows.small,
   },
-  
-  backButtonText: { fontSize: 20, color: '#2C3E50', fontWeight: 'bold' },
-  headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#2C3E50' },
+  backButtonText: { 
+    ...Typography.title3, 
+    color: Colors.label, 
+    fontWeight: 'bold' 
+  },
+
+  headerTitle: { 
+    ...Typography.title3, 
+    fontWeight: 'bold', 
+    color: Colors.label 
+  },
+
   placeholder: { width: 40 },
   content: { flex: 1 },
-  formContainer: { padding: 24 },
-  inputGroup: { marginBottom: 24 },
-  label: { fontSize: 16, fontWeight: '600', color: '#2C3E50', marginBottom: 8 },
-  
+  formContainer: { padding: Spacing.sectionSpacing },
+  inputGroup: { marginBottom: Spacing.sectionSpacing },
+  label: { 
+    ...Typography.callout, 
+    fontWeight: '600', 
+    color: Colors.label, 
+    marginBottom: Spacing.sm 
+  },
   input: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    color: '#2C3E50',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    ...ComponentStyles.input,
   },
-  
   dateButton: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.systemBackground,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    borderColor: Colors.systemGray5,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.inputPadding,
+    ...Shadows.small,
   },
-  
-  dateButtonText: { fontSize: 16, color: '#2C3E50' },
+  dateButtonText: { 
+    ...Typography.body, 
+    color: Colors.label 
+  },
   /*
   dropdownButton: {
     backgroundColor: '#FFFFFF',
@@ -438,65 +394,62 @@ const styles = StyleSheet.create({
 
   footer: {
     flexDirection: 'row',
-    padding: 20,
-    backgroundColor: '#FFFFFF',
+    padding: Spacing.screenPadding,
+    backgroundColor: Colors.systemBackground,
     borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
-    shadowColor: '#000',
+    borderTopColor: Colors.systemGray5,
+    shadowColor: Colors.label,
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 4,
   },
   resetButton: {
+    ...ComponentStyles.secondaryButton,
     flex: 1,
-    backgroundColor: '#F8F9FA',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    marginRight: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
+    marginRight: Spacing.sm,
   },
-  resetButtonText: { fontSize: 16, fontWeight: '600', color: '#7F8C8D' },
+  resetButtonText: { 
+    ...Typography.callout, 
+    fontWeight: '600', 
+    color: Colors.secondaryLabel 
+  },
   
   submitButton: {
-    flex: 2,
-    backgroundColor: '#3498DB',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    marginLeft: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 6,
+    ...ComponentStyles.primaryButton,
+    flex: 1,
+    marginLeft: Spacing.sm,
   },
-  submitButtonText: { fontSize: 16, fontWeight: '600', color: '#FFFFFF' },
+  
+  nextButton: {
+    ...ComponentStyles.primaryButton,
+    flex: 1,
+  },
+  submitButtonText: { 
+    ...Typography.callout, 
+    fontWeight: '600', 
+    color: Colors.systemBackground 
+  },
 
 
   contextMessage: {
-    backgroundColor: '#F8F9FA',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    marginTop: 8,
+    backgroundColor: Colors.secondarySystemBackground,
+    paddingHorizontal: Spacing.sectionSpacing,
+    paddingVertical: Spacing.lg,
+    marginTop: Spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: '#f8f8f8',
+    borderBottomColor: Colors.systemGray5,
   },
   contextTitle: {
-    fontSize: 24,
+    ...Typography.title1,
     fontWeight: 'bold',
-    color: '#2C3E50',
-    marginBottom: 4,
+    color: Colors.label,
+    marginBottom: Spacing.xs,
     textAlign: 'left',
   },
   contextSubtitle: {
-    fontSize: 14,
-    color: '#666666',
+    ...Typography.subheadline,
+    color: Colors.secondaryLabel,
     textAlign: 'left',
     lineHeight: 20,
   },

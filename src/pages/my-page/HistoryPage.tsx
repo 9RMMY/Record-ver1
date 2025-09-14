@@ -12,9 +12,9 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 import { useAtom } from 'jotai';
-import { ticketsAtom } from '../atoms/ticketAtoms';
-import { Ticket } from '../types/ticket';
-import { isPlaceholderTicket } from '../utils/isPlaceholder';
+import { ticketsAtom } from '../../atoms/ticketAtoms';
+import { Ticket } from '../../types/ticket';
+import { isPlaceholderTicket } from '../../utils/isPlaceholder';
 
 interface HistoryPageProps {
   navigation: any;

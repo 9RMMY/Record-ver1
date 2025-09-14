@@ -16,7 +16,7 @@ import {
 } from 'react-native-safe-area-context';
 import { launchImageLibrary, ImagePickerResponse } from 'react-native-image-picker';
 import { useAtom } from 'jotai';
-import { userProfileAtom } from '../atoms/userAtoms';
+import { userProfileAtom } from '../../atoms/userAtoms';
 
 interface PersonalInfoEditPageProps {
   navigation: any;

@@ -14,11 +14,11 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 import { useAtom } from 'jotai';
-import { ticketsAtom } from '../atoms/ticketAtoms';
-import { Ticket } from '../types/ticket';
-import TicketDetailModal from '../components/TicketDetailModal';
-import { isPlaceholderTicket } from '../utils/isPlaceholder';
-import { Colors, Typography, Spacing, BorderRadius, Shadows, ComponentStyles } from '../styles/designSystem';
+import { ticketsAtom } from '../../atoms/ticketAtoms';
+import { Ticket } from '../../types/ticket';
+import TicketDetailModal from '../../components/TicketDetailModal';
+import { isPlaceholderTicket } from '../../utils/isPlaceholder';
+import { Colors, Typography, Spacing, BorderRadius, Shadows, ComponentStyles } from '../../styles/designSystem';
 
 interface MainPageProps {
   navigation: any;

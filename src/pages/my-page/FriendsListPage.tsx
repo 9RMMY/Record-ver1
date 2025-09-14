@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAtom } from 'jotai';
-import { friendsAtom } from '../atoms/friendsAtoms';
+import { friendsAtom } from '../../atoms/friendsAtoms';
 
 interface Friend {
   id: string;

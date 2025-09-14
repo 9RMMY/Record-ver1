@@ -14,23 +14,32 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
 
-import MainPage from './src/pages/MainPage';
-import AddTicketPage from './src/pages/AddTicketPage';
-import ReviewOptions from './src/pages/ReviewOptions';
-import ImageOptions from './src/pages/ImageOptions';
-import AddReviewPage from './src/pages/AddReviewPage';
-import AIImageSettings from './src/pages/AIImageSettings';
-import AIImageResults from './src/pages/AIImageResults';
-import TicketCompletePage from './src/pages/TicketCompletePage';
-import MyPage from './src/pages/MyPage';
-import CalendarScreen from './src/pages/CalendarScreen';
-import FriendsListPage from './src/pages/FriendsListPage';
-import SentRequestsPage from './src/pages/SentRequestsPage';
-import AddFriendPage from './src/pages/AddFriendPage';
+// Home pages
+import MainPage from './src/pages/home/MainPage';
+
+// Add ticket pages
+import AddTicketPage from './src/pages/add-ticket/AddTicketPage';
+import ReviewOptions from './src/pages/add-ticket/ReviewOptions';
+import ImageOptions from './src/pages/add-ticket/ImageOptions';
+import AddReviewPage from './src/pages/add-ticket/AddReviewPage';
+import AIImageSettings from './src/pages/add-ticket/AIImageSettings';
+import AIImageResults from './src/pages/add-ticket/AIImageResults';
+import TicketCompletePage from './src/pages/add-ticket/TicketCompletePage';
+
+// Calendar pages
+import CalendarScreen from './src/pages/calendar/CalendarScreen';
+
+// My page related
+import MyPage from './src/pages/my-page/MyPage';
+import FriendsListPage from './src/pages/my-page/FriendsListPage';
+import SentRequestsPage from './src/pages/my-page/SentRequestsPage';
+import AddFriendPage from './src/pages/my-page/AddFriendPage';
+import SettingsPage from './src/pages/my-page/SettingsPage';
+import PersonalInfoEditPage from './src/pages/my-page/PersonalInfoEditPage';
+import HistoryPage from './src/pages/my-page/HistoryPage';
+
+// Components
 import FriendProfilePage from './src/components/FriendProfilePage';
-import SettingsPage from './src/pages/SettingsPage';
-import PersonalInfoEditPage from './src/pages/PersonalInfoEditPage';
-import HistoryPage from './src/pages/HistoryPage';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();

@@ -13,7 +13,7 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 import { useAtom } from 'jotai';
-import { userProfileAtom } from '../atoms/userAtoms';
+import { userProfileAtom } from '../../atoms/userAtoms';
 
 interface SettingsPageProps {
   navigation: any;
