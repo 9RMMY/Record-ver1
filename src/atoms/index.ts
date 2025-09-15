@@ -7,7 +7,6 @@
 export {
   // 기본 상태
   ticketsMapAtom,
-  currentUserIdAtom,
   
   // 파생 atoms (읽기 전용)
   ticketsAtom,
@@ -26,6 +25,14 @@ export {
   // 유틸리티 atoms
   createFilteredTicketsAtom,
   ticketStatsAtom,
+  ticketFilterOptionsAtom,
+  updateFilterOptionsAtom,
+  resetFiltersAtom,
+  searchTicketsAtom,
+  recentTicketsAtom,
+  ticketsWithReviewsAtom,
+  ticketsWithImagesAtom,
+  createTicketsByStatusAtom,
 } from './ticketAtoms';
 
 // 사용자 관련 atoms

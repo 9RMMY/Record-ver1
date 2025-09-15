@@ -1,10 +1,21 @@
 /**
  * 친구 관련 상태 관리 Atoms
- * 현업 수준의 안정적이고 확장 가능한 친구 및 친구 관계 데이터 관리
- * Map 기반 구조로 성능 최적화 및 타입 안전성 보장
+ * 
+ * @description 현업 수준의 안정적이고 확장 가능한 친구 및 친구 관계 데이터 관리
+ * @features
+ * - Map 기반 구조로 O(1) 성능 최적화
+ * - 완전한 타입 안전성 보장
+ * - Result 패턴으로 에러 처리 표준화
+ * - ISO string 사용으로 직렬화 문제 방지
+ * - 단일 객체 파라미터로 API 일관성 확보
+ * - 동적 사용자 ID 조회로 하드코딩 제거
+ * 
+ * @author TicketBookApp Team
+ * @version 2.0.0
+ * @since 2025-09-15
  */
 import { atom } from 'jotai';
-import { Friend, FriendRequest, Friendship, FriendTicketsMap, FriendSearchResult, CreateFriendRequestData, RespondToFriendRequestData } from '../types/friend';
+import { Friend, FriendRequest, Friendship, FriendTicketsMap, FriendTicketsData, FriendSearchResult, CreateFriendRequestData, RespondToFriendRequestData, UpdateFriendTicketsParams, RemoveFriendParams } from '../types/friend';
 import { Ticket } from '../types/ticket';
 import { FriendRequestStatus, TicketStatus, CONSTANTS } from '../types/enums';
 import { Result, ErrorFactory, ResultFactory } from '../types/errors';
@@ -13,6 +24,7 @@ import { IdGenerator } from '../utils/idGenerator';
 import { FriendValidator } from '../utils/validation';
 
 // ============= 기본 상태 Atoms =============
+// 모든 기본 상태는 Map 구조를 사용하여 성능과 일관성을 보장합니다.
 
 /**
  * 친구 목록을 Map으로 관리 (성능 최적화)
@@ -59,10 +71,11 @@ export const friendshipsMapAtom = atom<Map<string, Friendship>>(new Map());
 
 /**
  * 친구별 티켓 데이터를 Map으로 관리 (캐시)
- * key: friendId, value: { tickets, lastUpdated }
+ * key: friendId, value: FriendTicketsData
+ * ISO string 사용으로 직렬화 문제 방지
  */
-export const friendTicketsMapAtom = atom<FriendTicketsMap>({
-  'friend_1': {
+export const friendTicketsMapAtom = atom<FriendTicketsMap>(new Map([
+  ['friend_1', {
     tickets: [
       {
         id: 'friend1-ticket1',
@@ -87,9 +100,9 @@ export const friendTicketsMapAtom = atom<FriendTicketsMap>({
         updatedAt: new Date('2025-08-05T10:00:00'),
       },
     ],
-    lastUpdated: new Date(),
-  },
-  'friend_2': {
+    lastUpdated: new Date().toISOString(),
+  }],
+  ['friend_2', {
     tickets: [
       {
         id: 'friend2-ticket1',
@@ -103,15 +116,17 @@ export const friendTicketsMapAtom = atom<FriendTicketsMap>({
         updatedAt: new Date('2025-08-10T10:00:00'),
       },
     ],
-    lastUpdated: new Date(),
-  },
-  'friend_3': {
+    lastUpdated: new Date().toISOString(),
+  }],
+  ['friend_3', {
     tickets: [],
-    lastUpdated: new Date(),
-  },
-});
+    lastUpdated: new Date().toISOString(),
+  }],
+]));
 
 // ============= 파생 Atoms (읽기 전용) =============
+// 기본 상태로부터 계산되는 읽기 전용 atoms입니다.
+// 컴포넌트 호환성과 성능 최적화를 위해 제공됩니다.
 
 /**
  * 친구 목록을 배열로 변환 (기존 컴포넌트 호환성)
@@ -159,25 +174,27 @@ export const getFriendByIdAtom = atom<(id: string) => Friend | undefined>((get) 
 });
 
 /**
- * 특정 친구의 티켓 목록 조회
+ * 특정 친구의 티켓 목록 조회 (Map.get 사용)
  */
 export const getFriendTicketsAtom = atom<(friendId: string) => Ticket[]>((get) => {
   const friendTicketsMap = get(friendTicketsMapAtom);
-  return (friendId: string) => friendTicketsMap[friendId]?.tickets || [];
+  return (friendId: string) => friendTicketsMap.get(friendId)?.tickets || [];
 });
 
 /**
- * 친구별 티켓 데이터 (기존 호환성)
+ * 친구별 티켓 데이터 (기존 호환성, Map.entries 사용)
  */
 export const friendTicketsAtom = atom<Array<{ friendId: string; tickets: Ticket[] }>>((get) => {
   const friendTicketsMap = get(friendTicketsMapAtom);
-  return Object.entries(friendTicketsMap).map(([friendId, data]) => ({
+  return Array.from(friendTicketsMap.entries()).map(([friendId, data]) => ({
     friendId,
     tickets: data.tickets,
   }));
 });
 
 // ============= 쓰기 Atoms (액션) =============
+// 모든 쓰기 atoms는 단일 객체 파라미터를 받고 Result 패턴을 반환합니다.
+// 에러 처리가 표준화되어 있으며 타입 안전성이 보장됩니다.
 
 /**
  * 친구 요청 보내기
@@ -285,10 +302,11 @@ export const respondToFriendRequestAtom = atom(
         newFriendsMap.set(newFriend.id, newFriend);
         set(friendsMapAtom, newFriendsMap);
 
-        // 친구 관계 추가
+        // 새 친구 관계 추가 (현재 사용자 ID 동적 조회)
+        const currentUser = get(userProfileAtom);
         const newFriendship: Friendship = {
           id: IdGenerator.friend(),
-          userId: 'user_current',
+          userId: currentUser.id,
           friendId: request.fromUserId,
           createdAt: new Date(),
           isBlocked: false,
@@ -310,11 +328,12 @@ export const respondToFriendRequestAtom = atom(
 );
 
 /**
- * 친구 삭제
+ * 친구 삭제 (표준화된 객체 파라미터 사용)
  */
 export const removeFriendAtom = atom(
   null,
-  (get, set, friendId: string): Result<boolean> => {
+  (get, set, params: RemoveFriendParams): Result<boolean> => {
+    const { friendId } = params;
     try {
       const friendsMap = get(friendsMapAtom);
       const friendshipsMap = get(friendshipsMapAtom);
@@ -338,10 +357,10 @@ export const removeFriendAtom = atom(
         set(friendshipsMapAtom, newFriendshipsMap);
       }
 
-      // 친구 티켓 캐시에서 제거
+      // 친구 티켓 캐시에서 제거 (Map.delete 사용)
       const friendTicketsMap = get(friendTicketsMapAtom);
-      const newFriendTicketsMap = { ...friendTicketsMap };
-      delete newFriendTicketsMap[friendId];
+      const newFriendTicketsMap = new Map(friendTicketsMap);
+      newFriendTicketsMap.delete(friendId);
       set(friendTicketsMapAtom, newFriendTicketsMap);
 
       return ResultFactory.success(true);
@@ -354,20 +373,21 @@ export const removeFriendAtom = atom(
 );
 
 /**
- * 친구 티켓 데이터 업데이트 (서버에서 가져온 데이터로 캐시 갱신)
+ * 친구 티켓 데이터 업데이트 (표준화된 객체 파라미터 및 Map 사용)
+ * ISO string으로 직렬화 문제 방지
  */
 export const updateFriendTicketsAtom = atom(
   null,
-  (get, set, friendId: string, tickets: Ticket[]): Result<boolean> => {
+  (get, set, params: UpdateFriendTicketsParams): Result<boolean> => {
     try {
+      const { friendId, tickets } = params;
       const friendTicketsMap = get(friendTicketsMapAtom);
-      const newFriendTicketsMap = {
-        ...friendTicketsMap,
-        [friendId]: {
-          tickets: [...tickets],
-          lastUpdated: new Date(),
-        },
-      };
+      const newFriendTicketsMap = new Map(friendTicketsMap);
+      
+      newFriendTicketsMap.set(friendId, {
+        tickets: [...tickets],
+        lastUpdated: new Date().toISOString(),
+      });
       
       set(friendTicketsMapAtom, newFriendTicketsMap);
       return ResultFactory.success(true);
@@ -380,6 +400,7 @@ export const updateFriendTicketsAtom = atom(
 );
 
 // ============= 유틸리티 Atoms =============
+// 검색, 통계 등의 유틸리티 기능을 제공하는 atoms입니다.
 
 /**
  * 친구 검색
@@ -398,7 +419,7 @@ export const searchFriendsAtom = atom<(query: string) => Friend[]>((get) => {
 });
 
 /**
- * 친구 통계 정보
+ * 친구 통계 정보 (Map.values 사용으로 개선)
  */
 export const friendStatsAtom = atom((get) => {
   const friendsCount = get(friendsCountAtom);
@@ -406,7 +427,7 @@ export const friendStatsAtom = atom((get) => {
   const sentRequests = get(sentFriendRequestsAtom);
   const friendTicketsMap = get(friendTicketsMapAtom);
   
-  const friendsWithTickets = Object.values(friendTicketsMap)
+  const friendsWithTickets = Array.from(friendTicketsMap.values())
     .filter(data => data.tickets.length > 0).length;
   
   return {

@@ -49,13 +49,31 @@ export interface Friendship {
 }
 
 /**
- * 친구의 티켓 데이터 (Map 구조로 개선)
+ * 친구의 티켓 데이터 (Map 구조)
  */
-export interface FriendTicketsMap {
-  [friendId: string]: {
-    tickets: Ticket[];
-    lastUpdated: Date;
-  };
+export interface FriendTicketsData {
+  tickets: Ticket[];
+  lastUpdated: string; // ISO string for serialization
+}
+
+/**
+ * 친구 티켓 Map 타입
+ */
+export type FriendTicketsMap = Map<string, FriendTicketsData>;
+
+/**
+ * 친구 티켓 업데이트 파라미터
+ */
+export interface UpdateFriendTicketsParams {
+  friendId: string;
+  tickets: Ticket[];
+}
+
+/**
+ * 친구 삭제 파라미터
+ */
+export interface RemoveFriendParams {
+  friendId: string;
 }
 
 /**

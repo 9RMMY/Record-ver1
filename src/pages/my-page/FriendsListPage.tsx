@@ -36,7 +36,7 @@ const FriendsListPage: React.FC<FriendsListPageProps> = ({ navigation }) => {
       {
         text: '삭제',
         style: 'destructive',
-        onPress: () => removeFriend(friendId),
+        onPress: () => removeFriend({ friendId }),
       },
     ]);
   };

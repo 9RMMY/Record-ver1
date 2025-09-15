@@ -1,25 +1,55 @@
 /**
- * 티켓 상태 관리 Atoms
- * 현업 수준의 안정적이고 확장 가능한 티켓 데이터 관리
+ * 티켓 상태 관리 Atoms - 리팩토링된 버전
+ * 안정적이고 확장 가능한 티켓 데이터 관리
  * Map 기반 구조로 성능 최적화 및 타입 안전성 보장
+ * 
+ * 주요 개선사항:
+ * - 반복되는 try-catch + ResultFactory 패턴 공통화
+ * - Map 업데이트 최적화 (불필요한 복사 최소화)
+ * - 통합 유효성 검증 시스템
+ * - 필터링 로직 통합 및 성능 최적화
+ * - bulkDelete 결과 개선 (상세 실패 정보 제공)
+ * - 하드코딩된 초기값 제거 및 상수화
+ * 
+ * @author TicketBookApp Team
+ * @version 2.0.0 (리팩토링됨)
+ * @since 2025-09-15
  */
 import { atom } from 'jotai';
 import { Ticket, CreateTicketData, UpdateTicketData, TicketFilterOptions } from '../types/ticket';
-import { TicketStatus, CONSTANTS } from '../types/enums';
+import { TicketStatus } from '../types/enums';
 import { Result, ErrorFactory, ResultFactory } from '../types/errors';
-import { IdGenerator } from '../utils/idGenerator';
-import { TicketValidator } from '../utils/validation';
+import { 
+  createNewTicket, 
+  createUpdatedTicket, 
+  DEFAULT_TICKET_VALUES 
+} from '../constants/ticketDefaults';
+import { 
+  withErrorHandling, 
+  optimizedMapUpdate, 
+  optimizedMapBulkDelete, 
+  validateOwnership 
+} from '../utils/atomHelpers';
+import { 
+  validateTicketData, 
+  validateTicketLimits, 
+  validateReviewText, 
+  applyTicketFilters, 
+  filterTicketsByStatus, 
+  calculateTicketStats, 
+  processBulkDelete, 
+  BulkDeleteResult 
+} from '../utils/ticketHelpers';
+import { currentUserIdAtom } from './userAtoms';
+
+// ============= 기본 상태 Atoms =============
+// 상수화된 초기값을 사용하여 하드코딩 제거 및 중앙 관리
 
 /**
  * 티켓 데이터를 Map으로 관리 (성능 최적화)
  * key: ticketId, value: Ticket
  */
 export const ticketsMapAtom = atom<Map<string, Ticket>>(new Map());
-
-/**
- * 현재 사용자 ID atom (실제 앱에서는 인증 시스템에서 가져옴)
- */
-export const currentUserIdAtom = atom<string>('user_current');
 
 // ============= 파생 Atoms (읽기 전용) =============
 
@@ -41,27 +71,40 @@ export const ticketsCountAtom = atom<number>((get) => {
 });
 
 /**
- * 공개 티켓만 필터링
+ * 상태별 티켓 필터링 (통합 및 최적화)
  */
-export const publicTicketsAtom = atom<Ticket[]>((get) => {
+export const createTicketsByStatusAtom = (status: TicketStatus) => atom<Ticket[]>((get) => {
   const tickets = get(ticketsAtom);
-  return tickets.filter(ticket => ticket.status === TicketStatus.PUBLIC);
+  return filterTicketsByStatus(tickets, status);
 });
 
 /**
- * 비공개 티켓만 필터링
+ * 공개 티켓 atom (기존 호환성 유지)
  */
-export const privateTicketsAtom = atom<Ticket[]>((get) => {
-  const tickets = get(ticketsAtom);
-  return tickets.filter(ticket => ticket.status === TicketStatus.PRIVATE);
+export const publicTicketsAtom = createTicketsByStatusAtom(TicketStatus.PUBLIC);
+
+/**
+ * 비공개 티켓 atom (기존 호환성 유지)
+ */
+export const privateTicketsAtom = createTicketsByStatusAtom(TicketStatus.PRIVATE);
+
+/**
+ * 필터 옵션 atom
+ */
+export const ticketFilterOptionsAtom = atom<TicketFilterOptions>({
+  status: undefined,
+  category: undefined,
+  dateRange: undefined,
+  searchText: undefined,
 });
 
 /**
- * 필터링된 티켓 목록
+ * 필터링된 티켓 목록 (최적화된 버전)
  */
 export const filteredTicketsAtom = atom<Ticket[]>((get) => {
-  // 기본적으로 모든 티켓 반환 (필터 옵션은 별도 atom으로 관리)
-  return get(ticketsAtom);
+  const tickets = get(ticketsAtom);
+  const filterOptions = get(ticketFilterOptionsAtom);
+  return applyTicketFilters(tickets, filterOptions);
 });
 
 /**
@@ -75,251 +118,222 @@ export const getTicketByIdAtom = atom<(id: string) => Ticket | undefined>((get) 
 // ============= 쓰기 Atoms (액션) =============
 
 /**
- * 새 티켓 추가 (유효성 검증 포함)
+ * 새 티켓 추가 (리팩토링된 버전)
+ * 공통 에러 핸들링, 통합 검증, 최적화된 Map 업데이트 적용
  */
 export const addTicketAtom = atom(
   null,
   (get, set, ticketData: CreateTicketData): Result<Ticket> => {
-    try {
-      // 유효성 검증
-      const titleError = TicketValidator.validateTitle(ticketData.title);
-      if (titleError) return ResultFactory.failure(titleError);
+    return withErrorHandling(() => {
+      // 통합 유효성 검증
+      const validationError = validateTicketData(ticketData);
+      if (validationError) throw validationError;
 
-      const dateError = TicketValidator.validatePerformedAt(ticketData.performedAt);
-      if (dateError) return ResultFactory.failure(dateError);
-
-      const statusError = TicketValidator.validateStatus(ticketData.status);
-      if (statusError) return ResultFactory.failure(statusError);
-
+      // 리뷰 텍스트 검증
       if (ticketData.review?.reviewText) {
-        const reviewError = TicketValidator.validateReviewText(ticketData.review.reviewText);
-        if (reviewError) return ResultFactory.failure(reviewError);
+        const reviewError = validateReviewText(ticketData.review.reviewText);
+        if (reviewError) throw reviewError;
       }
 
-      // 현재 티켓 수 제한 확인
+      // 티켓 수 제한 확인
       const currentCount = get(ticketsCountAtom);
-      if (currentCount >= CONSTANTS.LIMITS.MAX_TICKETS_PER_USER) {
-        return ResultFactory.failure(
-          ErrorFactory.validation(`최대 ${CONSTANTS.LIMITS.MAX_TICKETS_PER_USER}개의 티켓만 생성할 수 있습니다`)
-        );
-      }
+      const limitError = validateTicketLimits(currentCount);
+      if (limitError) throw limitError;
 
+      // 새 티켓 생성 (팩토리 함수 사용)
       const currentUserId = get(currentUserIdAtom);
-      const now = new Date();
-      
-      // 새 티켓 생성
-      const newTicket: Ticket = {
-        id: IdGenerator.ticket(),
-        userId: currentUserId,
-        createdAt: now,
-        updatedAt: now,
-        ...ticketData,
-        review: ticketData.review ? {
-          ...ticketData.review,
-          createdAt: now,
-        } : undefined,
-        images: ticketData.images ? [...ticketData.images] : undefined,
-      };
+      const newTicket = createNewTicket(ticketData, currentUserId);
 
-      // Map에 추가
+      // 최적화된 Map 업데이트
       const currentMap = get(ticketsMapAtom);
-      const newMap = new Map(currentMap);
-      newMap.set(newTicket.id, newTicket);
+      const newMap = optimizedMapUpdate(currentMap, newTicket.id, newTicket);
       set(ticketsMapAtom, newMap);
 
-      return ResultFactory.success(newTicket);
-    } catch (error) {
-      return ResultFactory.failure(
-        ErrorFactory.unknown(error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다')
-      );
-    }
+      return newTicket;
+    }, '티켓 추가 중 오류가 발생했습니다')();
   }
 );
 
 /**
- * 기존 티켓 수정 (유효성 검증 포함)
+ * 기존 티켓 수정 (리팩토링된 버전)
+ * 공통 에러 핸들링, 통합 검증, 최적화된 Map 업데이트 적용
  */
 export const updateTicketAtom = atom(
   null,
   (get, set, ticketId: string, updateData: UpdateTicketData): Result<Ticket> => {
-    try {
+    return withErrorHandling(() => {
       const currentMap = get(ticketsMapAtom);
       const existingTicket = currentMap.get(ticketId);
       
       if (!existingTicket) {
-        return ResultFactory.failure(ErrorFactory.notFound('티켓', ticketId));
+        throw new Error(`티켓을 찾을 수 없습니다: ${ticketId}`);
       }
 
-      // 권한 확인 (본인 티켓만 수정 가능)
+      // 권한 확인 (공통 헬퍼 사용)
       const currentUserId = get(currentUserIdAtom);
-      if (existingTicket.userId !== currentUserId) {
-        return ResultFactory.failure(ErrorFactory.permissionDenied('티켓 수정'));
-      }
+      const ownershipError = validateOwnership(existingTicket.userId, currentUserId, '티켓 수정');
+      if (ownershipError) throw ownershipError;
 
-      // 유효성 검증
-      if (updateData.title !== undefined) {
-        const titleError = TicketValidator.validateTitle(updateData.title);
-        if (titleError) return ResultFactory.failure(titleError);
-      }
+      // 통합 유효성 검증
+      const validationError = validateTicketData(updateData, true);
+      if (validationError) throw validationError;
 
-      if (updateData.performedAt !== undefined) {
-        const dateError = TicketValidator.validatePerformedAt(updateData.performedAt);
-        if (dateError) return ResultFactory.failure(dateError);
-      }
-
-      if (updateData.status !== undefined) {
-        const statusError = TicketValidator.validateStatus(updateData.status);
-        if (statusError) return ResultFactory.failure(statusError);
-      }
-
+      // 리뷰 텍스트 검증
       if (updateData.review?.reviewText) {
-        const reviewError = TicketValidator.validateReviewText(updateData.review.reviewText);
-        if (reviewError) return ResultFactory.failure(reviewError);
+        const reviewError = validateReviewText(updateData.review.reviewText);
+        if (reviewError) throw reviewError;
       }
 
-      // 업데이트된 티켓 생성
-      const updatedTicket: Ticket = {
-        ...existingTicket,
-        ...updateData,
-        updatedAt: new Date(),
-        review: updateData.review ? {
-          ...existingTicket.review,
-          ...updateData.review,
-          updatedAt: new Date(),
-        } : existingTicket.review,
-      };
+      // 업데이트된 티켓 생성 (팩토리 함수 사용)
+      const updatedTicket = createUpdatedTicket(existingTicket, updateData);
 
-      // Map 업데이트
-      const newMap = new Map(currentMap);
-      newMap.set(ticketId, updatedTicket);
+      // 최적화된 Map 업데이트
+      const newMap = optimizedMapUpdate(currentMap, ticketId, updatedTicket);
       set(ticketsMapAtom, newMap);
 
-      return ResultFactory.success(updatedTicket);
-    } catch (error) {
-      return ResultFactory.failure(
-        ErrorFactory.unknown(error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다')
-      );
-    }
+      return updatedTicket;
+    }, '티켓 수정 중 오류가 발생했습니다')();
   }
 );
 
 /**
- * 티켓 삭제 (권한 확인 포함)
+ * 티켓 삭제 (리팩토링된 버전)
+ * 공통 에러 핸들링, 권한 검증, 최적화된 Map 업데이트 적용
  */
 export const deleteTicketAtom = atom(
   null,
   (get, set, ticketId: string): Result<boolean> => {
-    try {
+    return withErrorHandling(() => {
       const currentMap = get(ticketsMapAtom);
       const existingTicket = currentMap.get(ticketId);
       
       if (!existingTicket) {
-        return ResultFactory.failure(ErrorFactory.notFound('티켓', ticketId));
+        throw new Error(`티켓을 찾을 수 없습니다: ${ticketId}`);
       }
 
-      // 권한 확인 (본인 티켓만 삭제 가능)
+      // 권한 확인 (공통 헬퍼 사용)
       const currentUserId = get(currentUserIdAtom);
-      if (existingTicket.userId !== currentUserId) {
-        return ResultFactory.failure(ErrorFactory.permissionDenied('티켓 삭제'));
-      }
+      const ownershipError = validateOwnership(existingTicket.userId, currentUserId, '티켓 삭제');
+      if (ownershipError) throw ownershipError;
 
-      // Map에서 제거
-      const newMap = new Map(currentMap);
-      newMap.delete(ticketId);
+      // 최적화된 Map 삭제
+      const { newMap } = optimizedMapBulkDelete(currentMap, [ticketId]);
       set(ticketsMapAtom, newMap);
 
-      return ResultFactory.success(true);
-    } catch (error) {
-      return ResultFactory.failure(
-        ErrorFactory.unknown(error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다')
-      );
-    }
+      return true;
+    }, '티켓 삭제 중 오류가 발생했습니다')();
   }
 );
 
 /**
- * 여러 티켓 일괄 삭제
+ * 여러 티켓 일괄 삭제 (개선된 버전)
+ * 상세한 실패 정보와 함께 결과 반환
  */
 export const bulkDeleteTicketsAtom = atom(
   null,
-  (get, set, ticketIds: string[]): Result<number> => {
-    try {
+  (get, set, ticketIds: string[]): Result<BulkDeleteResult> => {
+    return withErrorHandling(() => {
       const currentMap = get(ticketsMapAtom);
       const currentUserId = get(currentUserIdAtom);
-      const newMap = new Map(currentMap);
-      let deletedCount = 0;
-
-      for (const ticketId of ticketIds) {
-        const ticket = currentMap.get(ticketId);
-        if (ticket && ticket.userId === currentUserId) {
-          newMap.delete(ticketId);
-          deletedCount++;
-        }
+      
+      // 삭제 처리 및 결과 분석
+      const result = processBulkDelete(currentMap, ticketIds, currentUserId);
+      
+      // 실제로 삭제할 ID들만 Map에서 제거
+      if (result.deletedIds.length > 0) {
+        const { newMap } = optimizedMapBulkDelete(currentMap, result.deletedIds);
+        set(ticketsMapAtom, newMap);
       }
 
-      set(ticketsMapAtom, newMap);
-      return ResultFactory.success(deletedCount);
-    } catch (error) {
-      return ResultFactory.failure(
-        ErrorFactory.unknown(error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다')
-      );
-    }
+      return result;
+    }, '일괄 삭제 중 오류가 발생했습니다')();
   }
 );
+
+// ============= 추가 파생 Atoms =============
+
+/**
+ * 최근 티켓 (7일 이내)
+ */
+export const recentTicketsAtom = atom<Ticket[]>((get) => {
+  const tickets = get(ticketsAtom);
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  
+  return tickets.filter(ticket => ticket.createdAt >= sevenDaysAgo);
+});
+
+/**
+ * 리뷰가 있는 티켓만
+ */
+export const ticketsWithReviewsAtom = atom<Ticket[]>((get) => {
+  const tickets = get(ticketsAtom);
+  return tickets.filter(ticket => ticket.review?.reviewText);
+});
+
+/**
+ * 이미지가 있는 티켓만
+ */
+export const ticketsWithImagesAtom = atom<Ticket[]>((get) => {
+  const tickets = get(ticketsAtom);
+  return tickets.filter(ticket => ticket.images && ticket.images.length > 0);
+});
 
 // ============= 유틸리티 Atoms =============
 
 /**
- * 티켓 필터링 (검색, 카테고리, 날짜 범위 등)
+ * 동적 필터링 atom 생성 함수 (최적화된 버전)
+ * 통합 필터링 로직 사용
  */
 export const createFilteredTicketsAtom = (filterOptions: TicketFilterOptions) => atom<Ticket[]>((get) => {
-  let tickets = get(ticketsAtom);
-
-  // 상태 필터
-  if (filterOptions.status) {
-    tickets = tickets.filter(ticket => ticket.status === filterOptions.status);
-  }
-
-  // 카테고리 필터
-  if (filterOptions.category) {
-    tickets = tickets.filter(ticket => ticket.category === filterOptions.category);
-  }
-
-  // 날짜 범위 필터
-  if (filterOptions.dateRange) {
-    const { start, end } = filterOptions.dateRange;
-    tickets = tickets.filter(ticket => {
-      const performedAt = ticket.performedAt;
-      return performedAt >= start && performedAt <= end;
-    });
-  }
-
-  // 텍스트 검색
-  if (filterOptions.searchText) {
-    const searchLower = filterOptions.searchText.toLowerCase();
-    tickets = tickets.filter(ticket => 
-      ticket.title.toLowerCase().includes(searchLower) ||
-      ticket.artist?.toLowerCase().includes(searchLower) ||
-      ticket.place?.toLowerCase().includes(searchLower)
-    );
-  }
-
-  return tickets;
+  const tickets = get(ticketsAtom);
+  return applyTicketFilters(tickets, filterOptions);
 });
 
 /**
- * 티켓 통계 정보
+ * 필터 옵션 업데이트 atom
+ */
+export const updateFilterOptionsAtom = atom(
+  null,
+  (get, set, newOptions: Partial<TicketFilterOptions>): void => {
+    const currentOptions = get(ticketFilterOptionsAtom);
+    set(ticketFilterOptionsAtom, { ...currentOptions, ...newOptions });
+  }
+);
+
+/**
+ * 티켓 통계 정보 (최적화된 버전)
+ * 통합 계산 함수 사용으로 성능 향상
  */
 export const ticketStatsAtom = atom((get) => {
   const tickets = get(ticketsAtom);
-  const publicCount = tickets.filter(t => t.status === TicketStatus.PUBLIC).length;
-  const privateCount = tickets.filter(t => t.status === TicketStatus.PRIVATE).length;
-  
-  return {
-    total: tickets.length,
-    public: publicCount,
-    private: privateCount,
-    withReviews: tickets.filter(t => t.review?.reviewText).length,
-    withImages: tickets.filter(t => t.images && t.images.length > 0).length,
-  };
+  return calculateTicketStats(tickets);
 });
+
+// ============= 유틸리티 Atoms =============
+
+/**
+ * 모든 필터 초기화
+ */
+export const resetFiltersAtom = atom(
+  null,
+  (get, set): void => {
+    set(ticketFilterOptionsAtom, {
+      status: undefined,
+      category: undefined,
+      dateRange: undefined,
+      searchText: undefined,
+    });
+  }
+);
+
+/**
+ * 티켓 검색 atom
+ */
+export const searchTicketsAtom = atom(
+  null,
+  (get, set, searchText: string): void => {
+    const currentOptions = get(ticketFilterOptionsAtom);
+    set(ticketFilterOptionsAtom, { ...currentOptions, searchText });
+  }
+);
