@@ -179,7 +179,7 @@ function App(): React.JSX.Element {
         />
         <Stack.Screen
           name="AddReview"
-          component={AddReviewPage}
+          component={AddReviewPage as any}
           options={{
             presentation: 'modal',
           }}
@@ -236,7 +236,7 @@ function App(): React.JSX.Element {
         />
         <Stack.Screen
           name="FriendProfile"
-          component={FriendProfilePage}
+          component={FriendProfilePage as any}
           options={{
             presentation: 'modal',
           }}

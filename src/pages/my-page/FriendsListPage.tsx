@@ -10,44 +10,21 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAtom } from 'jotai';
-import { friendsAtom } from '../../atoms/friendsAtoms';
-
-interface Friend {
-  id: string;
-  name: string;
-  username: string;
-  avatar: string;
-}
-
-interface FriendRequest {
-  id: string;
-  name: string;
-  username: string;
-  avatar: string;
-}
+import { friendsMapAtom, removeFriendAtom, friendRequestsMapAtom, respondToFriendRequestAtom } from '../../atoms';
+import { Friend, FriendRequest } from '../../types/friend';
 
 interface FriendsListPageProps {
   navigation: any;
 }
 
 const FriendsListPage: React.FC<FriendsListPageProps> = ({ navigation }) => {
-  const [friends, setFriends] = useAtom(friendsAtom);
-
-  // 더미 친구 요청 데이터
-  const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([
-    {
-      id: 'r1',
-      name: 'Alice',
-      username: '@alice',
-      avatar: 'https://i.pravatar.cc/50?img=1',
-    },
-    {
-      id: 'r2',
-      name: 'Bob',
-      username: '@bob',
-      avatar: 'https://i.pravatar.cc/50?img=2',
-    },
-  ]);
+  const [friendsMap] = useAtom(friendsMapAtom);
+  const [, removeFriend] = useAtom(removeFriendAtom);
+  const [friendRequestsMap] = useAtom(friendRequestsMapAtom);
+  const [, respondToRequest] = useAtom(respondToFriendRequestAtom);
+  
+  const friends = Array.from(friendsMap.values());
+  const friendRequests = Array.from(friendRequestsMap.values());
 
   const friendRequestsCount = friendRequests.length;
   const friendsCount = friends.length;
@@ -59,28 +36,19 @@ const FriendsListPage: React.FC<FriendsListPageProps> = ({ navigation }) => {
       {
         text: '삭제',
         style: 'destructive',
-        onPress: () => setFriends(friends.filter(f => f.id !== friendId)),
+        onPress: () => removeFriend(friendId),
       },
     ]);
   };
 
   // 친구 요청 수락
   const handleAcceptRequest = (request: FriendRequest) => {
-    setFriends([
-      ...friends,
-      {
-        id: request.id,
-        name: request.name,
-        username: request.username,
-        avatar: request.avatar,
-      },
-    ]);
-    setFriendRequests(friendRequests.filter(r => r.id !== request.id));
+    respondToRequest({ requestId: request.id, accept: true });
   };
 
   // 친구 요청 거절
   const handleRejectRequest = (requestId: string) => {
-    setFriendRequests(friendRequests.filter(r => r.id !== requestId));
+    respondToRequest({ requestId, accept: false });
   };
 
   return (

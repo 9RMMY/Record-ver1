@@ -12,7 +12,7 @@ import {
   Modal,
 } from 'react-native';
 import { useAtom } from 'jotai';
-import { addTicketAtom } from '../../atoms/ticketAtoms';
+import { addTicketAtom, TicketStatus, CreateTicketData } from '../../atoms';
 import { Ticket } from '../../types/ticket';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
@@ -35,13 +35,20 @@ const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation, route }) => {
   const fromEmptyState = route?.params?.fromEmptyState || false;
   const fromAddButton = route?.params?.fromAddButton || false;
 
-  const [formData, setFormData] = useState<Omit<Ticket, 'id' | 'updatedAt' | 'status'>>({
+  // 공연 시간 초기값을 오늘 오후 7시로 설정
+  const getDefaultPerformanceTime = () => {
+    const defaultDate = new Date();
+    defaultDate.setHours(19, 0, 0, 0); // 오후 7시로 설정
+    return defaultDate;
+  };
+
+  const [formData, setFormData] = useState<CreateTicketData>({
     title: '',
     artist: '',
     place: '',
-    performedAt: new Date(),
+    performedAt: getDefaultPerformanceTime(),
     bookingSite: '',
-    createdAt: new Date(),
+    status: TicketStatus.PUBLIC,
   });
 
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -97,7 +104,7 @@ const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation, route }) => {
       place: '',
       performedAt: new Date(),
       bookingSite: '',
-      createdAt: new Date(),
+      status: TicketStatus.PUBLIC,
     });
   };
 

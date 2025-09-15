@@ -32,7 +32,7 @@ const PersonalInfoEditPage: React.FC<PersonalInfoEditPageProps> = ({ navigation 
   // 컴포넌트가 사라지면 이 값들도 없어짐
 
   //현재 프로필 이미지의 경로
-  const [profileImage, setProfileImage] = useState<string | null>(userProfile.profileImage);
+  const [profileImage, setProfileImage] = useState<string | null>(userProfile.profileImage || null);
   //사용자 닉네임
   const [name, setName] = useState(userProfile.name);
   //사용자 아이디
@@ -97,11 +97,13 @@ const PersonalInfoEditPage: React.FC<PersonalInfoEditPageProps> = ({ navigation 
 
     // props로 전송
     setUserProfile({
-      profileImage,
+      ...userProfile,
+      profileImage: profileImage || undefined,
       name: name.trim(),
       userId,
       email,
       isAccountPrivate,
+      updatedAt: new Date(),
     });
 
     Alert.alert(

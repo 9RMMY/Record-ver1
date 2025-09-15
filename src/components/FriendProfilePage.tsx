@@ -15,9 +15,11 @@ import TicketDetailModal from './TicketDetailModal';
 import CustomCalendar from './CustomCalendar';
 import EventsList from './EventsList';
 import TicketGrid from './TicketGrid';
+import { Friend } from '../types/friend';
 import { Ticket } from '../types/ticket';
+import { FriendProfileScreenProps } from '../types/navigation';
 import { useAtom } from 'jotai';
-import { friendTicketsAtom } from '../atoms/friendsAtoms';
+import { friendTicketsAtom, TicketStatus } from '../atoms';
 import { isPlaceholderTicket } from '../utils/isPlaceholder';
 
 // ================== 더미 티켓 ==================
@@ -26,28 +28,34 @@ const dummyTickets: Ticket[] = [
     id: 'dummy-1',
     title: '콘서트 - 인디 밴드 라이브',
     performedAt: new Date('2025-09-10T19:00:00'),
-    status: '공개',
+    status: TicketStatus.PUBLIC,
     place: '홍대 롤링홀',
     artist: '라쿠나',
+    userId: 'friend_1',
     createdAt: new Date('2025-08-01T10:00:00'),
+    updatedAt: new Date('2025-08-01T10:00:00'),
   },
   {
     id: 'dummy-2',
     title: '뮤지컬 - 캣츠',
     performedAt: new Date('2025-09-12T14:00:00'),
-    status: '공개',
+    status: TicketStatus.PUBLIC,
     place: '블루스퀘어 인터파크홀',
     artist: '뮤지컬 배우들',
+    userId: 'friend_1',
     createdAt: new Date('2025-08-05T10:00:00'),
+    updatedAt: new Date('2025-08-05T10:00:00'),
   },
   {
     id: 'dummy-3',
     title: '오페라 - 라 보엠',
     performedAt: new Date('2025-09-18T19:30:00'),
-    status: '공개',
+    status: TicketStatus.PUBLIC,
     place: '예술의전당 오페라극장',
     artist: '친구와 함께',
+    userId: 'friend_2',
     createdAt: new Date('2025-08-10T10:00:00'),
+    updatedAt: new Date('2025-08-10T10:00:00'),
   },
 ];
 
@@ -80,20 +88,6 @@ const performanceData: PerformanceData = {
   },
 };
 
-// ================== 네비게이션 타입 ==================
-type RootStackParamList = {
-  FriendProfile: {
-    friend: {
-      id: string;
-      name: string;
-      username: string;
-      avatar: string;
-    };
-  };
-};
-
-type Props = NativeStackScreenProps<RootStackParamList, 'FriendProfile'>;
-
 // ================== 퍼포먼스 → 티켓 변환 함수 ==================
 const convertToTicket = (
   date: string,
@@ -107,16 +101,18 @@ const convertToTicket = (
     id: `friend-${date}`,
     title: performance.title,
     performedAt,
-    status: '공개',
+    status: TicketStatus.PUBLIC,
     place: performance.location,
     artist: '친구와 함께',
+    userId: 'friend_current',
     createdAt: new Date(),
+    updatedAt: new Date(),
   };
 };
 
 const { width } = Dimensions.get('window');
 
-const FriendProfilePage: React.FC<Props> = ({ navigation, route }) => {
+const FriendProfilePage: React.FC<FriendProfileScreenProps> = ({ navigation, route }) => {
   const { friend } = route.params;
   const [allFriendTicketsData] = useAtom(friendTicketsAtom);
   const [selectedDate, setSelectedDate] = React.useState(

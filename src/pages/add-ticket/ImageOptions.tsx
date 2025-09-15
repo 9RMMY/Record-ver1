@@ -22,13 +22,14 @@ import {
   Asset,
 } from 'react-native-image-picker';
 import { useAtom } from 'jotai';
-import { addTicketAtom } from '../../atoms/ticketAtoms';
+import { addTicketAtom, TicketStatus } from '../../atoms';
 import { 
   ImageOptionsScreenNavigationProp,
   ImageOptionsRouteProp,
   TicketData,
   ReviewData
 } from '../../types/reviewTypes';
+import { Ticket, CreateTicketData } from '../../types/ticket';
 
 // Types are now imported from reviewTypes
 

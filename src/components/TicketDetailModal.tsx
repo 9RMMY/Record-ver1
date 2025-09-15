@@ -22,7 +22,7 @@ import {
 } from 'react-native';
 import { Ticket } from '../types/ticket';
 import { useAtom } from 'jotai';
-import { deleteTicketAtom } from '../atoms/ticketAtoms';
+import { deleteTicketAtom, TicketStatus } from '../atoms';
 import { TicketDetailModalProps } from '../types/componentProps';
 
 // 화면 너비 가져오기
@@ -47,8 +47,8 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
   const hintOpacity = useRef(new Animated.Value(1)).current;
 
   // 공개/비공개 상태에 따른 색상 반환
-  const getStatusColor = (status: '공개' | '비공개') =>
-    status === '공개' ? '#4ECDC4' : '#FF6B6B';
+  const getStatusColor = (status: TicketStatus) =>
+    status === TicketStatus.PUBLIC ? '#4ECDC4' : '#FF6B6B';
 
   // 모달이 열리거나 카드를 뒤집을 때 힌트 페이드 인/아웃 효과
   useEffect(() => {

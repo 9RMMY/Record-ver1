@@ -11,7 +11,7 @@ import {
   Modal,
 } from 'react-native';
 import { useAtom } from 'jotai';
-import { addTicketAtom } from '../../atoms/ticketAtoms';
+import { addTicketAtom, TicketStatus, CreateTicketData } from '../../atoms';
 import { Ticket } from '../../types/ticket';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -43,13 +43,13 @@ const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation, route }) => {
     return defaultDate;
   };
 
-  const [formData, setFormData] = useState<Omit<Ticket, 'id' | 'updatedAt' | 'status'>>({
+  const [formData, setFormData] = useState<CreateTicketData>({
     title: '',
     artist: '',
     place: '',
     performedAt: getDefaultPerformanceTime(),
     bookingSite: '',
-    createdAt: new Date(),
+    status: TicketStatus.PUBLIC,
   });
 
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -108,7 +108,7 @@ const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation, route }) => {
       place: '',
       performedAt: getDefaultPerformanceTime(),
       bookingSite: '',
-      createdAt: new Date(),
+      status: TicketStatus.PUBLIC,
     });
   };
 

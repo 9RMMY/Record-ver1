@@ -17,7 +17,7 @@ import {
 } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useAtom } from 'jotai';
-import { addTicketAtom } from '../../atoms/ticketAtoms';
+import { addTicketAtom, TicketStatus } from '../../atoms';
 import { 
   ReviewOptionsScreenNavigationProp,
   ReviewOptionsRouteProp,

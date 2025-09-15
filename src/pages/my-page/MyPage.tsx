@@ -19,12 +19,12 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 import { useAtom } from 'jotai';
-import { ticketsAtom } from '../../atoms/ticketAtoms';
+import { ticketsAtom } from '../../atoms';
 import { Ticket } from '../../types/ticket';
 import { isPlaceholderTicket } from '../../utils/isPlaceholder';
 import TicketDetailModal from '../../components/TicketDetailModal';
 import TicketGrid from '../../components/TicketGrid';
-import { friendsAtom } from '../../atoms/friendsAtoms';
+import { friendsMapAtom } from '../../atoms';
 import { Colors, Typography, Spacing, BorderRadius, Shadows, ComponentStyles } from '../../styles/designSystem';
 
 // 마이 페이지 Props 타입 정의
@@ -37,7 +37,8 @@ const HEADER_HEIGHT = 80;
 
 const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
   const [tickets] = useAtom(ticketsAtom); // 전체 티켓 목록
-  const [friends] = useAtom(friendsAtom); // 친구 목록
+  const [friendsMap] = useAtom(friendsMapAtom); // 친구 목록
+  const friends = Array.from(friendsMap.values());
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null); // 선택된 티켓
   const [modalVisible, setModalVisible] = useState(false); // 모달 표시 여부
   const insets = useSafeAreaInsets();

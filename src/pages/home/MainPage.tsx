@@ -19,7 +19,7 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 import { useAtom } from 'jotai';
-import { ticketsAtom } from '../../atoms/ticketAtoms';
+import { ticketsAtom, TicketStatus } from '../../atoms';
 import { Ticket } from '../../types/ticket';
 import TicketDetailModal from '../../components/TicketDetailModal';
 import { isPlaceholderTicket } from '../../utils/isPlaceholder';
@@ -156,11 +156,13 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
             place: '',
             performedAt: undefined as any,
             bookingSite: '',
-            status: '공개' as const,
+            status: TicketStatus.PUBLIC,
+            userId: 'placeholder',
             images: [],
             review: undefined,
             createdAt: new Date(),
             updatedAt: new Date(),
+            isPlaceholder: true,
           },
         ];
 
