@@ -1,3 +1,8 @@
+/**
+ * 메인 페이지 - 홈 화면
+ * 현재 월의 티켓을 카드 형태로 보여주는 메인 화면
+ * 좌우 스와이프로 티켓 간 이동 가능
+ */
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
@@ -20,10 +25,12 @@ import TicketDetailModal from '../../components/TicketDetailModal';
 import { isPlaceholderTicket } from '../../utils/isPlaceholder';
 import { Colors, Typography, Spacing, BorderRadius, Shadows, ComponentStyles } from '../../styles/designSystem';
 
+// 메인 페이지 Props 타입 정의
 interface MainPageProps {
   navigation: any;
 }
 
+// 화면 너비 가져오기
 const { width } = Dimensions.get('window');
 
 const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
@@ -37,11 +44,11 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [currentTicketIndex, setCurrentTicketIndex] = useState(0);
 
-  // 애니메이션 값들
+  // 카드 스와이프 애니메이션을 위한 값들
   const pan = useRef(new Animated.ValueXY()).current;
   const opacity = useRef(new Animated.Value(1)).current;
 
-  // 카드 위치 리셋 함수
+  // 카드를 원래 위치로 되돌리는 함수
   const resetCardPosition = () => {
     Animated.parallel([
       Animated.spring(pan, {
@@ -57,7 +64,7 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
     ]).start();
   };
 
-  // 바운스 효과
+  // 스와이프 한계에 도달했을 때 바운스 효과 생성
   const createBounceEffect = (direction: 'left' | 'right') => {
     const bounceDistance = direction === 'left' ? -30 : 30;
 
@@ -76,22 +83,26 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
     ]).start();
   };
 
+  // 티켓 카드 클릭 시 상세 모달 열기
   const handleTicketPress = (ticket: Ticket) => {
     if (!ticket.id || !ticket.performedAt) return;
     setSelectedTicket(ticket);
     setModalVisible(true);
   };
 
+  // 티켓 상세 모달 닫기
   const handleCloseModal = () => {
     setModalVisible(false);
     setSelectedTicket(null);
   };
 
+  // 현재 월을 한국어 형식으로 반환
   const getCurrentMonth = () => {
     const now = new Date();
     return `${now.getMonth() + 1}월`;
   };
 
+  // 날짜를 한국어 형식으로 포맷팅
   const formatDate = (date?: Date) => {
     if (!date) return '';
     const month = date.getMonth() + 1;
@@ -99,6 +110,7 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
     return `${month}월 ${day}일`;
   };
 
+  // 필터 선택 처리
   const handleFilterSelect = (filter: '밴드' | '연극/뮤지컬') => {
     setSelectedFilter(filter);
     setShowFilterDropdown(false);
@@ -114,10 +126,10 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
     return now.getFullYear();
   };
 
-  // 실제 티켓만 필터링 (placeholder 제외)
+  // 실제 티켓만 필터링 (빈 카드 제외)
   const realTickets = tickets.filter(ticket => !isPlaceholderTicket(ticket));
 
-  // 현재 월의 티켓만 필터링
+  // 현재 월의 티켓만 필터링하고 날짜순 정렬
   const currentMonthTickets = realTickets
     .filter(ticket => {
       const ticketDate = new Date(ticket.performedAt);
@@ -132,7 +144,7 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
       );
     });
 
-  // 표시할 티켓들 (현재 월 티켓이 없으면 placeholder 하나만)
+  // 화면에 표시할 티켓들 (현재 월 티켓이 없으면 빈 카드 표시)
   const displayTickets: Ticket[] =
     currentMonthTickets.length > 0
       ? currentMonthTickets
@@ -158,6 +170,7 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
     currentTicketIndexRef.current = currentTicketIndex;
   }, [currentTicketIndex]);
 
+  // 카드 스와이프 제스처 처리
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -168,11 +181,13 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
         pan.setValue({ x: gestureState.dx, y: 0 });
       },
       onPanResponderRelease: (_, gestureState) => {
+        // 스와이프 임계값 설정
         const swipeThreshold = 80;
         const velocityThreshold = 0.3;
         const totalCards = displayTickets.length;
         const currentIndex = currentTicketIndexRef.current;
 
+        // 스와이프 방향 판단
         const shouldSwipeRight =
           gestureState.dx > swipeThreshold ||
           (gestureState.dx > 30 && gestureState.vx > velocityThreshold);
@@ -180,45 +195,49 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
           gestureState.dx < -swipeThreshold ||
           (gestureState.dx < -30 && gestureState.vx < -velocityThreshold);
 
+        // 스와이프 방향에 따른 카드 이동 처리
         if (shouldSwipeRight) {
           if (currentIndex === 0) {
-            createBounceEffect('left');
+            createBounceEffect('left'); // 첫 번째 카드에서 더 이상 이동 불가
           } else {
             setCurrentTicketIndex(currentIndex - 1);
             resetCardPosition();
           }
         } else if (shouldSwipeLeft) {
           if (currentIndex === totalCards - 1) {
-            createBounceEffect('right');
+            createBounceEffect('right'); // 마지막 카드에서 더 이상 이동 불가
           } else {
             setCurrentTicketIndex(currentIndex + 1);
             resetCardPosition();
           }
         } else {
-          resetCardPosition();
+          resetCardPosition(); // 스와이프 임계값에 도달하지 않으면 원위치
         }
       },
     }),
   ).current;
 
+  // 티켓 목록이 변경되었을 때 인덱스 조정
   useEffect(() => {
     if (currentTicketIndex >= displayTickets.length) {
       setCurrentTicketIndex(0);
     }
   }, [displayTickets.length, currentTicketIndex]);
 
+  // 필터 변경 시 첫 번째 카드로 이동
   useEffect(() => {
     setCurrentTicketIndex(0);
     resetCardPosition();
   }, [selectedFilter]);
 
+  // 현재 표시할 티켓과 빈 카드 여부 확인
   const currentTicket = displayTickets[currentTicketIndex] || displayTickets[0];
   const isPlaceholder = isPlaceholderTicket(currentTicket);
 
   return (
     <View style={[styles.container, { paddingBottom: insets.bottom }]}>
       <SafeAreaView style={styles.safeArea} edges={['top']}>
-        {/* Header */}
+        {/* 상단 헤더 - 앱 제목과 필터 */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Re:cord</Text>
           <View style={styles.headerRight}>
@@ -273,7 +292,7 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Sub Header */}
+        {/* 서브 헤더 - 월별 제목과 설명 */}
         <View style={styles.subHeader}>
           <Text style={styles.monthTitle}>
             {getCurrentMonth()}에 관람한 공연
@@ -283,9 +302,10 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
           </Text>
         </View>
 
-        {/* Main Content */}
+        {/* 메인 콘텐츠 - 티켓 카드 영역 */}
         <View style={styles.contentContainer}>
           <View style={styles.cardContainer}>
+            {/* 페이지 인디케이터 - 여러 티켓이 있을 때만 표시 */}
             {displayTickets.length > 1 && !isPlaceholder && (
               <View style={styles.indicatorContainer}>
                 <Text style={styles.indicatorText}>
@@ -317,6 +337,7 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
                 onPress={() => handleTicketPress(currentTicket)}
                 activeOpacity={isPlaceholder ? 1 : 0.7}
               >
+                {/* 티켓 이미지 또는 플레이스홀더 */}
                 {currentTicket.images && currentTicket.images.length > 0 ? (
                   <Image
                     source={{ uri: currentTicket.images[0] }}
@@ -334,6 +355,7 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
               </TouchableOpacity>
             </Animated.View>
 
+            {/* 공연 날짜 버튼 - 실제 티켓일 때만 표시 */}
             {!isPlaceholder && currentTicket.performedAt && (
               <View style={styles.dateButtonContainer}>
                 <TouchableOpacity style={styles.dateButton}>
@@ -346,6 +368,7 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
           </View>
         </View>
 
+        {/* 티켓 상세 모달 */}
         {selectedTicket && (
           <TicketDetailModal
             visible={modalVisible}

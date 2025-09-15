@@ -14,8 +14,7 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import {
   launchImageLibrary,
   launchCamera,
@@ -24,21 +23,17 @@ import {
 } from 'react-native-image-picker';
 import { useAtom } from 'jotai';
 import { addTicketAtom } from '../../atoms/ticketAtoms';
+import { 
+  ImageOptionsScreenNavigationProp,
+  ImageOptionsRouteProp,
+  TicketData,
+  ReviewData
+} from '../../types/reviewTypes';
 
-type RootStackParamList = {
-  ImageOptions: { ticketData: any; reviewData: any };
-  AIImageSettings: { ticketData: any; reviewData: any; images?: string[] };
-  TicketComplete: { ticketData: any; reviewData: any; images?: string[] };
-};
-
-type ImageOptionsNavigationProp = StackNavigationProp<
-  RootStackParamList,
-  'ImageOptions'
->;
-type ImageOptionsRouteProp = RouteProp<RootStackParamList, 'ImageOptions'>;
+// Types are now imported from reviewTypes
 
 const ImageOptions = () => {
-  const navigation = useNavigation<ImageOptionsNavigationProp>();
+  const navigation = useNavigation<ImageOptionsScreenNavigationProp>();
   const route = useRoute<ImageOptionsRouteProp>();
   const { ticketData, reviewData } = route.params;
   const [, addTicket] = useAtom(addTicketAtom);
@@ -77,7 +72,7 @@ const ImageOptions = () => {
         if (asset?.uri) {
           navigation.navigate('TicketComplete', {
             ticketData,
-            reviewData,
+            reviewData: { ...reviewData, image: undefined },
             images: [asset.uri],
           });
         }
@@ -137,7 +132,9 @@ const ImageOptions = () => {
     try {
       const ticketToSave = {
         ...ticketData,
-        review: reviewData,
+        review: {
+          reviewText: reviewData.reviewText || reviewData.text || '',
+        },
         createdAt: new Date(),
         images: [], // 빈 배열로 설정
       };

@@ -1,3 +1,8 @@
+/**
+ * 뮤지컬 메인 페이지 - 홈 화면 (뮤지컬 버전)
+ * 티켓을 단일 카드 형태로 보여주는 메인 화면
+ * 스와이프 기능 없이 단순한 카드 표시
+ */
 import React, { useState } from 'react';
 import {
   View,
@@ -17,10 +22,12 @@ import { Ticket } from '../../types/ticket';
 import TicketDetailModal from '../../components/TicketDetailModal';
 import { isPlaceholderTicket } from '../../utils/isPlaceholder';
 
+// 뮤지컬 메인 페이지 Props 타입 정의
 interface MainPageProps {
   navigation: any;
 }
 
+// 화면 너비 가져오기
 const { width } = Dimensions.get('window');
 
 const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
@@ -34,24 +41,26 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [currentTicketIndex, setCurrentTicketIndex] = useState(0);
 
+  // 티켓 카드 클릭 시 상세 모달 열기
   const handleTicketPress = (ticket: Ticket) => {
-    if (!ticket.id || !ticket.performedAt) return; // 빈 카드나 날짜 없는 카드 모달 열리지 않음
+    if (!ticket.id || !ticket.performedAt) return; // 빈 카드나 날짜 없는 카드는 모달 열리지 않음
     setSelectedTicket(ticket);
     setModalVisible(true);
   };
 
+  // 티켓 상세 모달 닫기
   const handleCloseModal = () => {
     setModalVisible(false);
     setSelectedTicket(null);
   };
 
-
-  //날짜 관련 함수
+  // 현재 월을 한국어 형식으로 반환
   const getCurrentMonth = () => {
     const now = new Date();
     return `${now.getMonth() + 1}월`;
   };
 
+  // 날짜를 한국어 형식으로 포맷팅
   const formatDate = (date?: Date) => {
     if (!date) return '';
     const month = date.getMonth() + 1;
@@ -59,19 +68,19 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
     return `${month}월 ${day}일`;
   };
 
-  //밴드, 뮤지컬 분기
+  // 필터 선택 처리 (밴드/뮤지컬 분기)
   const handleFilterSelect = (filter: '밴드' | '연극/뮤지컬') => {
     setSelectedFilter(filter);
     setShowFilterDropdown(false);
   };
 
-  //티켓(변수)
+  // 화면에 표시할 티켓들 (티켓이 없으면 빈 카드 표시)
   const displayTickets: Ticket[] =
-    tickets.length > 0 //티켓이 있으면 그대로 보여짐.
+    tickets.length > 0 // 티켓이 있으면 그대로 표시
       ? tickets
       : [
           {
-            id: '', // 빈 티켓
+            id: '', // 빈 카드 표시용
             title: '',
             artist: '',
             place: '',
@@ -85,6 +94,7 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
           },
         ];
 
+  // 메인 티켓 카드 렌더링 함수
   const renderMainTicket = () => {
     const currentTicket = displayTickets[currentTicketIndex];
     const isPlaceholder = isPlaceholderTicket(currentTicket);
@@ -101,6 +111,7 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
           onPress={() => handleTicketPress(currentTicket)}
           activeOpacity={isPlaceholder ? 1 : 0.7}
         >
+          {/* 티켓 이미지 또는 플레이스홀더 */}
           {currentTicket.images && currentTicket.images.length > 0 ? (
             <Image
               source={{ uri: currentTicket.images[0] }}
@@ -115,7 +126,7 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
           )}
         </TouchableOpacity>
 
-        {/* 날짜 버튼: 날짜 없으면 표시하지 않음 */}
+        {/* 공연 날짜 버튼 - 실제 티켓이고 날짜가 있을 때만 표시 */}
         {!isPlaceholder && currentTicket.performedAt && (
           <View style={styles.dateButtonContainer}>
             <TouchableOpacity style={styles.dateButton}>
@@ -132,7 +143,7 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
   return (
     <View style={[styles.container, { paddingBottom: insets.bottom }]}>
       <SafeAreaView style={styles.safeArea} edges={['top']}>
-        {/* Header */}
+        {/* 상단 헤더 - 앱 제목과 필터 */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Re:cord</Text>
           <View style={styles.headerRight}>
@@ -186,7 +197,7 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Sub Header */}
+        {/* 서브 헤더 - 월별 제목과 설명 */}
         <View style={styles.subHeader}>
           <Text style={styles.monthTitle}>
             {getCurrentMonth()}에 관람한 공연
@@ -196,9 +207,10 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
           </Text>
         </View>
 
-        {/* Main Ticket */}
+        {/* 메인 콘텐츠 - 티켓 카드 영역 */}
         <View style={styles.contentContainer}>{renderMainTicket()}</View>
 
+        {/* 티켓 상세 모달 */}
         {selectedTicket && (
           <TicketDetailModal
             visible={modalVisible}
@@ -313,7 +325,7 @@ const styles = StyleSheet.create({
     borderColor: '#FF3B30',
   },
   disabledCard: {
-    opacity: 0.5, // 비활성화 시 흐리게 표시
+    opacity: 0.5, // 빈 카드일 때 흐리게 표시
   },
   mainTicketImage: { width: '100%', height: '100%', resizeMode: 'cover' },
   mainTicketPlaceholder: {

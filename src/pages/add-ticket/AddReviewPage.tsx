@@ -1,3 +1,8 @@
+/**
+ * 후기 작성 페이지
+ * 텍스트 입력 또는 음성 녹음을 통해 공연 후기를 작성하는 화면
+ * 공개/비공개 설정 및 글자 수 제한 기능 포함
+ */
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -15,27 +20,23 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { voiceManager } from '../../utils/voiceUtils';
+import { RootStackParamList, TicketData } from '../../types/reviewTypes';
 
-interface AddReviewPageProps {
-  navigation: any;
-  route?: {
-    params?: {
-      ticketData?: any;
-      inputMode?: 'text' | 'voice'; // 리뷰 입력 모드
-    };
-  };
-}
+// 후기 작성 페이지 Props 타입 정의
+type AddReviewPageProps = NativeStackScreenProps<RootStackParamList, 'AddReview'>;
 
-const AddReviewPage: React.FC<AddReviewPageProps> = ({ navigation, route }) => {
-  const [reviewText, setReviewText] = useState('');
-  const [isPublic, setIsPublic] = useState(true);
+const AddReviewPage = ({ navigation, route }: AddReviewPageProps) => {
+  const [reviewText, setReviewText] = useState(''); // 후기 텍스트 상태
+  const [isPublic, setIsPublic] = useState(true); // 공개/비공개 설정
 
-  // 음성 관련
+  // 음성 녹음 관련 상태
   const [isRecording, setIsRecording] = useState(false);
-  const isVoiceMode = route?.params?.inputMode === 'voice';
-  const ticketData = route?.params?.ticketData;
+  const isVoiceMode = route?.params?.inputMode === 'voice'; // 음성 입력 모드 여부
+  const ticketData = route?.params?.ticketData; // 이전 단계에서 전달받은 티켓 데이터
 
+  // 음성 인식 초기 설정 및 이벤트 리스너 등록
   useEffect(() => {
     const setupVoice = async () => {
       if (!(await voiceManager.isVoiceAvailable())) {
@@ -43,6 +44,7 @@ const AddReviewPage: React.FC<AddReviewPageProps> = ({ navigation, route }) => {
         return;
       }
 
+      // 음성 인식 결과 처리 리스너 설정
       await voiceManager.setListeners({
         onSpeechResults: (event: any) => {
           const results: string[] | undefined = event?.value;
@@ -63,11 +65,13 @@ const AddReviewPage: React.FC<AddReviewPageProps> = ({ navigation, route }) => {
 
     setupVoice();
 
+    // 컴포넌트 언마운트 시 음성 인식 정리
     return () => {
       voiceManager.destroy();
     };
   }, []);
 
+  // 음성 녹음 시작 함수
   const startRecording = async () => {
     if (!(await voiceManager.isVoiceAvailable())) {
       Alert.alert('음성 인식 오류', '음성 인식 기능을 사용할 수 없습니다.');
@@ -75,7 +79,7 @@ const AddReviewPage: React.FC<AddReviewPageProps> = ({ navigation, route }) => {
     }
 
     try {
-      await voiceManager.startRecording('ko-KR');
+      await voiceManager.startRecording('ko-KR'); // 한국어로 음성 인식 시작
       setIsRecording(true);
     } catch (e: any) {
       setIsRecording(false);
@@ -83,6 +87,7 @@ const AddReviewPage: React.FC<AddReviewPageProps> = ({ navigation, route }) => {
     }
   };
 
+  // 음성 녹음 중지 함수
   const stopRecording = async () => {
     if (!(await voiceManager.isVoiceAvailable())) {
       setIsRecording(false);
@@ -97,23 +102,25 @@ const AddReviewPage: React.FC<AddReviewPageProps> = ({ navigation, route }) => {
     }
   };
 
+  // 후기 작성 완료 처리 및 다음 단계로 이동
   const handleSubmitReview = () => {
     if (!reviewText.trim()) {
       Alert.alert('Error', 'Please write a review');
       return;
     }
+    // 이미지 선택 페이지로 이동하며 후기 데이터 전달
     navigation.navigate('ImageOptions', {
-      ticketData: {
-        ...ticketData,
-        status: isPublic ? '공개' : '비공개',
+      ticketData: ticketData,
+      reviewData: { 
+        reviewText,
+        isPublic
       },
-      reviewData: { reviewText },
     });
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
+      {/* 상단 헤더 - 뒤로가기 버튼과 제목 */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Text style={styles.backButtonText}>←</Text>
@@ -128,7 +135,7 @@ const AddReviewPage: React.FC<AddReviewPageProps> = ({ navigation, route }) => {
       >
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
 
-          {/* Review Text Input + 공개/비공개 토글 */}
+          {/* 후기 입력 영역 - 텍스트 입력창과 공개/비공개 토글 */}
           <View style={styles.reviewContainer}>
             <View style={styles.reviewHeaderRow}>
               <Text style={styles.sectionTitle}>Your Review *</Text>
@@ -158,7 +165,7 @@ const AddReviewPage: React.FC<AddReviewPageProps> = ({ navigation, route }) => {
               {reviewText.length}/1000 characters
             </Text>
 
-            {/* 음성 입력: 길게 눌러 말하기 */}
+            {/* 음성 입력 모드일 때만 표시되는 음성 녹음 UI */}
             {isVoiceMode && (
               <View style={styles.voiceHint}>
                 <Text style={styles.voiceHintText}>🎤 길게 눌러 말하고, 손을 떼면 텍스트로 들어가요.</Text>
@@ -179,7 +186,7 @@ const AddReviewPage: React.FC<AddReviewPageProps> = ({ navigation, route }) => {
           </View>
         </ScrollView>
 
-        {/* Footer Buttons */}
+        {/* 하단 버튼 영역 - 취소 및 완료 버튼 */}
         <View style={styles.footer}>
           <TouchableOpacity
             style={styles.cancelButton}
@@ -293,7 +300,7 @@ const styles = StyleSheet.create({
   submitButtonText: { fontSize: 16, fontWeight: '600', color: '#FFFFFF' },
   submitButtonTextDisabled: { color: '#7F8C8D' },
 
-  // 음성 입력 UI
+  // 음성 입력 관련 스타일
   micButton: {
     marginTop: 16, backgroundColor: '#ECF0F1', padding: 14, borderRadius: 12, alignItems: 'center',
   },

@@ -1,3 +1,7 @@
+/**
+ * 후기 작성 옵션 선택 페이지
+ * 사용자가 후기 작성 방식을 선택하는 화면 (음성녹음/직접작성/건너뛰기)
+ */
 import React from 'react';
 import {
   View,
@@ -11,50 +15,43 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { useAtom } from 'jotai';
 import { addTicketAtom } from '../../atoms/ticketAtoms';
+import { 
+  ReviewOptionsScreenNavigationProp,
+  ReviewOptionsRouteProp,
+  TicketData,
+  ReviewData
+} from '../../types/reviewTypes';
 
-type RootStackParamList = {
-  ReviewOptions: { ticketData: any };
-  AddReview: { ticketData: any; inputMode: 'text' | 'voice' };
-  ImageOptions: { ticketData: any; reviewData: any };
-};
-
-type ReviewOptionsScreenNavigationProp = StackNavigationProp<
-  RootStackParamList,
-  'ReviewOptions'
->;
-type ReviewOptionsScreenRouteProp = RouteProp<
-  RootStackParamList,
-  'ReviewOptions'
->;
-
-const ReviewOptions = () => {
+const ReviewOptions: React.FC = () => {
   const navigation = useNavigation<ReviewOptionsScreenNavigationProp>();
-  const route = useRoute<ReviewOptionsScreenRouteProp>();
-  const { ticketData } = route.params;
+  const route = useRoute<ReviewOptionsRouteProp>();
+  const { ticketData } = route.params; // 이전 단계에서 전달받은 티켓 데이터
   const [, addTicket] = useAtom(addTicketAtom);
 
+  // 후기 작성 방식 선택 처리 (음성녹음 또는 직접작성)
   const handleOptionSelect = (mode: 'text' | 'voice') => {
     navigation.navigate('AddReview', {
       ticketData,
-      inputMode: mode,
+      inputMode: 'text', // 현재는 텍스트 모드로 고정
+      initialText: '',
     });
   };
 
+  // 후기 작성을 건너뛰고 이미지 선택으로 이동
   const handleCompleteWithoutReview = () => {
     navigation.navigate('ImageOptions', {
       ticketData,
-      reviewData: null, // 후기 없음을 나타냄
+      reviewData: { text: '' }, // 빈 후기 데이터로 진행
     });
   };
 
   return (
     <SafeAreaView style={styles.container}>
       
-      {/* 헤더 */}
+      {/* 상단 헤더 - 뒤로가기 버튼 */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
@@ -65,7 +62,7 @@ const ReviewOptions = () => {
         <View style={styles.placeholder} />
       </View>
 
-      {/* 본문 */}
+      {/* 메인 콘텐츠 - 제목, 설명, 옵션 버튼들 */}
       <View style={styles.content}>
         <Text style={styles.title}>공연 후기 작성하기</Text>
         <Text style={styles.subtitle}>
@@ -73,7 +70,7 @@ const ReviewOptions = () => {
         </Text>
 
         <View style={styles.optionsContainer}>
-          {/* 음성 입력 모드 */}
+          {/* 음성녹음 옵션 버튼 */}
           <TouchableOpacity
             style={[styles.optionButton, styles.recordButton]}
             onPress={() => handleOptionSelect('voice')}
@@ -91,7 +88,7 @@ const ReviewOptions = () => {
             </View>
           </TouchableOpacity>
 
-          {/* 텍스트 입력 모드 */}
+          {/* 직접 작성 옵션 버튼 */}
           <TouchableOpacity
             style={[styles.optionButton, styles.writeButton]}
             onPress={() => handleOptionSelect('text')}
@@ -111,7 +108,7 @@ const ReviewOptions = () => {
           </TouchableOpacity>
         </View>
 
-        {/* 후기 스킵 버튼 */}
+        {/* 후기 작성 건너뛰기 버튼 */}
         <TouchableOpacity
           style={styles.skipReviewButton}
           onPress={handleCompleteWithoutReview}

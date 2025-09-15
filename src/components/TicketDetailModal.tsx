@@ -1,3 +1,9 @@
+/**
+ * 티켓 상세 모달 컴포넌트
+ * 티켓 카드를 클릭했을 때 나타나는 상세 정보 모달
+ * 카드 뒤집기 애니메이션, 공유, 삭제 기능 포함
+ * isMine prop으로 내 티켓/친구 티켓 구분하여 삭제 버튼 표시 여부 결정
+ */
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
@@ -17,33 +23,34 @@ import {
 import { Ticket } from '../types/ticket';
 import { useAtom } from 'jotai';
 import { deleteTicketAtom } from '../atoms/ticketAtoms';
+import { TicketDetailModalProps } from '../types/componentProps';
 
-interface TicketDetailModalProps {
-  visible: boolean;
-  ticket: Ticket;
-  onClose: () => void;
-  isMine?: boolean; // 내 티켓인지 친구 티켓인지 구분
-}
-
+// 화면 너비 가져오기
 const { width } = Dimensions.get('window');
 
 const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
   visible,
   ticket,
   onClose,
-  isMine = true, // 기본값은 내 티켓으로 설정
+  isMine = true, // 기본값은 내 티켓으로 설정 (삭제 버튼 표시)
 }) => {
-  const [, deleteTicket] = useAtom(deleteTicketAtom);
-  const [isFlipped, setIsFlipped] = useState(false);
-  const flipAnimation = useRef(new Animated.Value(0)).current;
+  const [, deleteTicket] = useAtom(deleteTicketAtom); // 티켓 삭제 함수
+  const [isFlipped, setIsFlipped] = useState(false); // 카드 뒤집기 상태
+  const flipAnimation = useRef(new Animated.Value(0)).current; // 뒤집기 애니메이션
 
-  // ✅ 탭 힌트 opacity 애니메이션
+  // 티켓 데이터가 없으면 모달을 렌더링하지 않음
+  if (!ticket) {
+    return null;
+  }
+
+  // 탭 힌트 투명도 애니메이션
   const hintOpacity = useRef(new Animated.Value(1)).current;
 
+  // 공개/비공개 상태에 따른 색상 반환
   const getStatusColor = (status: '공개' | '비공개') =>
     status === '공개' ? '#4ECDC4' : '#FF6B6B';
 
-  // 모달 열리거나 카드 뒤집을 때 힌트 fade in/out
+  // 모달이 열리거나 카드를 뒤집을 때 힌트 페이드 인/아웃 효과
   useEffect(() => {
     if (visible) {
       hintOpacity.setValue(1);

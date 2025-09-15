@@ -1,7 +1,12 @@
-// atoms/friendsAtoms.ts
+/**
+ * 친구 관련 상태 관리 Atoms
+ * 친구 목록과 친구별 티켓 데이터를 관리
+ * 친구 프로필, 친구 추가, 친구 티켓 조회 기능 지원
+ */
 import { atom } from 'jotai';
 import { Ticket } from '../types/ticket';
 
+// 친구 정보 인터페이스
 export interface Friend {
   id: string;
   name: string;
@@ -15,6 +20,7 @@ export interface FriendTickets {
   tickets: Ticket[];
 }
 
+// 친구 목록 atom - 현재 사용자의 친구들을 저장
 export const friendsAtom = atom<Friend[]>([
   {
     id: '1',
@@ -37,10 +43,10 @@ export const friendsAtom = atom<Friend[]>([
 ]);
 
 // 친구별 티켓 데이터를 관리하는 atom
+// 각 친구의 공개 티켓 목록을 저장 (실제로는 서버에서 가져와야 함)
 export const friendTicketsAtom = atom<FriendTickets[]>([
-  // 예시 데이터 - 실제로는 서버에서 가져와야 함
   {
-    friendId: '1',
+    friendId: '1', // 서현서의 티켓들
     tickets: [
       {
         id: 'friend1-ticket1',
@@ -63,7 +69,7 @@ export const friendTicketsAtom = atom<FriendTickets[]>([
     ],
   },
   {
-    friendId: '2',
+    friendId: '2', // 민지의 티켓들
     tickets: [
       {
         id: 'friend2-ticket1',
@@ -77,7 +83,7 @@ export const friendTicketsAtom = atom<FriendTickets[]>([
     ],
   },
   {
-    friendId: '3',
-    tickets: [], // 티켓이 없는 친구
+    friendId: '3', // 이스 (티켓이 없는 친구)
+    tickets: [],
   },
 ]);
