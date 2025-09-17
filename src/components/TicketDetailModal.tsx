@@ -231,69 +231,81 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <View style={styles.container}>
-        <StatusBar barStyle="dark-content" />
+      <TouchableWithoutFeedback onPress={() => setShowDropdown(false)}>
+        <View style={styles.container}>
+          <StatusBar barStyle="dark-content" />
 
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={onClose}>
-            <Text style={styles.backButtonText}>‹</Text>
-          </TouchableOpacity>
-          <View style={styles.headerActions}>
-            {isEditing && isMine ? (
-              <>
-                <TouchableOpacity style={styles.actionButton} onPress={handleCancelEdit}>
-                  <Text style={styles.actionButtonText}>✕</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.actionButton, styles.saveButton]} onPress={handleSaveEdit}>
-                  <Text style={[styles.actionButtonText, styles.saveButtonText]}>✓</Text>
-                </TouchableOpacity>
-              </>
-            ) : isMine ? (
-              <>
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity style={styles.backButton} onPress={onClose}>
+              <Text style={styles.backButtonText}>‹</Text>
+            </TouchableOpacity>
+            <View style={styles.headerActions}>
+              {isEditing && isMine ? (
+                <>
+                  <TouchableOpacity style={styles.actionButton} onPress={handleCancelEdit}>
+                    <Text style={styles.actionButtonText}>✕</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={[styles.actionButton, styles.saveButton]} onPress={handleSaveEdit}>
+                    <Text style={[styles.actionButtonText, styles.saveButtonText]}>✓</Text>
+                  </TouchableOpacity>
+                </>
+              ) : isMine ? (
+                <>
+                  <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
+                    <Text style={styles.actionButtonText}>↗</Text>
+                  </TouchableOpacity>
+                  <View style={styles.dropdownContainer}>
+                    <TouchableOpacity
+                      style={styles.actionButton}
+                      onPress={(e) => {
+                        e.stopPropagation(); // 드롭다운을 열 때 외부 터치 이벤트 방지
+                        setShowDropdown(!showDropdown);
+                      }}
+                    >
+                      <Text style={styles.actionButtonText}>⋯</Text>
+                    </TouchableOpacity>
+                    {showDropdown && (
+                      <View style={styles.dropdown}>
+                        <TouchableOpacity style={styles.dropdownItem} onPress={handleEdit}>
+                          <Text style={styles.dropdownText}>티켓 편집하기</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.dropdownItem} onPress={handleTogglePrivacy}>
+                          <Text style={styles.dropdownText}>
+                            {ticket.status === TicketStatus.PUBLIC ? '티켓 비공개하기' : '티켓 공유하기'}
+                          </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.dropdownItem} onPress={handleAddToPhoto}>
+                          <Text style={styles.dropdownText}>사진 앨범에 저장</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={[styles.dropdownItem, styles.dropdownItemDanger]} onPress={handleDelete}>
+                          <Text style={[styles.dropdownText, styles.dropdownTextDanger]}>내 티켓 삭제하기</Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                  </View>
+                </>
+              ) : (
                 <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
                   <Text style={styles.actionButtonText}>↗</Text>
                 </TouchableOpacity>
-                <View style={styles.dropdownContainer}>
-                  <TouchableOpacity
-                    style={styles.actionButton}
-                    onPress={() => setShowDropdown(!showDropdown)}
-                  >
-                    <Text style={styles.actionButtonText}>⋯</Text>
-                  </TouchableOpacity>
-                  {showDropdown && (
-                    <View style={styles.dropdown}>
-                      <TouchableOpacity style={styles.dropdownItem} onPress={handleEdit}>
-                        <Text style={styles.dropdownText}>티켓 편집하기</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity style={styles.dropdownItem} onPress={handleTogglePrivacy}>
-                        <Text style={styles.dropdownText}>
-                          {ticket.status === TicketStatus.PUBLIC ? '티켓 비공개하기' : '티켓 공유하기'}
-                        </Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity style={styles.dropdownItem} onPress={handleAddToPhoto}>
-                        <Text style={styles.dropdownText}>사진 앨범에 저장</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity style={[styles.dropdownItem, styles.dropdownItemDanger]} onPress={handleDelete}>
-                        <Text style={[styles.dropdownText, styles.dropdownTextDanger]}>내 티켓 삭제하기</Text>
-                      </TouchableOpacity>
-                    </View>
-                  )}
-                </View>
-              </>
-            ) : (
-              <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
-                <Text style={styles.actionButtonText}>↗</Text>
-              </TouchableOpacity>
-            )}
+              )}
+            </View>
           </View>
-        </View>
 
-        {/* Content */}
-        <TouchableWithoutFeedback onPress={() => setShowDropdown(false)}>
+          {/* Content */}
           <View style={styles.content}>
             <View style={styles.posterContainer}>
-              <TouchableOpacity onPress={handleCardTap} activeOpacity={0.9}>
+              <TouchableOpacity
+                onPress={() => {
+                  if (showDropdown) {
+                    setShowDropdown(false);
+                  } else {
+                    handleCardTap();
+                  }
+                }}
+                activeOpacity={0.9}
+              >
                 <View style={styles.flipContainer}>
                   <Animated.View
                     style={[styles.flipCard, styles.flipCardFront, frontAnimatedStyle]}
@@ -429,26 +441,26 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
             </View>
 
           </View>
-        </TouchableWithoutFeedback>
 
-        {/* Date/Time Pickers */}
-        {showDatePicker && (
-          <DateTimePicker
-            value={editedTicket.performedAt ?? ticket.performedAt}
-            mode="date"
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-            onChange={handleDateChange}
-          />
-        )}
-        {showTimePicker && (
-          <DateTimePicker
-            value={editedTicket.performedAt ?? ticket.performedAt}
-            mode="time"
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-            onChange={handleTimeChange}
-          />
-        )}
-      </View>
+          {/* Date/Time Pickers */}
+          {showDatePicker && (
+            <DateTimePicker
+              value={editedTicket.performedAt ?? ticket.performedAt}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={handleDateChange}
+            />
+          )}
+          {showTimePicker && (
+            <DateTimePicker
+              value={editedTicket.performedAt ?? ticket.performedAt}
+              mode="time"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={handleTimeChange}
+            />
+          )}
+        </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 };
