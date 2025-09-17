@@ -7,7 +7,7 @@
  * @since 2025-09-15
  */
 
-import { Ticket, CreateTicketData, TicketFilterOptions } from '../types/ticket';
+import { Ticket, CreateTicketData, UpdateTicketData, TicketFilterOptions } from '../types/ticket';
 import { TicketStatus } from '../types/enums';
 import { IdGenerator } from '../utils/idGenerator';
 
@@ -25,6 +25,8 @@ export const DEFAULT_TICKET_VALUES = {
  */
 export const TICKET_LIMITS = {
   MAX_TITLE_LENGTH: 100,
+  MAX_PLACE_LENGTH: 100,
+  MAX_ARTIST_LENGTH: 100,
   MAX_REVIEW_LENGTH: 1000,
   MAX_IMAGES: 10,
   MAX_TICKETS_PER_USER: 500,
@@ -88,11 +90,16 @@ export const createNewTicket = (
  */
 export const createUpdatedTicket = (
   existingTicket: Ticket,
-  updateData: Partial<Ticket>
+  updateData: UpdateTicketData
 ): Ticket => {
   const now = new Date();
   
-  return {
+  console.log('🔧 createUpdatedTicket 호출:', {
+    existingTicket: existingTicket.title,
+    updateData
+  });
+  
+  const updatedTicket = {
     ...existingTicket,
     ...updateData,
     updatedAt: now,
@@ -102,6 +109,9 @@ export const createUpdatedTicket = (
       updatedAt: now,
     } : existingTicket.review,
   };
+  
+  console.log('🔧 createUpdatedTicket 결과:', updatedTicket);
+  return updatedTicket;
 };
 
 /**

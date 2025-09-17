@@ -16,7 +16,7 @@ import {
 } from 'react-native-safe-area-context';
 import { launchImageLibrary, ImagePickerResponse } from 'react-native-image-picker';
 import { useAtom } from 'jotai';
-import { userProfileAtom } from '../../atoms/userAtoms';
+import { userProfileAtom, updateUserProfileAtom } from '../../atoms/userAtoms';
 
 interface PersonalInfoEditPageProps {
   navigation: any;
@@ -25,7 +25,8 @@ interface PersonalInfoEditPageProps {
 // 개인정보 수정
 const PersonalInfoEditPage: React.FC<PersonalInfoEditPageProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
-  const [userProfile, setUserProfile] = useAtom(userProfileAtom);
+  const [userProfile] = useAtom(userProfileAtom);
+  const [, updateUserProfile] = useAtom(updateUserProfileAtom);
   
   // 프로필 수정 폼의 각 입력 필드와 연결된 로컬 상태 
   // useState로 선언한 값들은 해당 컴포넌트 안에서만 유효함
@@ -95,16 +96,20 @@ const PersonalInfoEditPage: React.FC<PersonalInfoEditPageProps> = ({ navigation 
       return;
     }
 
-    // props로 전송
-    setUserProfile({
-      ...userProfile,
+    // Jotai atom을 통한 상태 업데이트
+    const updateResult = updateUserProfile({
       profileImage: profileImage || undefined,
       name: name.trim(),
       userId,
       email,
       isAccountPrivate,
-      updatedAt: new Date(),
     });
+    
+    // 업데이트 실패 시 에러 처리
+    if (!updateResult.success) {
+      Alert.alert('오류', updateResult.error?.message || '프로필 업데이트에 실패했습니다.');
+      return;
+    }
 
     Alert.alert(
       '저장 완료',
@@ -215,12 +220,6 @@ const PersonalInfoEditPage: React.FC<PersonalInfoEditPageProps> = ({ navigation 
               <View style={styles.editImageOverlay}>
                 <Text style={styles.editImageText}>📷</Text>
               </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.changeImageButton}
-              onPress={handleProfileImagePick}
-            >
-              <Text style={styles.changeImageButtonText}>사진 변경</Text>
             </TouchableOpacity>
           </View>
         </View>

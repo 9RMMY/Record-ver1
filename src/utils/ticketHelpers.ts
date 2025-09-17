@@ -31,6 +31,18 @@ export const TICKET_VALIDATION_RULES: ValidationRule<CreateTicketData>[] = [
     }
   },
   {
+    field: 'place',
+    validator: (place: string) => {
+      if (!place || place.trim().length === 0) {
+        return new Error('장소는 필수입니다');
+      }
+      if (place.length > TICKET_LIMITS.MAX_PLACE_LENGTH) {
+        return new Error(`장소는 ${TICKET_LIMITS.MAX_PLACE_LENGTH}자를 초과할 수 없습니다`);
+      }
+      return null;
+    }
+  },
+  {
     field: 'performedAt',
     validator: (date: Date) => {
       if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
@@ -67,6 +79,27 @@ export const TICKET_UPDATE_VALIDATION_RULES: ValidationRule<UpdateTicketData>[] 
     }
   },
   {
+    field: 'place',
+    validator: (place: string) => {
+      if (place !== undefined && (!place || place.trim().length === 0)) {
+        return new Error('장소는 비어있을 수 없습니다');
+      }
+      if (place && place.length > TICKET_LIMITS.MAX_PLACE_LENGTH) {
+        return new Error(`장소는 ${TICKET_LIMITS.MAX_PLACE_LENGTH}자를 초과할 수 없습니다`);
+      }
+      return null;
+    }
+  },
+  {
+    field: 'artist',
+    validator: (artist: string) => {
+      if (artist && artist.length > TICKET_LIMITS.MAX_ARTIST_LENGTH) {
+        return new Error(`출연진은 ${TICKET_LIMITS.MAX_ARTIST_LENGTH}자를 초과할 수 없습니다`);
+      }
+      return null;
+    }
+  },
+  {
     field: 'performedAt',
     validator: (date: Date) => {
       if (date !== undefined && (!date || !(date instanceof Date) || isNaN(date.getTime()))) {
@@ -93,8 +126,11 @@ export const validateTicketData = <T extends CreateTicketData | UpdateTicketData
   data: T,
   isUpdate = false
 ): Error | null => {
+  console.log('🔍 validateTicketData 호출:', { data, isUpdate });
   const rules = isUpdate ? TICKET_UPDATE_VALIDATION_RULES : TICKET_VALIDATION_RULES;
-  return validateFields(data, rules as ValidationRule<T>[]);
+  const result = validateFields(data, rules as ValidationRule<T>[]);
+  console.log('📝 validateTicketData 결과:', result);
+  return result;
 };
 
 /**

@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Image,
   Dimensions,
+  ViewStyle,
 } from 'react-native';
 import { Ticket } from '../types/ticket';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../styles/designSystem';
@@ -14,12 +15,22 @@ import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../styles/de
 interface TicketGridProps {
   tickets: Ticket[];
   onTicketPress: (ticket: Ticket) => void;
+  containerStyle?: ViewStyle;
+  cardWidth?: number;
+  cardAspectRatio?: number;
 }
 
-const { width } = Dimensions.get('window');
-const cardWidth = (width - 60) / 3; // 3 columns with padding (20px * 2 + 20px gaps)
-
-const TicketGrid: React.FC<TicketGridProps> = ({ tickets, onTicketPress }) => {
+const TicketGrid: React.FC<TicketGridProps> = ({ 
+  tickets, 
+  onTicketPress,
+  containerStyle,
+  cardWidth: customCardWidth,
+  cardAspectRatio = 1.4
+}) => {
+  const { width } = Dimensions.get('window');
+  const defaultCardWidth = (width - 60) / 3; // 3 columns with padding (20px * 2 + 20px gaps)
+  const cardWidth = customCardWidth || defaultCardWidth;
+  const cardHeight = cardWidth * cardAspectRatio;
   const renderTicketCard = ({ item }: { item: Ticket }) => {
     const hasImages = item.images && item.images.length > 0;
     
@@ -27,6 +38,7 @@ const TicketGrid: React.FC<TicketGridProps> = ({ tickets, onTicketPress }) => {
       <TouchableOpacity
         style={[
           styles.ticketCard,
+          { width: cardWidth, height: cardHeight },
           !hasImages && styles.ticketCardNoImage
         ]}
         onPress={() => onTicketPress(item)}
@@ -56,7 +68,7 @@ const TicketGrid: React.FC<TicketGridProps> = ({ tickets, onTicketPress }) => {
   }
 
   return (
-    <View style={styles.gridContainer}>
+    <View style={[styles.gridContainer, containerStyle]}>
       <FlatList
         data={tickets}
         renderItem={renderTicketCard}
@@ -86,8 +98,6 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
   },
   ticketCard: {
-    width: cardWidth,
-    height: cardWidth * 1.4,
     backgroundColor: Colors.systemBackground,
     borderRadius: BorderRadius.xl,
     marginBottom: Spacing.lg,

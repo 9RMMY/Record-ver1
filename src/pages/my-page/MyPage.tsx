@@ -25,6 +25,7 @@ import { isPlaceholderTicket } from '../../utils/isPlaceholder';
 import TicketDetailModal from '../../components/TicketDetailModal';
 import TicketGrid from '../../components/TicketGrid';
 import { friendsMapAtom } from '../../atoms';
+import { userProfileAtom } from '../../atoms/userAtoms';
 import { Colors, Typography, Spacing, BorderRadius, Shadows, ComponentStyles } from '../../styles/designSystem';
 
 // 마이 페이지 Props 타입 정의
@@ -38,6 +39,7 @@ const HEADER_HEIGHT = 80;
 const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
   const [tickets] = useAtom(ticketsAtom); // 전체 티켓 목록
   const [friendsMap] = useAtom(friendsMapAtom); // 친구 목록
+  const [userProfile] = useAtom(userProfileAtom); // 사용자 프로필 정보
   const friends = Array.from(friendsMap.values());
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null); // 선택된 티켓
   const [modalVisible, setModalVisible] = useState(false); // 모달 표시 여부
@@ -110,7 +112,7 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
           opacity: centerIdOpacity,
           top: insets.top + 10
         }]}>
-          <Text style={styles.centerId}>ID1234</Text>
+          <Text style={styles.centerId}>{userProfile.userId || userProfile.username || '사용자'}</Text>
         </Animated.View>
 
         {/* 오른쪽 기능 아이콘들 (친구 추가, 설정) */}
@@ -144,10 +146,16 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
         {/* 사용자 프로필 섹션 - 아바타, 통계, 사용자 정보 */}
         <View style={[styles.profileSection, { paddingTop: HEADER_HEIGHT + 32}]}>
           <View style={styles.avatarContainer}>
-            <Image
-              source={{ uri: 'https://example.com/profile.jpg' }}
-              style={styles.avatarImage}
-            />
+            {userProfile.profileImage ? (
+              <Image
+                source={{ uri: userProfile.profileImage }}
+                style={styles.avatarImage}
+              />
+            ) : (
+              <View style={[styles.avatarImage, styles.defaultAvatar]}>
+                <Text style={styles.defaultAvatarText}>👤</Text>
+              </View>
+            )}
           </View>
 
           {/* 티켓 개수 뱃지 - 실제 등록된 티켓 수 표시 */}
@@ -157,7 +165,7 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
           </View>
 
           {/* 사용자 아이디 */}
-          <Text style={styles.username}>ID1234</Text>
+          <Text style={styles.username}>{userProfile.name || userProfile.userId || userProfile.username || '사용자'}</Text>
 
           {/* 사용자 통계 정보 (티켓 수, 친구 수) */}
           <View style={styles.statsRow}>
@@ -314,6 +322,15 @@ const styles = StyleSheet.create({
     ...Typography.title1,
     fontWeight: 'bold',
     color: Colors.label,
+  },
+  defaultAvatar: {
+    backgroundColor: Colors.systemGray5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  defaultAvatarText: {
+    fontSize: 48,
+    color: Colors.secondaryLabel,
   },
 
 });

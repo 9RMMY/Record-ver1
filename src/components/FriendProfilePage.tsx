@@ -241,15 +241,28 @@ const FriendProfilePage: React.FC<FriendProfileScreenProps> = ({ navigation, rou
         >
           {/* 피드 탭 */}
           <View key="feed" style={styles.pageContainer}>
-            <TicketGrid
-              tickets={realFriendTickets}
-              onTicketPress={handleTicketPress}
-            />
+            <ScrollView 
+              style={styles.feedScrollView}
+              contentContainerStyle={styles.feedContent}
+              showsVerticalScrollIndicator={false}
+            >
+              <TicketGrid
+                tickets={realFriendTickets}
+                onTicketPress={handleTicketPress}
+                containerStyle={styles.friendGridContainer}
+                cardWidth={(width - 70) / 3}
+                cardAspectRatio={1.4}
+              />
+            </ScrollView>
           </View>
 
           {/* 캘린더 탭 */}
-          <View key="calendar" style={{ flex: 1 }}>
-            <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+          <View key="calendar" style={styles.pageContainer}>
+            <ScrollView 
+              style={styles.calendarScrollView}
+              contentContainerStyle={styles.calendarContent}
+              showsVerticalScrollIndicator={false}
+            >
               <CustomCalendar
                 selectedDate={selectedDate}
                 tickets={allFriendTickets}
@@ -356,7 +369,26 @@ const styles = StyleSheet.create({
   tabText: { fontSize: 16, fontWeight: '500', color: '#6C757D' },
   activeTabText: { color: '#B11515', fontWeight: '600' },
   pager: { flex: 1 },
-  pageContainer: { flex: 1, paddingHorizontal: 20, backgroundColor: '#F8F9FA' },
+  pageContainer: { flex: 1, backgroundColor: '#F8F9FA' },
+  feedScrollView: {
+    flex: 1,
+  },
+  feedContent: {
+    flexGrow: 1,
+    paddingBottom: 20,
+    alignItems: 'center',
+  },
+  friendGridContainer: {
+    paddingTop: 8,
+    paddingBottom: 16,
+  },
+  calendarScrollView: {
+    flex: 1,
+  },
+  calendarContent: {
+    flexGrow: 1,
+    paddingBottom: 20,
+  },
 });
 
 export default FriendProfilePage;

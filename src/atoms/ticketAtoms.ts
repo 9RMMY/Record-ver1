@@ -162,35 +162,53 @@ export const updateTicketAtom = atom(
   null,
   (get, set, ticketId: string, updateData: UpdateTicketData): Result<Ticket> => {
     return withErrorHandling(() => {
+      console.log('🔍 updateTicketAtom 시작:', { ticketId, updateData });
+      
       const currentMap = get(ticketsMapAtom);
       const existingTicket = currentMap.get(ticketId);
       
+      console.log('📋 기존 티켓:', existingTicket);
+      
       if (!existingTicket) {
+        console.log('❌ 티켓을 찾을 수 없음:', ticketId);
         throw new Error(`티켓을 찾을 수 없습니다: ${ticketId}`);
       }
 
       // 권한 확인 (공통 헬퍼 사용)
       const currentUserId = get(currentUserIdAtom);
+      console.log('👤 현재 사용자 ID:', currentUserId, '티켓 소유자 ID:', existingTicket.userId);
+      
       const ownershipError = validateOwnership(existingTicket.userId, currentUserId, '티켓 수정');
-      if (ownershipError) throw ownershipError;
+      if (ownershipError) {
+        console.log('❌ 권한 오류:', ownershipError);
+        throw ownershipError;
+      }
 
       // 통합 유효성 검증
       const validationError = validateTicketData(updateData, true);
-      if (validationError) throw validationError;
+      if (validationError) {
+        console.log('❌ 유효성 검증 오류:', validationError);
+        throw validationError;
+      }
 
       // 리뷰 텍스트 검증
       if (updateData.review?.reviewText) {
         const reviewError = validateReviewText(updateData.review.reviewText);
-        if (reviewError) throw reviewError;
+        if (reviewError) {
+          console.log('❌ 리뷰 검증 오류:', reviewError);
+          throw reviewError;
+        }
       }
 
       // 업데이트된 티켓 생성 (팩토리 함수 사용)
       const updatedTicket = createUpdatedTicket(existingTicket, updateData);
+      console.log('🔄 업데이트된 티켓:', updatedTicket);
 
       // 최적화된 Map 업데이트
       const newMap = optimizedMapUpdate(currentMap, ticketId, updatedTicket);
       set(ticketsMapAtom, newMap);
-
+      
+      console.log('✅ 티켓 업데이트 완료');
       return updatedTicket;
     }, '티켓 수정 중 오류가 발생했습니다')();
   }
