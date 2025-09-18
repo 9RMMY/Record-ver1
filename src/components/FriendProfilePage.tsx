@@ -185,9 +185,9 @@ const FriendProfilePage: React.FC<FriendProfileScreenProps> = ({ navigation, rou
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Text style={styles.backButtonText}>←</Text>
+          <Text style={styles.backButtonText}>‹</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>프로필</Text>
+        <Text style={styles.headerTitle}>{friend.name}</Text>
         <View style={styles.placeholder} />
       </View>
 
@@ -291,7 +291,7 @@ const FriendProfilePage: React.FC<FriendProfileScreenProps> = ({ navigation, rou
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  container: { flex: 1, backgroundColor: '#F8F9FA' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -303,64 +303,76 @@ const styles = StyleSheet.create({
     borderBottomColor: '#E9ECEF',
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F8F9FA',
+    paddingVertical: 8,
+    paddingHorizontal: 4,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  backButtonText: { fontSize: 20, color: '#2C3E50' },
-  headerTitle: { fontSize: 18, fontWeight: '600', color: '#2C3E50' },
-  placeholder: { width: 40 },
+  backButtonText: { fontSize: 24, color: '#B11515', fontWeight: '300' },
+  headerTitle: { fontSize: 18, fontWeight: '600', color: '#2C3E50', flex: 1, textAlign: 'center', marginRight: 28 },
+  placeholder: { width: 28 },
   mainContent: { flex: 1 },
   profileSection: {
     alignItems: 'center',
-    paddingVertical: 32,
+    paddingVertical: 20,
     paddingHorizontal: 20,
     backgroundColor: '#FFFFFF',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    marginBottom: 8,
   },
   profileAvatar: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    marginBottom: 10,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 8,
     backgroundColor: '#EEE',
   },
   profileName: {
-    fontSize: 24,
-    fontWeight: '600',
+    fontSize: 22,
+    fontWeight: '700',
     color: '#2C3E50',
-    marginBottom: 5,
+    marginBottom: 2,
   },
-  profileUsername: { fontSize: 16, color: '#6C757D' },
+  profileUsername: {
+    fontSize: 15,
+    color: '#6C757D',
+    marginBottom: 12,
+  },
   badgeWrapper: {
+    position: 'absolute',
+    top: 75,
+    right: '38%',
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    height: 32,
-    paddingHorizontal: 12,
-    top: -20,
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderWidth: 1.5,
+    borderColor: '#F1F3F5',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   badgeEmoji: { fontSize: 14, marginRight: 4 },
   badgeText: { color: '#FF3B30', fontSize: 12, fontWeight: 'bold' },
   tabContainer: {
     flexDirection: 'row',
     paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 10,
+    paddingTop: 8,
+    paddingBottom: 8,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#E9ECEF',
   },
   tabButton: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: 10,
     alignItems: 'center',
     borderBottomWidth: 2,
     borderBottomColor: 'transparent',

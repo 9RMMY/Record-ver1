@@ -238,7 +238,8 @@ function App(): React.JSX.Element {
           name="FriendProfile"
           component={FriendProfilePage as any}
           options={{
-            presentation: 'modal',
+            presentation: 'card',
+            headerShown: false,
           }}
         />
         <Stack.Screen

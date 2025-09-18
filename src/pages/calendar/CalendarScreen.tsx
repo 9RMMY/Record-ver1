@@ -130,10 +130,10 @@ const CalendarScreen = () => {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
       
-      {/* 캘린더 상단 헤더 - 총 티켓 개수 표시 */}
+      {/* 캘린더 상단 헤더 - 총 티켓 개수 표시 (항상 고정) */}
       <CalendarHeader totalTickets={totalTickets} />
       
-      {/* 주간 캘린더 (스크롤 시 나타남) */}
+      {/* 주간 캘린더 (스크롤 시 나타남, 헤더 바로 아래 고정) */}
       {isWeeklyView && (
         <Animated.View style={[styles.weeklyCalendarContainer, weeklyCalendarStyle]}>
           <WeeklyCalendar
@@ -188,10 +188,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.systemBackground,
   },
   weeklyCalendarContainer: {
-    position: 'absolute',
-    top: 100, // CalendarHeader 높이 고려
-    left: 0,
-    right: 0,
+    // CalendarHeader 바로 아래에 고정되도록 변경
+    backgroundColor: Colors.systemBackground,
     zIndex: 10,
   },
   scrollView: {

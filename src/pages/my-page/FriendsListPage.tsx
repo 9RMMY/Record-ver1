@@ -41,15 +41,34 @@ const FriendsListPage: React.FC<FriendsListPageProps> = ({ navigation }) => {
     ]);
   };
 
+  // 친구 요청 거절
+  const handleRejectRequest = (requestId: string) => {
+    Alert.alert('친구 요청 거절', '정말로 친구 요청을 거절하시겠어요?', [
+      { text: '취소', style: 'cancel' },
+      {
+        text: '거절',
+        style: 'destructive',
+        onPress: () => respondToRequest({ requestId, accept: false }),
+      },
+    ]);
+  };
+
+  // 친구 프로필로 이동 (모달 닫기 → 풀스크린 열기)
+  const handleNavigateToFriendProfile = (friend: Friend) => {
+    // 먼저 현재 모달을 닫기
+    navigation.goBack();
+    
+    // 모달 닫기 애니메이션이 완료된 후 풀스크린 열기
+    setTimeout(() => {
+      navigation.navigate('FriendProfile', { friend });
+    }, 300); // 모달 닫기 애니메이션 시간 고려
+  };
+
   // 친구 요청 수락
   const handleAcceptRequest = (request: FriendRequest) => {
     respondToRequest({ requestId: request.id, accept: true });
   };
 
-  // 친구 요청 거절
-  const handleRejectRequest = (requestId: string) => {
-    respondToRequest({ requestId, accept: false });
-  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -89,9 +108,7 @@ const FriendsListPage: React.FC<FriendsListPageProps> = ({ navigation }) => {
               {/* 프로필 클릭 가능 */}
               <TouchableOpacity
                 style={styles.friendInfo}
-                onPress={() =>
-                  navigation.navigate('FriendProfile', { friend: request })
-                }
+                onPress={() => handleNavigateToFriendProfile(request)}
               >
                 <Image
                   source={{ uri: request.avatar }}
@@ -131,9 +148,7 @@ const FriendsListPage: React.FC<FriendsListPageProps> = ({ navigation }) => {
             <View key={friend.id} style={styles.friendItem}>
               <TouchableOpacity
                 style={styles.friendInfo}
-                onPress={() =>
-                  navigation.navigate('FriendProfile', { friend })
-                }
+                onPress={() => handleNavigateToFriendProfile(friend)}
               >
                 <Image
                   source={{ uri: friend.avatar }}
