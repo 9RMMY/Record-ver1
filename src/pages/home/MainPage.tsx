@@ -13,6 +13,7 @@ import {
   Dimensions,
   Animated,
   PanResponder,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import {
   SafeAreaView,
@@ -25,13 +26,13 @@ import TicketDetailModal from '../../components/TicketDetailModal';
 import { isPlaceholderTicket } from '../../utils/isPlaceholder';
 import { Colors, Typography, Spacing, BorderRadius, Shadows, ComponentStyles } from '../../styles/designSystem';
 
+// 화면 너비 가져오기
+const { width } = Dimensions.get('window');
+
 // 메인 페이지 Props 타입 정의
 interface MainPageProps {
   navigation: any;
 }
-
-// 화면 너비 가져오기
-const { width } = Dimensions.get('window');
 
 const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
@@ -236,6 +237,57 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
   const currentTicket = displayTickets[currentTicketIndex] || displayTickets[0];
   const isPlaceholder = isPlaceholderTicket(currentTicket);
 
+  // 점 인디케이터를 위한 인덱스 배열 생성
+  const renderDots = () => {
+    const totalDots = displayTickets.length;
+    const maxDots = 7;
+    const dots = [];
+
+    if (totalDots <= maxDots) {
+      // 총 점의 개수가 7개 이하면 모든 점을 표시
+      for (let i = 0; i < totalDots; i++) {
+        dots.push(i);
+      }
+    } else {
+      // 총 점의 개수가 8개 이상일 경우
+      const half = Math.floor(maxDots / 2);
+      let start = Math.max(0, currentTicketIndex - half);
+      let end = Math.min(totalDots - 1, currentTicketIndex + half);
+
+      if (currentTicketIndex <= half) {
+        // 앞쪽에 있을 경우
+        start = 0;
+        end = maxDots - 1;
+      } else if (currentTicketIndex >= totalDots - half) {
+        // 뒤쪽에 있을 경우
+        start = totalDots - maxDots;
+        end = totalDots - 1;
+      }
+
+      for (let i = start; i <= end; i++) {
+        dots.push(i);
+      }
+    }
+
+    return (
+      <>
+        {totalDots > maxDots && dots[0] > 0 && <Text style={styles.dotEllipsis}>...</Text>}
+        {dots.map(index => (
+          <View
+            key={index}
+            style={[
+              styles.dot,
+              index === currentTicketIndex && styles.activeDot,
+            ]}
+          />
+        ))}
+        {totalDots > maxDots && dots[dots.length - 1] < totalDots - 1 && (
+          <Text style={styles.dotEllipsis}>...</Text>
+        )}
+      </>
+    );
+  };
+
   return (
     <View style={[styles.container, { paddingBottom: insets.bottom }]}>
       <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -245,7 +297,10 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
           <View style={styles.headerRight}>
             <TouchableOpacity
               style={styles.filterButton}
-              onPress={() => setShowFilterDropdown(!showFilterDropdown)}
+              onPress={(e) => {
+                e.stopPropagation(); // 이벤트 버블링 방지
+                setShowFilterDropdown(!showFilterDropdown);
+              }}
             >
               <Text style={styles.filterButtonText}>{selectedFilter}</Text>
               <Text style={styles.filterArrow}>▼</Text>
@@ -305,70 +360,68 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
         </View>
 
         {/* 메인 콘텐츠 - 티켓 카드 영역 */}
-        <View style={styles.contentContainer}>
-          <View style={styles.cardContainer}>
-            {/* 페이지 인디케이터 - 여러 티켓이 있을 때만 표시 */}
-            {displayTickets.length > 1 && !isPlaceholder && (
-              <View style={styles.indicatorContainer}>
-                <Text style={styles.indicatorText}>
-                  {currentTicketIndex + 1} / {displayTickets.length}
-                </Text>
+        <TouchableWithoutFeedback onPress={() => setShowFilterDropdown(false)}>
+          <View style={styles.contentContainer}>
+            <View style={styles.cardContainer}>
+              {/* 페이지 인디케이터 - 실제 티켓이 있을 때만 표시 */}
+              <View style={styles.dotIndicatorContainer}>
+                {!isPlaceholder && renderDots()}
               </View>
-            )}
 
-            <Animated.View
-              style={[
-                styles.animatedCard,
-                {
-                  transform: pan.getTranslateTransform(),
-                  opacity: opacity,
-                },
-              ]}
-              {...panResponder.panHandlers}
-            >
-              <TouchableOpacity
-                disabled={isPlaceholder}
+              <Animated.View
                 style={[
-                  styles.mainTicketCard,
-                  isPlaceholder && styles.disabledCard,
-                  !isPlaceholder &&
-                    (!currentTicket.images ||
-                      currentTicket.images.length === 0) &&
-                    styles.mainTicketCardNoImage,
+                  styles.animatedCard,
+                  {
+                    transform: pan.getTranslateTransform(),
+                    opacity: opacity,
+                  },
                 ]}
-                onPress={() => handleTicketPress(currentTicket)}
-                activeOpacity={isPlaceholder ? 1 : 0.7}
+                {...panResponder.panHandlers}
               >
-                {/* 티켓 이미지 또는 플레이스홀더 */}
-                {currentTicket.images && currentTicket.images.length > 0 ? (
-                  <Image
-                    source={{ uri: currentTicket.images[0] }}
-                    style={styles.mainTicketImage}
-                  />
-                ) : (
-                  <View style={styles.mainTicketPlaceholder}>
-                    <Text style={styles.placeholderText}>
-                      {isPlaceholder
-                        ? '새 티켓을 추가해보세요!'
-                        : '이미지 없음'}
-                    </Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            </Animated.View>
-
-            {/* 공연 날짜 버튼 - 실제 티켓일 때만 표시 */}
-            {!isPlaceholder && currentTicket.performedAt && (
-              <View style={styles.dateButtonContainer}>
-                <TouchableOpacity style={styles.dateButton}>
-                  <Text style={styles.dateButtonText}>
-                    {formatDate(currentTicket.performedAt)}
-                  </Text>
+                <TouchableOpacity
+                  disabled={isPlaceholder}
+                  style={[
+                    styles.mainTicketCard,
+                    isPlaceholder && styles.disabledCard,
+                    !isPlaceholder &&
+                      (!currentTicket.images ||
+                        currentTicket.images.length === 0) &&
+                      styles.mainTicketCardNoImage,
+                  ]}
+                  onPress={() => handleTicketPress(currentTicket)}
+                  activeOpacity={isPlaceholder ? 1 : 0.7}
+                >
+                  {/* 티켓 이미지 또는 플레이스홀더 */}
+                  {currentTicket.images && currentTicket.images.length > 0 ? (
+                    <Image
+                      source={{ uri: currentTicket.images[0] }}
+                      style={styles.mainTicketImage}
+                    />
+                  ) : (
+                    <View style={styles.mainTicketPlaceholder}>
+                      <Text style={styles.placeholderText}>
+                        {isPlaceholder
+                          ? '새 티켓을 추가해보세요!'
+                          : '이미지 없음'}
+                      </Text>
+                    </View>
+                  )}
                 </TouchableOpacity>
-              </View>
-            )}
+              </Animated.View>
+
+              {/* 공연 날짜 버튼 - 실제 티켓일 때만 표시 */}
+              {!isPlaceholder && currentTicket.performedAt && (
+                <View style={styles.dateButtonContainer}>
+                  <TouchableOpacity style={styles.dateButton}>
+                    <Text style={styles.dateButtonText}>
+                      {formatDate(currentTicket.performedAt)}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
           </View>
-        </View>
+        </TouchableWithoutFeedback>
 
         {/* 티켓 상세 모달 */}
         {selectedTicket && (
@@ -398,10 +451,10 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.systemBackground,
     zIndex: 1,
   },
-  headerTitle: { 
-    ...Typography.title2, 
-    fontWeight: '700', 
-    color: Colors.label 
+  headerTitle: {
+    ...Typography.title2,
+    fontWeight: '700',
+    color: Colors.label,
   },
   headerRight: { position: 'relative' },
 
@@ -416,14 +469,14 @@ const styles = StyleSheet.create({
     borderColor: Colors.systemGray5,
     ...Shadows.small,
   },
-  filterButtonText: { 
-    ...Typography.subheadline, 
-    color: Colors.secondaryLabel, 
-    marginRight: Spacing.xs 
+  filterButtonText: {
+    ...Typography.subheadline,
+    color: Colors.secondaryLabel,
+    marginRight: Spacing.xs,
   },
-  filterArrow: { 
-    fontSize: 10, 
-    color: Colors.secondaryLabel 
+  filterArrow: {
+    fontSize: 10,
+    color: Colors.secondaryLabel,
   },
 
   filterDropdown: {
@@ -438,9 +491,9 @@ const styles = StyleSheet.create({
     ...Shadows.large,
     zIndex: 1000,
   },
-  filterOption: { 
-    paddingHorizontal: Spacing.lg, 
-    paddingVertical: Spacing.md 
+  filterOption: {
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
   },
   filterOptionSelectedBand: {
     backgroundColor: Colors.secondarySystemBackground,
@@ -452,14 +505,14 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: BorderRadius.xl,
     borderBottomRightRadius: BorderRadius.xl,
   },
-  filterOptionText: { 
-    ...Typography.subheadline, 
-    color: Colors.label, 
-    textAlign: 'center' 
+  filterOptionText: {
+    ...Typography.subheadline,
+    color: Colors.label,
+    textAlign: 'center',
   },
-  filterOptionTextSelected: { 
-    color: Colors.primary, 
-    fontWeight: '600' 
+  filterOptionTextSelected: {
+    color: Colors.primary,
+    fontWeight: '600',
   },
 
   subHeader: {
@@ -474,30 +527,46 @@ const styles = StyleSheet.create({
     color: Colors.label,
     marginBottom: Spacing.sm,
   },
-  monthSubtitle: { 
-    ...Typography.subheadline, 
-    color: Colors.secondaryLabel, 
-    lineHeight: 20 
+  monthSubtitle: {
+    ...Typography.subheadline,
+    color: Colors.secondaryLabel,
+    lineHeight: 20,
   },
 
-  contentContainer: { 
-    flex: 1, 
-    paddingTop: Spacing.xxxl, 
-    paddingHorizontal: Spacing.screenPadding 
+  contentContainer: {
+    flex: 1,
+    paddingTop: 16,
+    paddingHorizontal: Spacing.screenPadding,
   },
   cardContainer: { alignItems: 'center', flex: 1 },
 
-  indicatorContainer: { marginBottom: Spacing.md },
-  indicatorText: { 
-    ...Typography.subheadline, 
-    color: Colors.secondaryLabel, 
-    fontWeight: '500' 
+  // 점 인디케이터 스타일
+  dotIndicatorContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: Spacing.md,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.systemGray3,
+    marginHorizontal: Spacing.xs,
+  },
+  activeDot: {
+    backgroundColor: Colors.systemGray,
+  },
+  dotEllipsis: {
+    ...Typography.subheadline,
+    color: Colors.systemGray,
+    marginHorizontal: Spacing.xs,
   },
 
   animatedCard: { alignItems: 'center' },
   mainTicketCard: {
-    width: width - 80,
-    height: (width - 80) * 1.3,
+    width: (width - 80) * 1.05,
+    height: (width - 80) * 1.3 * 1.05,
     borderRadius: BorderRadius.xxl,
     overflow: 'hidden',
     backgroundColor: Colors.systemGray6,
@@ -522,29 +591,29 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  placeholderText: { 
-    ...Typography.callout, 
-    color: Colors.secondaryLabel, 
-    fontWeight: '500' 
+  placeholderText: {
+    ...Typography.callout,
+    color: Colors.secondaryLabel,
+    fontWeight: '500',
   },
 
-  dateButtonContainer: { 
-    marginTop: Spacing.lg, 
-    alignItems: 'center' 
+  dateButtonContainer: {
+    marginTop: 16,
+    alignItems: 'center',
   },
   dateButton: {
     backgroundColor: Colors.secondarySystemBackground,
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.md,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderRadius: BorderRadius.xxl,
     borderWidth: 1,
     borderColor: Colors.systemGray5,
     ...Shadows.small,
   },
-  dateButtonText: { 
-    ...Typography.subheadline, 
-    color: Colors.label, 
-    fontWeight: '500' 
+  dateButtonText: {
+    ...Typography.subheadline,
+    color: Colors.label,
+    fontWeight: '500',
   },
 });
 

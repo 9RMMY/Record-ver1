@@ -256,15 +256,21 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
 
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity style={styles.backButton} onPress={onClose}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => {
+                if (isEditing) {
+                  handleCancelEdit();
+                } else {
+                  onClose();
+                }
+              }}
+            >
               <Text style={styles.backButtonText}>‹</Text>
             </TouchableOpacity>
             <View style={styles.headerActions}>
               {isEditing && isMine ? (
                 <>
-                  <TouchableOpacity style={styles.actionButton} onPress={handleCancelEdit}>
-                    <Text style={styles.actionButtonText}>✕</Text>
-                  </TouchableOpacity>
                   <TouchableOpacity style={[styles.actionButton, styles.saveButton]} onPress={handleSaveEdit}>
                     <Text style={[styles.actionButtonText, styles.saveButtonText]}>✓</Text>
                   </TouchableOpacity>
@@ -460,26 +466,26 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
             </View>
 
           </View>
-
-          {/* Date/Time Pickers */}
-          {showDatePicker && (
-            <DateTimePicker
-              value={editedTicket.performedAt ?? ticket.performedAt}
-              mode="date"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onChange={handleDateChange}
-            />
-          )}
-          {showTimePicker && (
-            <DateTimePicker
-              value={editedTicket.performedAt ?? ticket.performedAt}
-              mode="time"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onChange={handleTimeChange}
-            />
-          )}
         </View>
       </TouchableWithoutFeedback>
+
+      {/* Date/Time Pickers */}
+      {showDatePicker && (
+        <DateTimePicker
+          value={editedTicket.performedAt ?? ticket.performedAt}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          onChange={handleDateChange}
+        />
+      )}
+      {showTimePicker && (
+        <DateTimePicker
+          value={editedTicket.performedAt ?? ticket.performedAt}
+          mode="time"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          onChange={handleTimeChange}
+        />
+      )}
     </Modal>
   );
 };
@@ -514,7 +520,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   actionButtonText: { fontSize: 18, color: '#2C3E50', fontWeight: 'bold' },
-  saveButton: { backgroundColor: '#4ECDC4' },
+  saveButton: { backgroundColor: '#B11515' },
   saveButtonText: { color: '#FFF' },
 
   content: { flex: 1, backgroundColor: '#F8F9FA' },
@@ -563,7 +569,7 @@ const styles = StyleSheet.create({
 
   reviewCardContent: {
     flex: 1,
-    padding: 24,
+    padding: 16,
     borderRadius: 20,
     backgroundColor: '#FFF',
   },
@@ -577,7 +583,7 @@ const styles = StyleSheet.create({
   reviewScrollView: {
     flex: 1,
     maxHeight: 350, // 스크롤 영역 높이 증가
-    width: '105%', // 가로 넓이 직접 지정
+    width: '100%', // 가로 넓이 직접 지정
     alignSelf: 'center',
   },
   reviewScrollContent: {
@@ -616,28 +622,15 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#F1F2F6',
   },
-  detailLabel: { fontSize: 16, color: '#7F8C8D', fontWeight: '500', flex: 1 , paddingHorizontal: 12,},
+  detailLabel: { fontSize: 16, color: '#7F8C8D', fontWeight: '500', flex: 1 },
   detailValue: {
     fontSize: 16,
     color: '#2C3E50',
     fontWeight: '600',
-    flex: 2,
+    flex: 7,
     textAlign: 'right',
-    paddingHorizontal: 12,
   },
 
-  statusSection: {
-    backgroundColor: '#FFF',
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  statusBadge: {
-    alignSelf: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  statusText: { color: '#FFF', fontWeight: 'bold', fontSize: 14 },
 
   // 편집 모드 스타일
   titleInput: {
@@ -648,14 +641,13 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#E0E0E0',
-    paddingVertical: 8,
     paddingHorizontal: 16,
   },
   detailInput: {
     fontSize: 16,
     color: '#2C3E50',
     fontWeight: '600',
-    flex: 2,
+    flex: 7,
     textAlign: 'right',
     borderBottomWidth: 1,
     borderBottomColor: '#E0E0E0',
@@ -663,7 +655,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   dateTimeEditContainer: {
-    flex: 2,
+    flex: 1,
     alignItems: 'flex-end',
   },
   dateEditButton: {
@@ -701,7 +693,7 @@ const styles = StyleSheet.create({
     color: '#2C3E50',
     lineHeight: 24,
     textAlign: 'left',
-    minHeight: 120,
+    minHeight: 350,
     borderWidth: 1,
     borderColor: '#E0E0E0',
     borderRadius: 8,
