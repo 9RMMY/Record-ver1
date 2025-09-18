@@ -586,7 +586,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   reviewScrollContent: {
-    flexGrow: 1, // minHeight 대신 flexGrow 사용
+    flexGrow: 1, 
   },
   reviewText: {
     fontSize: 16,
