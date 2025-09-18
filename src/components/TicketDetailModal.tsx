@@ -203,8 +203,27 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
   };
 
   const handleTogglePrivacy = () => {
-    Alert.alert('알림', '공개/비공개 기능은 구현 예정입니다.');
-    setShowDropdown(false);
+    const newStatus = ticket.status === TicketStatus.PUBLIC ? TicketStatus.PRIVATE : TicketStatus.PUBLIC;
+    Alert.alert(
+      newStatus === TicketStatus.PUBLIC ? '티켓을 공개하시겠습니까?' : '티켓을 비공개하시겠습니까?',
+      '',
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: newStatus === TicketStatus.PUBLIC ? '공개하기' : '비공개하기',
+          onPress: () => {
+            const result = updateTicket(ticket.id, { status: newStatus });
+            if (result?.success) {
+              Alert.alert('완료', `티켓이 성공적으로 ${newStatus === TicketStatus.PUBLIC ? '공개되었습니다' : '비공개되었습니다'}.`);
+              console.log('Ticket status updated to:', newStatus); // 콘솔 로그 추가
+            } else {
+              Alert.alert('오류', '상태 변경에 실패했습니다.');
+            }
+            setShowDropdown(false);
+          },
+        },
+      ]
+    );
   };
 
   const handleAddToPhoto = () => {
@@ -272,7 +291,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.dropdownItem} onPress={handleTogglePrivacy}>
                           <Text style={styles.dropdownText}>
-                            {ticket.status === TicketStatus.PUBLIC ? '티켓 비공개하기' : '티켓 공유하기'}
+                            {ticket.status === TicketStatus.PUBLIC ? '티켓 비공개하기' : '티켓 공개하기'}
                           </Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.dropdownItem} onPress={handleAddToPhoto}>
@@ -597,13 +616,14 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#F1F2F6',
   },
-  detailLabel: { fontSize: 16, color: '#7F8C8D', fontWeight: '500', flex: 1 },
+  detailLabel: { fontSize: 16, color: '#7F8C8D', fontWeight: '500', flex: 1 , paddingHorizontal: 12,},
   detailValue: {
     fontSize: 16,
     color: '#2C3E50',
     fontWeight: '600',
     flex: 2,
     textAlign: 'right',
+    paddingHorizontal: 12,
   },
 
   statusSection: {
