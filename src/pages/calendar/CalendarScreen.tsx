@@ -2,9 +2,10 @@
  * 캘린더 화면
  * 월별 달력 뷰에서 티켓들을 날짜별로 확인할 수 있는 페이지
  * 특정 날짜 선택 시 해당 날짜의 공연 목록을 하단에 표시
+ * 스크롤 시 월간 캘린더에서 주간 캘린더로 전환되는 애니메이션 포함
  */
-import React, { useState } from 'react';
-import { View, StyleSheet, StatusBar } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, StyleSheet, StatusBar, ScrollView, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useAtom } from 'jotai';
@@ -13,6 +14,7 @@ import { Ticket } from '../../types/ticket';
 import TicketDetailModal from '../../components/TicketDetailModal';
 import CalendarHeader from '../../components/CalendarHeader';
 import CustomCalendar from '../../components/CustomCalendar';
+import WeeklyCalendar from '../../components/WeeklyCalendar';
 import EventsList from '../../components/EventsList';
 import { Colors } from '../../styles/designSystem';
 
@@ -30,6 +32,13 @@ const CalendarScreen = () => {
   const [tickets] = useAtom(ticketsAtom); // 전체 티켓 목록
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null); // 선택된 티켓
   const [modalVisible, setModalVisible] = useState(false); // 모달 표시 여부
+  
+  // 스크롤 애니메이션을 위한 Animated Value
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const scrollViewRef = useRef<ScrollView>(null);
+  
+  // 월간/주간 캘린더 전환을 위한 상태
+  const [isWeeklyView, setIsWeeklyView] = useState(false);
 
   // 날짜를 YYYY-MM-DD 형식으로 포맷팅
   const formatDate = (date: Date) => date.toISOString().split('T')[0];
@@ -39,10 +48,32 @@ const CalendarScreen = () => {
     ticket => formatDate(new Date(ticket.performedAt)) === selectedDate,
   );
 
-  // 캘린더에서 날짜 선택 처리
+  // 캘린더에서 날짜 선택 처리 (월간 캘린더용)
   const handleDayPress = (day: { dateString: string }) => {
     setSelectedDate(day.dateString);
   };
+
+  // 주간 캘린더에서 날짜 선택 처리
+  const handleWeeklyDayPress = (dateString: string) => {
+    setSelectedDate(dateString);
+  };
+
+  // 스크롤 이벤트 처리 - 스크롤 위치에 따라 캘린더 뷰 전환
+  const handleScroll = Animated.event(
+    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+    {
+      useNativeDriver: false,
+      listener: (event: any) => {
+        const offsetY = event.nativeEvent.contentOffset.y;
+        // 스크롤이 100px 이상 내려가면 주간 뷰로 전환
+        if (offsetY > 100 && !isWeeklyView) {
+          setIsWeeklyView(true);
+        } else if (offsetY <= 50 && isWeeklyView) {
+          setIsWeeklyView(false);
+        }
+      },
+    },
+  );
 
   // 티켓 카드 클릭 시 상세 모달 열기
   const handleTicketPress = (ticket: Ticket) => {
@@ -59,6 +90,42 @@ const CalendarScreen = () => {
   // 전체 티켓 개수 계산
   const totalTickets = tickets.length;
 
+  // 월간 캘린더 애니메이션 스타일
+  const monthlyCalendarStyle = {
+    opacity: scrollY.interpolate({
+      inputRange: [0, 100],
+      outputRange: [1, 0],
+      extrapolate: 'clamp',
+    }),
+    transform: [
+      {
+        translateY: scrollY.interpolate({
+          inputRange: [0, 100],
+          outputRange: [0, -50],
+          extrapolate: 'clamp',
+        }),
+      },
+    ],
+  };
+
+  // 주간 캘린더 애니메이션 스타일
+  const weeklyCalendarStyle = {
+    opacity: scrollY.interpolate({
+      inputRange: [50, 100],
+      outputRange: [0, 1],
+      extrapolate: 'clamp',
+    }),
+    transform: [
+      {
+        translateY: scrollY.interpolate({
+          inputRange: [50, 100],
+          outputRange: [50, 0],
+          extrapolate: 'clamp',
+        }),
+      },
+    ],
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
@@ -66,18 +133,41 @@ const CalendarScreen = () => {
       {/* 캘린더 상단 헤더 - 총 티켓 개수 표시 */}
       <CalendarHeader totalTickets={totalTickets} />
       
-      {/* 월별 캘린더 컴포넌트 */}
-      <CustomCalendar
-        selectedDate={selectedDate}
-        tickets={tickets}
-        onDayPress={handleDayPress}
-      />
+      {/* 주간 캘린더 (스크롤 시 나타남) */}
+      {isWeeklyView && (
+        <Animated.View style={[styles.weeklyCalendarContainer, weeklyCalendarStyle]}>
+          <WeeklyCalendar
+            selectedDate={selectedDate}
+            tickets={tickets}
+            onDayPress={handleWeeklyDayPress}
+          />
+        </Animated.View>
+      )}
       
-      {/* 선택된 날짜의 공연 목록 */}
-      <EventsList
-        selectedEvents={selectedEvents}
-        onTicketPress={handleTicketPress}
-      />
+      <ScrollView
+        ref={scrollViewRef}
+        style={styles.scrollView}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* 월별 캘린더 컴포넌트 (스크롤 시 사라짐) */}
+        <Animated.View style={monthlyCalendarStyle}>
+          <CustomCalendar
+            selectedDate={selectedDate}
+            tickets={tickets}
+            onDayPress={handleDayPress}
+          />
+        </Animated.View>
+        
+        {/* 선택된 날짜의 공연 목록 */}
+        <View style={styles.eventsContainer}>
+          <EventsList
+            selectedEvents={selectedEvents}
+            onTicketPress={handleTicketPress}
+          />
+        </View>
+      </ScrollView>
 
       {/* 티켓 상세 모달 */}
       {selectedTicket && (
@@ -96,6 +186,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.systemBackground,
+  },
+  weeklyCalendarContainer: {
+    position: 'absolute',
+    top: 100, // CalendarHeader 높이 고려
+    left: 0,
+    right: 0,
+    zIndex: 10,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  eventsContainer: {
+    flex: 1,
+    minHeight: 400, // 스크롤을 위한 최소 높이 보장
   },
 });
 
