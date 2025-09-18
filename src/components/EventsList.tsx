@@ -10,20 +10,21 @@ interface EventsListProps {
 }
 
 const EventsList: React.FC<EventsListProps> = ({ selectedEvents, onTicketPress }) => {
+  // 날짜를 한 번만 표시하기 위한 로직
+  const eventDate = selectedEvents.length > 0 ? new Date(selectedEvents[0].performedAt) : null;
+  const dateString = eventDate ? `${eventDate.getMonth() + 1}월 ${eventDate.getDate()}일` : '';
+
   return (
     <ScrollView style={styles.eventsContainer}>
       {selectedEvents.length > 0 ? (
-        selectedEvents.map(ticket => {
-          const eventDate = new Date(ticket.performedAt);
-          const dateString = `${eventDate.getMonth() + 1}월 ${eventDate.getDate()}일`;
-          
-          return (
-            <View key={ticket.id} style={styles.eventSection}>
-              <Text style={styles.eventDateTitle}>{dateString}</Text>
-              <EventCard ticket={ticket} onPress={onTicketPress} />
-            </View>
-          );
-        })
+        <>
+          <View style={styles.eventSection}>
+            <Text style={styles.eventDateTitle}>{dateString}</Text>
+            {selectedEvents.map(ticket => (
+              <EventCard key={ticket.id} ticket={ticket} onPress={onTicketPress} />
+            ))}
+          </View>
+        </>
       ) : (
         <View style={styles.noEvents}>
           <Text style={styles.noEventsText}>선택한 날짜에 일정이 없습니다.</Text>
@@ -40,13 +41,14 @@ const styles = StyleSheet.create({
   },
   eventSection: {
     marginBottom: Spacing.sectionSpacing,
+    gap: Spacing.md,
   },
   eventDateTitle: {
     ...Typography.title3,
     fontWeight: '700',
     color: Colors.label,
     marginTop: Spacing.md,
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.xs, // 날짜와 카드 사이 간격 감소
   },
   noEvents: {
     flex: 1,
