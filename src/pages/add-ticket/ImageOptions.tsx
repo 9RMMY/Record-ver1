@@ -23,7 +23,7 @@ import {
 } from 'react-native-image-picker';
 import { useAtom } from 'jotai';
 import { addTicketAtom, TicketStatus } from '../../atoms';
-import { 
+import {
   ImageOptionsScreenNavigationProp,
   ImageOptionsRouteProp,
   TicketData,
@@ -176,8 +176,7 @@ const ImageOptions = () => {
         <Text style={styles.headerTitle}>Image Options</Text>
         <View style={styles.placeholder} />
       </View>
-
-      {/* Content */}
+      
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.content}
@@ -242,12 +241,14 @@ const ImageOptions = () => {
             <Text style={styles.nextButtonText}>다음으로</Text>
           </TouchableOpacity>
         )}
+      </ScrollView>
 
-        {/* 이미지 스킵 버튼 */}
+      {/* 이미지 스킵 버튼 */}
+      <View style={styles.bottomButtonContainer}>
         <TouchableOpacity style={styles.skipButton} onPress={handleSkipImages}>
           <Text style={styles.skipButtonText}>이미지 없이 완료</Text>
         </TouchableOpacity>
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 };
@@ -282,10 +283,8 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-
   content: {
     padding: 24,
-    paddingBottom: 40,
   },
   title: {
     fontSize: 28,
@@ -329,7 +328,6 @@ const styles = StyleSheet.create({
   },
   optionButtonSubText: { fontSize: 15, fontWeight: '400', color: '#FFFFFF' },
 
-  // 미리보기 컨테이너 스타일 개선
   previewContainer: {
     marginTop: 24,
     alignItems: 'center',
@@ -355,18 +353,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 24,
   },
-
   nextButtonText: {
     color: '#FFFFFF',
     fontWeight: '600',
     fontSize: 17,
+  },
+
+  bottomButtonContainer: {
+    padding: 24,
   },
   skipButton: {
     backgroundColor: '#8E8E93',
     paddingVertical: 16,
     paddingHorizontal: 24,
     borderRadius: 12,
-    marginTop: 16,
     alignItems: 'center',
   },
   skipButtonText: {
