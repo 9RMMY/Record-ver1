@@ -28,7 +28,7 @@ const TicketGrid: React.FC<TicketGridProps> = ({
   cardAspectRatio = 1.4
 }) => {
   const { width } = Dimensions.get('window');
-  const defaultCardWidth = (width - 60) / 3; // 3 columns with padding (20px * 2 + 20px gaps)
+  const defaultCardWidth = (width-10) / 3; // 3 columns with padding (20px * 2 + 20px gaps)
   const cardWidth = customCardWidth || defaultCardWidth;
   const cardHeight = cardWidth * cardAspectRatio;
   const renderTicketCard = ({ item }: { item: Ticket }) => {
@@ -86,21 +86,21 @@ const TicketGrid: React.FC<TicketGridProps> = ({
 const styles = StyleSheet.create({
   gridContainer: {
     flex: 1,
-    paddingTop: Spacing.sectionSpacing,
+    paddingTop: 0,
     paddingBottom: Spacing.xl,
   },
   gridContent: {
-    paddingHorizontal: Spacing.screenPadding,
+    //paddingHorizontal: Spacing.screenPadding,
     paddingBottom: Spacing.sectionSpacing,
   },
   gridRow: {
     justifyContent: 'flex-start',
-    gap: Spacing.md,
+    gap: 5,
   },
   ticketCard: {
     backgroundColor: Colors.systemBackground,
     borderRadius: BorderRadius.xl,
-    marginBottom: Spacing.lg,
+    marginBottom: 5,
     overflow: 'hidden',
     ...Shadows.large,
   },
