@@ -464,7 +464,6 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                 )}
               </View>
             </View>
-
           </View>
         </View>
       </TouchableWithoutFeedback>
@@ -598,7 +597,7 @@ const styles = StyleSheet.create({
 
   titleSection: {
     alignItems: 'center',
-    paddingTop: 16,
+    paddingTop: 8,
     paddingBottom: 8,
     backgroundColor: '#FFF',
   },
@@ -656,7 +655,10 @@ const styles = StyleSheet.create({
   },
   dateTimeEditContainer: {
     flex: 1,
-    alignItems: 'flex-end',
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
   },
   dateEditButton: {
     backgroundColor: '#F8F9FA',
@@ -665,7 +667,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#E0E0E0',
-    marginBottom: 4,
   },
   timeEditButton: {
     backgroundColor: '#F8F9FA',
