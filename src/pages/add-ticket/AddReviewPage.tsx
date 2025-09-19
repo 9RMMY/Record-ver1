@@ -21,8 +21,9 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { voiceManager } from '../../utils/voiceUtils';
 import { RootStackParamList, TicketData } from '../../types/reviewTypes';
+import { Colors, Typography, Spacing, BorderRadius, Shadows, ComponentStyles, Layout } from '../../styles/designSystem';
+import { voiceManager } from '../../utils/voiceUtils';
 
 // 후기 작성 페이지 Props 타입 정의
 type AddReviewPageProps = NativeStackScreenProps<RootStackParamList, 'AddReview'>;
@@ -219,27 +220,35 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F8F9FA' },
   flex: { flex: 1 },
   header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    padding: 20, backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
-    zIndex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.lg,
+    height: Layout.navigationBarHeight,
+    backgroundColor: Colors.systemBackground,
+    borderBottomWidth: 0.5,
+    borderBottomColor: Colors.separator,
+    position: 'relative',
   },
   backButton: {
-    width: 40, height: 40, borderRadius: 20, backgroundColor: '#F8F9FA',
-    justifyContent: 'center', alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
+    position: 'absolute',
+    left: Spacing.lg,
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.round,
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
   },
-  backButtonText: { fontSize: 20, color: '#2C3E50', fontWeight: 'bold' },
-  headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#2C3E50' },
-  placeholder: { width: 40 },
+  backButtonText: { ...Typography.body, color: Colors.systemBlue, fontWeight: '400' },
+  headerTitle: { ...Typography.headline, color: Colors.label },
+  placeholder: {
+    position: 'absolute',
+    right: Spacing.lg,
+    width: 44,
+    height: 44,
+  },
   content: { flex: 1 },
   reviewContainer: {
     backgroundColor: '#FFFFFF', marginHorizontal: 20, marginBottom: 20,

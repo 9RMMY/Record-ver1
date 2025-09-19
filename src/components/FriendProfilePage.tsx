@@ -21,6 +21,7 @@ import { FriendProfileScreenProps } from '../types/navigation';
 import { useAtom } from 'jotai';
 import { friendTicketsAtom, TicketStatus } from '../atoms';
 import { isPlaceholderTicket } from '../utils/isPlaceholder';
+import { Colors, Typography, Spacing, BorderRadius, Shadows, ComponentStyles, Layout } from '../styles/designSystem';
 
 // ================== 더미 티켓 ==================
 const dummyTickets: Ticket[] = [
@@ -179,9 +180,9 @@ const FriendProfilePage: React.FC<FriendProfileScreenProps> = ({ navigation, rou
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {/* 헤더 */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
+      <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
@@ -287,31 +288,42 @@ const FriendProfilePage: React.FC<FriendProfileScreenProps> = ({ navigation, rou
           isMine={false}
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F8F9FA' },
+  container: { flex: 1, backgroundColor: Colors.secondarySystemBackground },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E9ECEF',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.lg,
+    height: Layout.navigationBarHeight,
+    backgroundColor: Colors.systemBackground,
+    borderBottomWidth: 0.5,
+    borderBottomColor: Colors.separator,
+    position: 'relative',
   },
   backButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 4,
+    position: 'absolute',
+    left: Spacing.lg,
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.round,
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 1,
   },
-  backButtonText: { fontSize: 24, color: '#B11515', fontWeight: '300' },
-  headerTitle: { fontSize: 18, fontWeight: '600', color: '#2C3E50', flex: 1, textAlign: 'center', marginRight: 28 },
-  placeholder: { width: 28 },
+  backButtonText: { ...Typography.body, color: Colors.systemBlue, fontWeight: '400' },
+  headerTitle: { ...Typography.headline, color: Colors.label },
+  placeholder: {
+    position: 'absolute',
+    right: Spacing.lg,
+    width: 44,
+    height: 44,
+  },
   mainContent: { flex: 1 },
   profileSection: {
     alignItems: 'center',
@@ -382,7 +394,7 @@ const styles = StyleSheet.create({
   tabText: { fontSize: 16, fontWeight: '500', color: '#6C757D' },
   activeTabText: { color: '#B11515', fontWeight: '600' },
   pager: { flex: 1 },
-  pageContainer: { flex: 1, backgroundColor: '#F8F9FA' },
+  pageContainer: { flex: 1, backgroundColor: Colors.secondarySystemBackground },
   feedScrollView: {
     flex: 1,
   },

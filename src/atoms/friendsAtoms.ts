@@ -36,6 +36,7 @@ export const friendsMapAtom = atom<Map<string, Friend>>(new Map([
     name: '서현서',
     username: 'wooyoungwoo29',
     profileImage: 'https://via.placeholder.com/50/20B2AA/FFFFFF?text=서',
+    avatar: 'https://via.placeholder.com/50/20B2AA/FFFFFF?text=서',
     createdAt: new Date('2025-08-01T10:00:00'),
     updatedAt: new Date('2025-08-01T10:00:00'),
   }],
@@ -44,6 +45,7 @@ export const friendsMapAtom = atom<Map<string, Friend>>(new Map([
     name: '민지',
     username: 'dxxrjh',
     profileImage: 'https://via.placeholder.com/50/8B4513/FFFFFF?text=민',
+    avatar: 'https://via.placeholder.com/50/8B4513/FFFFFF?text=민',
     createdAt: new Date('2025-08-02T10:00:00'),
     updatedAt: new Date('2025-08-02T10:00:00'),
   }],
@@ -52,6 +54,7 @@ export const friendsMapAtom = atom<Map<string, Friend>>(new Map([
     name: '이스',
     username: 'cknvsp',
     profileImage: 'https://via.placeholder.com/50/708090/FFFFFF?text=이',
+    avatar: 'https://via.placeholder.com/50/708090/FFFFFF?text=이',
     createdAt: new Date('2025-08-03T10:00:00'),
     updatedAt: new Date('2025-08-03T10:00:00'),
   }],
@@ -61,7 +64,68 @@ export const friendsMapAtom = atom<Map<string, Friend>>(new Map([
  * 친구 요청 목록을 Map으로 관리
  * key: requestId, value: FriendRequest
  */
-export const friendRequestsMapAtom = atom<Map<string, FriendRequest>>(new Map());
+export const friendRequestsMapAtom = atom<Map<string, FriendRequest>>(new Map([
+  ['request_1', {
+    id: 'request_1',
+    fromUserId: 'user_101',
+    toUserId: 'current_user',
+    name: '김민수',
+    username: 'minsu_kim',
+    avatar: 'https://via.placeholder.com/50/4A90E2/FFFFFF?text=김',
+    status: FriendRequestStatus.PENDING,
+    message: '안녕하세요! 같이 공연 보러 가요!',
+    createdAt: new Date('2025-09-18T14:30:00'),
+    updatedAt: new Date('2025-09-18T14:30:00'),
+  }],
+  ['request_2', {
+    id: 'request_2',
+    fromUserId: 'user_102',
+    toUserId: 'current_user',
+    name: '박지영',
+    username: 'jiyoung_park',
+    avatar: 'https://via.placeholder.com/50/E91E63/FFFFFF?text=박',
+    status: FriendRequestStatus.PENDING,
+    message: '뮤지컬 좋아하시나요? 친구해요!',
+    createdAt: new Date('2025-09-17T16:45:00'),
+    updatedAt: new Date('2025-09-17T16:45:00'),
+  }],
+  ['request_3', {
+    id: 'request_3',
+    fromUserId: 'user_103',
+    toUserId: 'current_user',
+    name: '이준호',
+    username: 'junho_lee',
+    avatar: 'https://via.placeholder.com/50/FF9500/FFFFFF?text=이',
+    status: FriendRequestStatus.PENDING,
+    message: '콘서트 정보 공유해요!',
+    createdAt: new Date('2025-09-16T09:20:00'),
+    updatedAt: new Date('2025-09-16T09:20:00'),
+  }],
+  ['request_4', {
+    id: 'request_4',
+    fromUserId: 'user_104',
+    toUserId: 'current_user',
+    name: '최수진',
+    username: 'sujin_choi',
+    avatar: 'https://via.placeholder.com/50/9C27B0/FFFFFF?text=최',
+    status: FriendRequestStatus.PENDING,
+    message: '티켓북 앱에서 만나서 반가워요!',
+    createdAt: new Date('2025-09-15T11:10:00'),
+    updatedAt: new Date('2025-09-15T11:10:00'),
+  }],
+  ['request_5', {
+    id: 'request_5',
+    fromUserId: 'user_105',
+    toUserId: 'current_user',
+    name: '정다은',
+    username: 'daeun_jung',
+    avatar: 'https://via.placeholder.com/50/4CAF50/FFFFFF?text=정',
+    status: FriendRequestStatus.PENDING,
+    message: '같은 공연 좋아하는 것 같아요! 친구 신청드려요 😊',
+    createdAt: new Date('2025-09-14T20:15:00'),
+    updatedAt: new Date('2025-09-14T20:15:00'),
+  }],
+]));
 
 /**
  * 친구 관계 목록을 Map으로 관리

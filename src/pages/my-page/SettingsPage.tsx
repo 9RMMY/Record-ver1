@@ -14,6 +14,7 @@ import {
 } from 'react-native-safe-area-context';
 import { useAtom } from 'jotai';
 import { userProfileAtom } from '../../atoms/userAtoms';
+import { Colors, Typography, Spacing, BorderRadius, Shadows, ComponentStyles, Layout } from '../../styles/designSystem';
 
 interface SettingsPageProps {
   navigation: any;
@@ -105,7 +106,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       {/* 헤더 */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
+      <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
@@ -187,46 +188,54 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: Colors.secondarySystemBackground,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E9ECEF',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.lg,
+    height: Layout.navigationBarHeight,
+    backgroundColor: Colors.systemBackground,
+    borderBottomWidth: 0.5,
+    borderBottomColor: Colors.separator,
+    position: 'relative',
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F8F9FA',
+    position: 'absolute',
+    left: Spacing.lg,
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.round,
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 1,
   },
   backButtonText: {
-    fontSize: 20,
-    color: '#2C3E50',
+    ...Typography.body,
+    color: Colors.systemBlue,
+    fontWeight: '400',
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#2C3E50',
+    ...Typography.headline,
+    color: Colors.label,
   },
   placeholder: {
-    width: 40,
+    position: 'absolute',
+    right: Spacing.lg,
+    width: 44,
+    height: 44,
   },
   content: {
     flex: 1,
   },
   userSection: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.systemBackground,
     alignItems: 'center',
-    paddingVertical: 32,
-    marginBottom: 24,
+    paddingVertical: Spacing.xxxl,
+    marginBottom: Spacing.sectionSpacing,
+    ...Shadows.small,
   },
   userAvatarContainer: {
     position: 'relative',
@@ -236,7 +245,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#E9ECEF',
+    backgroundColor: Colors.systemGray5,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -249,60 +258,61 @@ const styles = StyleSheet.create({
     right: 0,
     width: 24,
     height: 24,
-    borderRadius: 12,
-    backgroundColor: '#B11515',
+    borderRadius: BorderRadius.lg,
+    backgroundColor: Colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#FFFFFF',
+    borderColor: Colors.systemBackground,
   },
   editProfileText: {
     fontSize: 12,
   },
   userName: {
-    fontSize: 22,
+    ...Typography.title2,
     fontWeight: '700',
-    color: '#2C3E50',
-    marginBottom: 4,
+    color: Colors.label,
+    marginBottom: Spacing.xs,
   },
   userId: {
-    fontSize: 16,
+    ...Typography.callout,
     fontWeight: '500',
-    color: '#495057',
-    marginBottom: 4,
+    color: Colors.secondaryLabel,
+    marginBottom: Spacing.xs,
   },
   userEmail: {
-    fontSize: 14,
-    color: '#6C757D',
-    marginBottom: 8,
+    ...Typography.footnote,
+    color: Colors.tertiaryLabel,
+    marginBottom: Spacing.sm,
   },
   privateAccountBadge: {
-    backgroundColor: '#FFF3CD',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    backgroundColor: Colors.systemYellow + '20',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.xl,
     borderWidth: 1,
-    borderColor: '#FFEAA7',
+    borderColor: Colors.systemYellow + '40',
   },
   privateAccountText: {
-    fontSize: 12,
+    ...Typography.caption1,
     fontWeight: '500',
-    color: '#856404',
+    color: Colors.systemYellow,
   },
   optionsContainer: {
-    backgroundColor: '#FFFFFF',
-    marginHorizontal: 16,
-    borderRadius: 12,
+    ...ComponentStyles.card,
+    marginHorizontal: Spacing.lg,
+    borderRadius: BorderRadius.lg,
     overflow: 'hidden',
+    padding: 0,
   },
   optionItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F1F3F4',
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.lg,
+    borderBottomWidth: 0.5,
+    borderBottomColor: Colors.separator,
   },
   optionLeft: {
     flexDirection: 'row',
@@ -313,21 +323,21 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   optionTitle: {
-    fontSize: 16,
+    ...Typography.callout,
     fontWeight: '500',
-    color: '#2C3E50',
+    color: Colors.label,
   },
   optionArrow: {
-    fontSize: 16,
-    color: '#ADB5BD',
+    ...Typography.callout,
+    color: Colors.systemGray2,
   },
   versionContainer: {
     alignItems: 'center',
     paddingVertical: 32,
   },
   versionText: {
-    fontSize: 14,
-    color: '#6C757D',
+    ...Typography.footnote,
+    color: Colors.tertiaryLabel,
   },
 });
 

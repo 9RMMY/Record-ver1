@@ -5,15 +5,16 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   Alert,
   Platform,
   Modal,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAtom } from 'jotai';
 import { addTicketAtom, TicketStatus, CreateTicketData } from '../../atoms';
 import { Ticket } from '../../types/ticket';
+import { Colors, Typography, Spacing, BorderRadius, Shadows, ComponentStyles, Layout } from '../../styles/designSystem';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 interface AddTicketPageProps {
@@ -289,36 +290,35 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 20,
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
-    zIndex: 1,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.lg,
+    height: Layout.navigationBarHeight,
+    backgroundColor: Colors.systemBackground,
+    borderBottomWidth: 0.5,
+    borderBottomColor: Colors.separator,
+    position: 'relative',
   },
   
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F8F9FA',
+    position: 'absolute',
+    left: Spacing.lg,
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.round,
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
+    zIndex: 1,
   },
   
-  backButtonText: { fontSize: 20, color: '#2C3E50', fontWeight: 'bold' },
-  headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#2C3E50' },
-  placeholder: { width: 40 },
+  backButtonText: { ...Typography.body, color: Colors.systemBlue, fontWeight: '400' },
+  headerTitle: { ...Typography.headline, color: Colors.label },
+  placeholder: {
+    position: 'absolute',
+    right: Spacing.lg,
+    width: 44,
+    height: 44,
+  },
   content: { flex: 1 },
   formContainer: { padding: 24 },
   inputGroup: { marginBottom: 24 },

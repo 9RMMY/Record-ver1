@@ -8,6 +8,7 @@ import {
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Colors, Typography, Spacing, BorderRadius, Shadows, ComponentStyles, Layout } from '../../styles/designSystem';
 
 interface SentRequest {
   id: string;
@@ -59,6 +60,8 @@ const SentRequestsPage: React.FC<SentRequestsPageProps> = ({ navigation }) => {
         >
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
+        <Text style={styles.headerTitle}>보낸 요청</Text>
+        <View style={styles.placeholder} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -68,8 +71,14 @@ const SentRequestsPage: React.FC<SentRequestsPageProps> = ({ navigation }) => {
         </Text>
 
         {/* 보낸 요청 목록 */}
-        {sentRequests.map(request => (
-          <View key={request.id} style={styles.requestItem}>
+        {sentRequests.map((request, index) => (
+          <View 
+            key={request.id} 
+            style={[
+              styles.requestItem,
+              index === sentRequests.length - 1 && styles.lastRequestItem
+            ]}
+          >
             {/* 프로필 클릭 가능 */}
             <TouchableOpacity
               style={styles.requestInfo}
@@ -107,32 +116,48 @@ const SentRequestsPage: React.FC<SentRequestsPageProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: Colors.secondarySystemBackground,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E9ECEF',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.lg,
+    height: Layout.navigationBarHeight,
+    backgroundColor: Colors.systemBackground,
+    borderBottomWidth: 0.5,
+    borderBottomColor: Colors.separator,
+    position: 'relative',
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F8F9FA',
+    position: 'absolute',
+    left: Spacing.lg,
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.round,
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 1,
   },
   backButtonText: {
-    fontSize: 20,
-    color: '#2C3E50',
+    ...Typography.body,
+    color: Colors.systemBlue,
+    fontWeight: '400',
+  },
+  headerTitle: {
+    ...Typography.headline,
+    color: Colors.label,
+  },
+  placeholder: {
+    position: 'absolute',
+    right: Spacing.lg,
+    width: 44,
+    height: 44,
   },
   content: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: Colors.secondarySystemBackground,
   },
   sectionTitle: {
     fontSize: 18,
@@ -145,6 +170,11 @@ const styles = StyleSheet.create({
     marginTop: 16,
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   requestItem: {
     flexDirection: 'row',
@@ -156,6 +186,11 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#F1F3F4',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   requestInfo: {
     flexDirection: 'row',
@@ -200,8 +235,13 @@ const styles = StyleSheet.create({
   },
   toggleButtonText: {
     fontSize: 14,
-    fontWeight: '400',
+    fontWeight: '600',
     color: '#FFFFFF',
+  },
+  lastRequestItem: {
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
+    borderBottomWidth: 0,
   },
 });
 

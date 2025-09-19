@@ -27,6 +27,7 @@ import TicketGrid from '../../components/TicketGrid';
 import { friendsMapAtom } from '../../atoms';
 import { userProfileAtom } from '../../atoms/userAtoms';
 import { Colors, Typography, Spacing, BorderRadius, Shadows, ComponentStyles } from '../../styles/designSystem';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 
 // 마이 페이지 Props 타입 정의
 interface MyPageProps {
@@ -44,7 +45,8 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null); // 선택된 티켓
   const [modalVisible, setModalVisible] = useState(false); // 모달 표시 여부
   const insets = useSafeAreaInsets();
-  
+  const tabBarHeight = useBottomTabBarHeight(); // 하단 탭 바 높이 가져오기
+
   // 스크롤 애니메이션을 위한 Animated.Value
   const scrollY = useRef(new Animated.Value(0)).current;
 
@@ -92,9 +94,9 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
 
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       {/* 애니메이션 헤더 - 스크롤에 따라 투명도 변화 */}
-      <Animated.View style={[styles.header, { 
+      <Animated.View style={[styles.header, {
         paddingTop: insets.top,
         height: HEADER_HEIGHT + insets.top,
         backgroundColor: headerOpacity.interpolate({
@@ -106,13 +108,13 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
         <Animated.Text style={[styles.appTitle, { opacity: headerOpacity }]}>
           Re:cord
         </Animated.Text>
-        
+
         {/* 중앙 사용자 아이디 (스크롤 시 나타남) */}
-        <Animated.View style={[styles.centerIdContainer, { 
+        <Animated.View style={[styles.centerIdContainer, {
           opacity: centerIdOpacity,
           top: insets.top + 10
         }]}>
-          <Text style={styles.centerId}>{userProfile.userId || userProfile.username || '사용자'}</Text>
+          <Text style={styles.centerId}>{userProfile.username || '사용자'}</Text>
         </Animated.View>
 
         {/* 오른쪽 기능 아이콘들 (친구 추가, 설정) */}
@@ -125,7 +127,7 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
           <Text style={styles.iconText}>👥+</Text>
         </TouchableOpacity>
           {/* 설정 버튼 */}
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.iconButton}
             onPress={() => navigation.navigate('Settings')}
           >
@@ -134,14 +136,15 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
         </Animated.View>
       </Animated.View>
 
-      <Animated.ScrollView 
-        style={styles.content} 
+      <Animated.ScrollView
+        style={styles.content}
         showsVerticalScrollIndicator={false}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
           { useNativeDriver: false }
         )}
         scrollEventThrottle={16}
+        contentContainerStyle={[styles.scrollViewContent, { paddingBottom: tabBarHeight }]}
       >
         {/* 사용자 프로필 섹션 - 아바타, 통계, 사용자 정보 */}
         <View style={[styles.profileSection, { paddingTop: HEADER_HEIGHT + 32}]}>
@@ -175,7 +178,7 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
               <Text style={styles.statValue}>{realTickets.length}개</Text>
             </View>
             {/* 친구 통계 (클릭 시 친구 목록으로 이동) */}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.statBox}
               onPress={() => navigation.navigate('FriendsList')}
             >
@@ -209,8 +212,11 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.systemBackground },
-  
+
   content: { flex: 1 },
+  scrollViewContent: {
+    flexGrow: 1, // 스크롤뷰 콘텐츠가 화면을 채우도록 설정
+  },
   header: {
     position: 'absolute',
     top: 0,
@@ -278,7 +284,7 @@ const styles = StyleSheet.create({
   },
 
   avatarContainer: {
-
+    marginBottom: Spacing.xl,
   },
   avatarImage: {
     width: 120,
@@ -289,13 +295,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: Spacing.md,
-    gap: 40,
   },
   badgeWrapper: {
     flexDirection: 'row',
@@ -315,6 +314,13 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     ...Typography.caption1,
     fontWeight: 'bold',
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: Spacing.md,
+    gap: 40,
   },
   statBox: {
     alignItems: 'center',
@@ -343,7 +349,6 @@ const styles = StyleSheet.create({
     fontSize: 48,
     color: Colors.secondaryLabel,
   },
-
 });
 
 export default MyPage;

@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
     elevation: 2,
     zIndex: 1,
   },
-  headerTitle: { fontSize: 24, fontWeight: 'bold', color: '#2C3E50' },
+  headerTitle: { fontSize: 17, fontWeight: '600', color: '#000000' },
   headerRight: { position: 'relative' },
   filterButton: {
     flexDirection: 'row',

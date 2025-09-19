@@ -10,8 +10,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAtom } from 'jotai';
-import { friendsMapAtom, removeFriendAtom, friendRequestsMapAtom, respondToFriendRequestAtom } from '../../atoms';
+import { friendsMapAtom, removeFriendAtom, receivedFriendRequestsAtom, respondToFriendRequestAtom } from '../../atoms';
 import { Friend, FriendRequest } from '../../types/friend';
+import { Colors, Typography, Spacing, BorderRadius, Shadows, ComponentStyles, Layout } from '../../styles/designSystem';
 
 interface FriendsListPageProps {
   navigation: any;
@@ -20,11 +21,10 @@ interface FriendsListPageProps {
 const FriendsListPage: React.FC<FriendsListPageProps> = ({ navigation }) => {
   const [friendsMap] = useAtom(friendsMapAtom);
   const [, removeFriend] = useAtom(removeFriendAtom);
-  const [friendRequestsMap] = useAtom(friendRequestsMapAtom);
+  const [friendRequests] = useAtom(receivedFriendRequestsAtom);
   const [, respondToRequest] = useAtom(respondToFriendRequestAtom);
   
   const friends = Array.from(friendsMap.values());
-  const friendRequests = Array.from(friendRequestsMap.values());
 
   const friendRequestsCount = friendRequests.length;
   const friendsCount = friends.length;
@@ -42,15 +42,26 @@ const FriendsListPage: React.FC<FriendsListPageProps> = ({ navigation }) => {
   };
 
   // 친구 요청 거절
-  const handleRejectRequest = (requestId: string) => {
-    Alert.alert('친구 요청 거절', '정말로 친구 요청을 거절하시겠어요?', [
-      { text: '취소', style: 'cancel' },
-      {
-        text: '거절',
-        style: 'destructive',
-        onPress: () => respondToRequest({ requestId, accept: false }),
-      },
-    ]);
+  const handleRejectRequest = (request: FriendRequest) => {
+    Alert.alert(
+      '친구 요청 거절',
+      `${request.name}님의 친구 요청을 거절하시겠어요?`,
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '거절',
+          style: 'destructive',
+          onPress: () => {
+            try {
+              respondToRequest({ requestId: request.id, accept: false });
+              Alert.alert('완료', '친구 요청을 거절했습니다.');
+            } catch (error) {
+              Alert.alert('오류', '친구 요청 거절 중 오류가 발생했습니다.');
+            }
+          },
+        },
+      ]
+    );
   };
 
   // 친구 프로필로 이동 (모달 닫기 → 풀스크린 열기)
@@ -66,7 +77,24 @@ const FriendsListPage: React.FC<FriendsListPageProps> = ({ navigation }) => {
 
   // 친구 요청 수락
   const handleAcceptRequest = (request: FriendRequest) => {
-    respondToRequest({ requestId: request.id, accept: true });
+    Alert.alert(
+      '친구 요청 수락',
+      `${request.name}님의 친구 요청을 수락하시겠어요?`,
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '수락',
+          onPress: () => {
+            try {
+              respondToRequest({ requestId: request.id, accept: true });
+              Alert.alert('성공', `${request.name}님과 친구가 되었습니다! 🎉`);
+            } catch (error) {
+              Alert.alert('오류', '친구 요청 수락 중 오류가 발생했습니다.');
+            }
+          },
+        },
+      ]
+    );
   };
 
 
@@ -79,6 +107,7 @@ const FriendsListPage: React.FC<FriendsListPageProps> = ({ navigation }) => {
         >
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
+        <Text style={styles.headerTitle}>친구</Text>
         <TouchableOpacity
           style={styles.addFriendButton}
           onPress={() => navigation.navigate('AddFriend')}
@@ -99,7 +128,7 @@ const FriendsListPage: React.FC<FriendsListPageProps> = ({ navigation }) => {
               style={styles.sentFriendButton}
               onPress={() => navigation.navigate('SentRequests')}
             >
-              <Text style={styles.sentFriendText}>보낸 요청 +</Text>
+              <Text style={styles.sentFriendText}>보낸 요청</Text>
             </TouchableOpacity>
           </View>
 
@@ -130,7 +159,7 @@ const FriendsListPage: React.FC<FriendsListPageProps> = ({ navigation }) => {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.requestButton, styles.rejectButton]}
-                  onPress={() => handleRejectRequest(request.id)}
+                  onPress={() => handleRejectRequest(request)}
                 >
                   <Text style={styles.requestButtonText}>거절</Text>
                 </TouchableOpacity>
@@ -141,9 +170,12 @@ const FriendsListPage: React.FC<FriendsListPageProps> = ({ navigation }) => {
 
         {/* 친구 목록 섹션 */}
         <View style={styles.friendsSection}>
-          <Text style={styles.friendsSectionTitle}>
-            내 친구들 ({friendsCount})
-          </Text>
+          <View style={styles.friendsSectionHeader}>
+            <Text style={styles.friendsSectionTitle}>
+              내 친구들 ({friendsCount})
+            </Text>
+            <View style={styles.placeholder} />
+          </View>
           {friends.map(friend => (
             <View key={friend.id} style={styles.friendItem}>
               <TouchableOpacity
@@ -174,43 +206,57 @@ const FriendsListPage: React.FC<FriendsListPageProps> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F8F9FA' },
+  container: { flex: 1, backgroundColor: Colors.secondarySystemBackground },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E9ECEF',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.lg,
+    height: Layout.navigationBarHeight,
+    backgroundColor: Colors.systemBackground,
+    borderBottomWidth: 0.5,
+    borderBottomColor: Colors.separator,
+    position: 'relative',
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F8F9FA',
+    position: 'absolute',
+    left: Spacing.lg,
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.round,
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 1,
   },
-  backButtonText: { fontSize: 20, color: '#2C3E50' },
+  backButtonText: { ...Typography.body, color: Colors.systemBlue, fontWeight: '400' },
+  headerTitle: {
+    ...Typography.headline,
+    color: Colors.label,
+  },
   addFriendButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F8F9FA',
+    position: 'absolute',
+    right: Spacing.lg,
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.round,
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  addFriendIcon: { fontSize: 16, color: '#2C3E50' },
-  content: { flex: 1, backgroundColor: '#F8F9FA' },
+  addFriendIcon: { ...Typography.headline, color: Colors.systemBlue, fontWeight: '600' },
+  content: { flex: 1, backgroundColor: Colors.secondarySystemBackground },
+  placeholder: {
+    width: 44,
+    height: 44,
+  },
 
   friendsSection: {
-    backgroundColor: '#FFFFFF',
-    marginHorizontal: 16,
-    marginTop: 16,
-    borderRadius: 12,
+    ...ComponentStyles.card,
+    marginHorizontal: Spacing.lg,
+    marginTop: Spacing.lg,
     overflow: 'hidden',
+    padding: 0,
   },
   friendsSectionHeader: {
     flexDirection: 'row',
@@ -233,10 +279,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 8,
-    backgroundColor: '#B11515',
   },
   sentFriendText: {
-    color: '#FFFFFF',
+    color: '#0b0b0bff',
     fontSize: 14,
     fontWeight: '600',
   },

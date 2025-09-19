@@ -6,10 +6,8 @@ import {
   StyleSheet,
   ScrollView,
 } from 'react-native';
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Colors, Typography, Spacing, BorderRadius, Shadows, ComponentStyles, Layout } from '../../styles/designSystem';
 
 interface AIImageSettingsProps {
   navigation: any;
@@ -99,7 +97,7 @@ const AIImageSettings: React.FC<AIImageSettingsProps> = ({ navigation, route }) 
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>AI 이미지 설정</Text>
-        <View style={{ width: 40 }} />
+        <View style={styles.placeholder} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -205,22 +203,33 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 20,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.lg,
+    height: Layout.navigationBarHeight,
+    backgroundColor: Colors.systemBackground,
+    borderBottomWidth: 0.5,
+    borderBottomColor: Colors.separator,
+    position: 'relative',
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#ECF0F1',
+    position: 'absolute',
+    left: Spacing.lg,
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.round,
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 1,
   },
-  backButtonText: { fontSize: 20, color: '#2C3E50', fontWeight: 'bold' },
-  headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#2C3E50' },
+  backButtonText: { ...Typography.body, color: Colors.systemBlue, fontWeight: '400' },
+  headerTitle: { ...Typography.headline, color: Colors.label },
+  placeholder: {
+    position: 'absolute',
+    right: Spacing.lg,
+    width: 44,
+    height: 44,
+  },
   content: { flex: 1 },
   sectionContainer: {
     backgroundColor: '#FFFFFF',

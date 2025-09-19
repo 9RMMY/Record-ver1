@@ -23,12 +23,8 @@ import {
 } from 'react-native-image-picker';
 import { useAtom } from 'jotai';
 import { addTicketAtom, TicketStatus } from '../../atoms';
-import {
-  ImageOptionsScreenNavigationProp,
-  ImageOptionsRouteProp,
-  TicketData,
-  ReviewData
-} from '../../types/reviewTypes';
+import { ImageOptionsScreenNavigationProp, ImageOptionsRouteProp } from '../../types/reviewTypes';
+import { Colors, Typography, Spacing, BorderRadius, Shadows, ComponentStyles, Layout } from '../../styles/designSystem';
 import { Ticket, CreateTicketData } from '../../types/ticket';
 
 // Types are now imported from reviewTypes
@@ -258,27 +254,33 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 20,
-    backgroundColor: '#F2F2F7',
-    borderBottomWidth: 0,
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.lg,
+    height: Layout.navigationBarHeight,
+    backgroundColor: Colors.systemBackground,
+    borderBottomWidth: 0.5,
+    borderBottomColor: Colors.separator,
+    position: 'relative',
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#FFFFFF',
+    position: 'absolute',
+    left: Spacing.lg,
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.round,
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+    zIndex: 1,
   },
-  backButtonText: { fontSize: 20, color: '#007AFF' },
-  headerTitle: { fontSize: 20, fontWeight: '600', color: '#000000' },
-  placeholder: { width: 40 },
+  backButtonText: { ...Typography.body, color: Colors.systemBlue, fontWeight: '400' },
+  headerTitle: { ...Typography.headline, color: Colors.label },
+  placeholder: {
+    position: 'absolute',
+    right: Spacing.lg,
+    width: 44,
+    height: 44,
+  },
 
   scrollView: {
     flex: 1,

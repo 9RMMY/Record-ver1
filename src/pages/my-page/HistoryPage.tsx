@@ -15,6 +15,7 @@ import { useAtom } from 'jotai';
 import { ticketsAtom } from '../../atoms';
 import { Ticket } from '../../types/ticket';
 import { isPlaceholderTicket } from '../../utils/isPlaceholder';
+import { Colors, Typography, Spacing, BorderRadius, Shadows, ComponentStyles, Layout } from '../../styles/designSystem';
 
 interface HistoryPageProps {
   navigation: any;
@@ -113,7 +114,7 @@ const HistoryPage: React.FC<HistoryPageProps> = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
+      <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
@@ -190,37 +191,44 @@ const HistoryPage: React.FC<HistoryPageProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: Colors.secondarySystemBackground,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E9ECEF',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.lg,
+    height: Layout.navigationBarHeight,
+    backgroundColor: Colors.systemBackground,
+    borderBottomWidth: 0.5,
+    borderBottomColor: Colors.separator,
+    position: 'relative',
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F8F9FA',
+    position: 'absolute',
+    left: Spacing.lg,
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.round,
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 1,
   },
   backButtonText: {
-    fontSize: 20,
-    color: '#2C3E50',
+    ...Typography.body,
+    color: Colors.systemBlue,
+    fontWeight: '400',
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#2C3E50',
+    ...Typography.headline,
+    color: Colors.label,
   },
   placeholder: {
-    width: 40,
+    position: 'absolute',
+    right: Spacing.lg,
+    width: 44,
+    height: 44,
   },
   filterContainer: {
     backgroundColor: '#FFFFFF',

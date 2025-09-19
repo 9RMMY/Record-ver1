@@ -17,6 +17,7 @@ import {
 import { launchImageLibrary, ImagePickerResponse } from 'react-native-image-picker';
 import { useAtom } from 'jotai';
 import { userProfileAtom, updateUserProfileAtom } from '../../atoms/userAtoms';
+import { Colors, Typography, Spacing, BorderRadius, Shadows, ComponentStyles, Layout } from '../../styles/designSystem';
 
 interface PersonalInfoEditPageProps {
   navigation: any;
@@ -185,7 +186,7 @@ const PersonalInfoEditPage: React.FC<PersonalInfoEditPageProps> = ({ navigation 
   return (
     <SafeAreaView style={styles.container}>
       {/* 헤더 */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
+      <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
@@ -261,8 +262,8 @@ const PersonalInfoEditPage: React.FC<PersonalInfoEditPageProps> = ({ navigation 
               <Switch
                 value={isAccountPrivate}
                 onValueChange={setIsAccountPrivate}
-                trackColor={{ false: '#E9ECEF', true: '#B11515' }}
-                thumbColor={isAccountPrivate ? '#FFFFFF' : '#FFFFFF'}
+                trackColor={{ false: Colors.systemGray4, true: Colors.systemGreen }}
+                thumbColor={Colors.systemBackground}
               />
             </View>
           </View>
@@ -306,66 +307,73 @@ const PersonalInfoEditPage: React.FC<PersonalInfoEditPageProps> = ({ navigation 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: Colors.secondarySystemBackground,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E9ECEF',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.lg,
+    height: Layout.navigationBarHeight,
+    backgroundColor: Colors.systemBackground,
+    borderBottomWidth: 0.5,
+    borderBottomColor: Colors.separator,
+    position: 'relative',
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F8F9FA',
+    position: 'absolute',
+    left: Spacing.lg,
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.round,
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  backButtonText: {
+    ...Typography.body,
+    color: Colors.systemBlue,
+    fontWeight: '400',
+  },
+  headerTitle: {
+    ...Typography.headline,
+    color: Colors.label,
+  },
+  saveButton: {
+    position: 'absolute',
+    right: Spacing.lg,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    backgroundColor: Colors.systemBlue,
+    borderRadius: BorderRadius.md,
+    minWidth: 44,
+    minHeight: 32,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  backButtonText: {
-    fontSize: 20,
-    color: '#2C3E50',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#2C3E50',
-  },
-  saveButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: '#B11515',
-    borderRadius: 8,
-  },
   saveButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#FFFFFF',
+    ...Typography.headline,
+    color: Colors.systemBackground,
   },
   content: {
     flex: 1,
   },
   section: {
-    backgroundColor: '#FFFFFF',
-    marginHorizontal: 16,
-    marginTop: 24,
-    borderRadius: 12,
-    padding: 20,
+    ...ComponentStyles.card,
+    marginHorizontal: Spacing.lg,
+    marginTop: Spacing.sectionSpacing,
   },
   sectionTitle: {
-    fontSize: 18,
+    ...Typography.title3,
     fontWeight: '600',
-    color: '#2C3E50',
-    marginBottom: 4,
+    color: Colors.label,
+    marginBottom: Spacing.xs,
   },
   sectionSubtitle: {
-    fontSize: 14,
-    color: '#6C757D',
-    marginBottom: 20,
+    ...Typography.footnote,
+    color: Colors.tertiaryLabel,
+    marginBottom: Spacing.xl,
   },
   fieldContainer: {
     gap: 16,
@@ -374,40 +382,35 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   fieldLabel: {
-    fontSize: 14,
+    ...Typography.footnote,
     fontWeight: '500',
-    color: '#495057',
+    color: Colors.secondaryLabel,
   },
   textInput: {
-    borderWidth: 1,
-    borderColor: '#DEE2E6',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: '#2C3E50',
-    backgroundColor: '#FFFFFF',
+    ...ComponentStyles.input,
+    borderColor: Colors.systemGray4,
+    backgroundColor: Colors.systemBackground,
   },
   guidelinesContainer: {
-    backgroundColor: '#F8F9FA',
-    marginHorizontal: 16,
-    marginTop: 24,
-    marginBottom: 32,
-    borderRadius: 12,
-    padding: 20,
+    backgroundColor: Colors.secondarySystemBackground,
+    marginHorizontal: Spacing.lg,
+    marginTop: Spacing.sectionSpacing,
+    marginBottom: Spacing.xxxl,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.xl,
     borderWidth: 1,
-    borderColor: '#E9ECEF',
+    borderColor: Colors.separator,
   },
   guidelinesTitle: {
-    fontSize: 16,
+    ...Typography.callout,
     fontWeight: '600',
-    color: '#495057',
-    marginBottom: 12,
+    color: Colors.secondaryLabel,
+    marginBottom: Spacing.md,
   },
   guidelineText: {
-    fontSize: 14,
-    color: '#6C757D',
-    marginBottom: 4,
+    ...Typography.footnote,
+    color: Colors.tertiaryLabel,
+    marginBottom: Spacing.xs,
   },
   profileImageContainer: {
     alignItems: 'center',
@@ -426,7 +429,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: '#E9ECEF',
+    backgroundColor: Colors.systemGray5,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -439,28 +442,25 @@ const styles = StyleSheet.create({
     right: 0,
     width: 32,
     height: 32,
-    borderRadius: 16,
-    backgroundColor: '#B11515',
+    borderRadius: BorderRadius.lg,
+    backgroundColor: Colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#FFFFFF',
+    borderColor: Colors.systemBackground,
   },
   editImageText: {
     fontSize: 16,
   },
   changeImageButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    backgroundColor: '#F8F9FA',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#DEE2E6',
+    ...ComponentStyles.secondaryButton,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
   },
   changeImageButtonText: {
-    fontSize: 14,
+    ...Typography.footnote,
     fontWeight: '500',
-    color: '#495057',
+    color: Colors.secondaryLabel,
   },
   privacyContainer: {
     marginTop: 16,
@@ -476,14 +476,14 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   privacyTitle: {
-    fontSize: 16,
+    ...Typography.callout,
     fontWeight: '500',
-    color: '#2C3E50',
-    marginBottom: 4,
+    color: Colors.label,
+    marginBottom: Spacing.xs,
   },
   privacyDescription: {
-    fontSize: 14,
-    color: '#6C757D',
+    ...Typography.footnote,
+    color: Colors.tertiaryLabel,
     lineHeight: 20,
   },
 });
