@@ -24,7 +24,7 @@ import {
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ticket, UpdateTicketData } from '../types/ticket';
 import { useAtom } from 'jotai';
-import { deleteTicketAtom, updateTicketAtom, TicketStatus, getTicketByIdAtom } from '../atoms';
+import { deleteTicketAtom, updateTicketAtom, TicketStatus, getTicketByIdAtom, ticketsAtom } from '../atoms';
 import { TicketDetailModalProps } from '../types/componentProps';
 
 const { width } = Dimensions.get('window');
@@ -38,6 +38,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
   const [, deleteTicket] = useAtom(deleteTicketAtom);
   const [, updateTicket] = useAtom(updateTicketAtom);
   const [getTicketById] = useAtom(getTicketByIdAtom);
+  const [allTickets] = useAtom(ticketsAtom);
 
   const ticket = propTicket ? getTicketById(propTicket.id) || propTicket : null;
   const [isFlipped, setIsFlipped] = useState(false);
@@ -243,6 +244,9 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
   const frontAnimatedStyle = { transform: [{ rotateY: frontInterpolate }] };
   const backAnimatedStyle = { transform: [{ rotateY: backInterpolate }] };
 
+  // n회차 관람 뱃지를 위한 로직
+  const viewCount = allTickets.filter(t => t.title === ticket.title).length;
+
   return (
     <Modal
       visible={visible}
@@ -400,6 +404,12 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                 />
               ) : (
                 <Text style={styles.title}>{ticket.title}</Text>
+              )}
+              {/* n회차 관람 뱃지 */}
+              {viewCount > 1 && (
+                <View style={styles.viewCountBadge}>
+                  <Text style={styles.viewCountText}>{viewCount}회차 관람</Text>
+                </View>
               )}
             </View>
 
@@ -609,9 +619,22 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
 
+  viewCountBadge: {
+    backgroundColor: '#E0E0E0',
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  viewCountText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#4A4A4A',
+  },
+
   detailsSection: {
     backgroundColor: '#FFF',
-    paddingHorizontal: 20,
+    paddingHorizontal: 28,
+    paddingVertical: 12,
   },
   detailRow: {
     flexDirection: 'row',
@@ -621,15 +644,19 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#F1F2F6',
   },
-  detailLabel: { fontSize: 16, color: '#7F8C8D', fontWeight: '500', flex: 1 },
+  detailLabel: { 
+    fontSize: 12, 
+    color: '#7F8C8D', 
+    fontWeight: '400',
+    marginRight: 8, // 라벨과 값 사이 간격 추가
+  },
   detailValue: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#2C3E50',
-    fontWeight: '600',
-    flex: 7,
+    fontWeight: '500',
+    flex: 1, // 남은 공간을 채우도록 flex: 1로 변경
     textAlign: 'right',
   },
-
 
   // 편집 모드 스타일
   titleInput: {
@@ -643,10 +670,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   detailInput: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#2C3E50',
-    fontWeight: '600',
-    flex: 7,
+    fontWeight: '500',
+    flex: 1,
     textAlign: 'right',
     borderBottomWidth: 1,
     borderBottomColor: '#E0E0E0',
