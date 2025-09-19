@@ -8,7 +8,7 @@ import {
   Dimensions,
   ScrollView,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import PagerView from 'react-native-pager-view';
 import TicketDetailModal from './TicketDetailModal';
@@ -114,6 +114,7 @@ const { width } = Dimensions.get('window');
 
 const FriendProfilePage: React.FC<FriendProfileScreenProps> = ({ navigation, route }) => {
   const { friend } = route.params;
+  const insets = useSafeAreaInsets();
   const [allFriendTicketsData] = useAtom(friendTicketsAtom);
   const [selectedDate, setSelectedDate] = React.useState(
     new Date().toISOString().split('T')[0],
@@ -178,9 +179,9 @@ const FriendProfilePage: React.FC<FriendProfileScreenProps> = ({ navigation, rou
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {/* 헤더 */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
@@ -286,7 +287,7 @@ const FriendProfilePage: React.FC<FriendProfileScreenProps> = ({ navigation, rou
           isMine={false}
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 };
 

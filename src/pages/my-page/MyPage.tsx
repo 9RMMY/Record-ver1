@@ -185,11 +185,13 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
           </View>
         </View>
 
-        {/* 티켓 그리드 - 사용자의 티켓 컬렉션 표시 */}
-        <TicketGrid
-          tickets={realTickets}
-          onTicketPress={handleTicketPress}
-        />
+        {/* 티켓 그리드 섹션 */}
+        <View style={styles.ticketGridSection}>
+          <TicketGrid
+            tickets={realTickets}
+            onTicketPress={handleTicketPress}
+          />
+        </View>
       </Animated.ScrollView>
 
       {/* 티켓 상세 모달 */}
@@ -258,14 +260,23 @@ const styles = StyleSheet.create({
     ...Typography.callout,
   },
 
-  // 프로필 섹션 스타일
+  // 프로필 섹션 스타일 - 수정됨
   profileSection: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: Spacing.xxxl,
-    backgroundColor: Colors.systemBackground,
-    ...Shadows.large,
+    paddingBottom: Spacing.xl, // 하단 패딩 조정
+    backgroundColor: 'transparent', // 배경색 제거
+    // ...Shadows.large, // 그림자 제거
   },
+  
+  // 티켓 그리드 섹션 추가
+  ticketGridSection: {
+    flex: 1,
+    backgroundColor: Colors.systemBackground,
+    paddingTop: Spacing.lg,
+  },
+
   avatarContainer: {
 
   },

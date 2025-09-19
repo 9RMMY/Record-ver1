@@ -4,10 +4,10 @@
  * 특정 날짜 선택 시 해당 날짜의 공연 목록을 하단에 표시
  * 스크롤 시 월간 캘린더에서 주간 캘린더로 전환되는 애니메이션 포함
  */
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, StyleSheet, StatusBar, ScrollView, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useAtom } from 'jotai';
 import { ticketsAtom } from '../../atoms';
 import { Ticket } from '../../types/ticket';
@@ -17,6 +17,7 @@ import CustomCalendar from '../../components/CustomCalendar';
 import WeeklyCalendar from '../../components/WeeklyCalendar';
 import EventsList from '../../components/EventsList';
 import { Colors } from '../../styles/designSystem';
+import { useCallback } from 'react';
 
 // 캘린더 화면 Props 타입 정의
 interface CalendarProps {
@@ -39,6 +40,17 @@ const CalendarScreen = () => {
   
   // 월간/주간 캘린더 전환을 위한 상태
   const [isWeeklyView, setIsWeeklyView] = useState(false);
+
+  // useFocusEffect를 사용하여 화면에 포커스될 때마다 뷰를 월간으로 초기화
+  useFocusEffect(
+    useCallback(() => {
+      setIsWeeklyView(false);
+      // 스크롤 위치도 함께 초기화
+      if (scrollViewRef.current) {
+        scrollViewRef.current.scrollTo({ y: 0, animated: false });
+      }
+    }, [])
+  );
 
   // 날짜를 YYYY-MM-DD 형식으로 포맷팅
   const formatDate = (date: Date) => date.toISOString().split('T')[0];
@@ -133,7 +145,6 @@ const CalendarScreen = () => {
       {/* 캘린더 상단 헤더 - 총 티켓 개수 표시 (항상 고정) */}
       <CalendarHeader totalTickets={totalTickets} />
       
-      {/* 주간 캘린더 (스크롤 시 나타남, 헤더 바로 아래 고정) */}
       {isWeeklyView && (
         <Animated.View style={[styles.weeklyCalendarContainer, weeklyCalendarStyle]}>
           <WeeklyCalendar
