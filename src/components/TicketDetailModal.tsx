@@ -406,7 +406,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                 <Text style={styles.title}>{ticket.title}</Text>
               )}
               {/* n회차 관람 뱃지 */}
-              {viewCount > 1 && (
+              {viewCount > 1 && !isEditing && (
                 <View style={styles.viewCountBadge}>
                   <Text style={styles.viewCountText}>{viewCount}회차 관람</Text>
                 </View>
@@ -608,7 +608,7 @@ const styles = StyleSheet.create({
   titleSection: {
     alignItems: 'center',
     paddingTop: 8,
-    paddingBottom: 8,
+    paddingBottom: 4,
     backgroundColor: '#FFF',
   },
   title: {
@@ -618,7 +618,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 8,
   },
-
   viewCountBadge: {
     backgroundColor: '#E0E0E0',
     borderRadius: 16,
@@ -634,7 +633,7 @@ const styles = StyleSheet.create({
   detailsSection: {
     backgroundColor: '#FFF',
     paddingHorizontal: 28,
-    paddingVertical: 12,
+    paddingVertical: 8,
   },
   detailRow: {
     flexDirection: 'row',
