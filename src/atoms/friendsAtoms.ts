@@ -353,11 +353,13 @@ export const respondToFriendRequestAtom = atom(
         const friendsMap = get(friendsMapAtom);
         const friendshipsMap = get(friendshipsMapAtom);
         
-        // 새 친구 추가 (실제로는 서버에서 사용자 정보를 가져와야 함)
+        // 새 친구 추가 (FriendRequest의 실제 정보 사용)
         const newFriend: Friend = {
           id: request.fromUserId,
-          name: '새 친구', // 실제로는 서버에서 가져온 정보
-          username: 'newfriend',
+          name: request.name,
+          username: request.username,
+          avatar: request.avatar,
+          profileImage: request.avatar, // avatar와 profileImage 동기화
           createdAt: new Date(),
           updatedAt: new Date(),
         };

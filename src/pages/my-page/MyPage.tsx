@@ -19,13 +19,15 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 import { useAtom } from 'jotai';
-import { ticketsAtom } from '../../atoms';
+import { myTicketsAtom } from '../../atoms/ticketsAtomsApi';
+import { friendsAtom } from '../../atoms/friendsAtomsApi';
+import { userProfileAtom } from '../../atoms/userAtomsApi';
 import { Ticket } from '../../types/ticket';
 import { isPlaceholderTicket } from '../../utils/isPlaceholder';
 import TicketDetailModal from '../../components/TicketDetailModal';
 import TicketGrid from '../../components/TicketGrid';
-import { friendsMapAtom } from '../../atoms';
-import { userProfileAtom } from '../../atoms/userAtoms';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import { useMyTicketsData, useFriendsData, useUserProfileData } from '../../hooks/useApiData';
 import { Colors, Typography, Spacing, BorderRadius, Shadows, ComponentStyles } from '../../styles/designSystem';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 
@@ -38,10 +40,27 @@ interface MyPageProps {
 const HEADER_HEIGHT = 80;
 
 const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
-  const [tickets] = useAtom(ticketsAtom); // 전체 티켓 목록
-  const [friendsMap] = useAtom(friendsMapAtom); // 친구 목록
-  const [userProfile] = useAtom(userProfileAtom); // 사용자 프로필 정보
-  const friends = Array.from(friendsMap.values());
+  // 기존 atoms 사용 (안정적인 방식)
+  const [myTickets] = useAtom(myTicketsAtom);
+  const [friendsList] = useAtom(friendsAtom);
+  const [profile] = useAtom(userProfileAtom);
+  
+  // 기본값으로 안전하게 처리
+  const actualTickets = myTickets || [];
+  const actualFriends = friendsList || [];
+  const actualProfile = profile || {
+    id: 'default',
+    name: '사용자',
+    username: '@user',
+    email: 'user@example.com',
+    profileImage: undefined,
+    avatar: undefined,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  
+  // 로딩 상태 (나중에 API 연동 시 사용)
+  const isLoading = false;
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null); // 선택된 티켓
   const [modalVisible, setModalVisible] = useState(false); // 모달 표시 여부
   const insets = useSafeAreaInsets();
@@ -50,10 +69,10 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
   // 스크롤 애니메이션을 위한 Animated.Value
   const scrollY = useRef(new Animated.Value(0)).current;
 
-  // 실제 등록된 티켓만 필터링하고 최신순으로 정렬
-  const realTickets = tickets
-    .filter(ticket => !isPlaceholderTicket(ticket))
-    .sort((a, b) => {
+  // 실제 등록된 티켓만 필터링하고 최신순으로 정렬 (티켓 수 세기 & 티켓 그리드에 정렬하려고)
+  const realTickets = actualTickets
+    .filter((ticket: Ticket) => !isPlaceholderTicket(ticket))
+    .sort((a: Ticket, b: Ticket) => {
       const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
       const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
       return dateB - dateA; // 최신순 정렬
@@ -114,7 +133,7 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
           opacity: centerIdOpacity,
           top: insets.top + 10
         }]}>
-          <Text style={styles.centerId}>{userProfile.username || '사용자'}</Text>
+          <Text style={styles.centerId}>{actualProfile.username || '사용자'}</Text>
         </Animated.View>
 
         {/* 오른쪽 기능 아이콘들 (친구 추가, 설정) */}
@@ -149,9 +168,9 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
         {/* 사용자 프로필 섹션 - 아바타, 통계, 사용자 정보 */}
         <View style={[styles.profileSection, { paddingTop: HEADER_HEIGHT + 32}]}>
           <View style={styles.avatarContainer}>
-            {userProfile.profileImage ? (
+            {actualProfile.profileImage ? (
               <Image
-                source={{ uri: userProfile.profileImage }}
+                source={{ uri: actualProfile.profileImage }}
                 style={styles.avatarImage}
               />
             ) : (
@@ -168,7 +187,7 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
           </View>
 
           {/* 사용자 아이디 */}
-          <Text style={styles.username}>{userProfile.name || userProfile.userId || userProfile.username || '사용자'}</Text>
+          <Text style={styles.username}>{actualProfile.name || actualProfile.username || '사용자'}</Text>
 
           {/* 사용자 통계 정보 (티켓 수, 친구 수) */}
           <View style={styles.statsRow}>
@@ -183,17 +202,21 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
               onPress={() => navigation.navigate('FriendsList')}
             >
               <Text style={styles.statLabel}>친구들</Text>
-              <Text style={styles.statValue}>{friends.length}명</Text>
+              <Text style={styles.statValue}>{actualFriends.length}명</Text>
             </TouchableOpacity>
           </View>
         </View>
 
         {/* 티켓 그리드 섹션 */}
         <View style={styles.ticketGridSection}>
-          <TicketGrid
-            tickets={realTickets}
-            onTicketPress={handleTicketPress}
-          />
+          {isLoading ? (
+            <LoadingSpinner loading={true} message="티켓 로딩 중..." />
+          ) : (
+            <TicketGrid
+              tickets={realTickets}
+              onTicketPress={handleTicketPress}
+            />
+          )}
         </View>
       </Animated.ScrollView>
 

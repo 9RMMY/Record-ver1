@@ -12,6 +12,10 @@ export const Colors = {
   secondarySystemBackground: '#F2F2F7',  // Light gray background
   tertiarySystemBackground: '#FFFFFF',   // White for cards
   
+  // Basic Colors
+  white: '#FFFFFF',
+  black: '#000000',
+  
   // Text Colors
   label: '#000000',             // Primary text (black)
   secondaryLabel: '#3C3C43',    // Secondary text (60% opacity)

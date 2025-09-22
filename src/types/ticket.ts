@@ -1,13 +1,12 @@
 import { TicketStatus, TicketCategory } from './enums';
+export { TicketStatus, TicketCategory } from './enums';
 
 /**
  * 티켓 리뷰 인터페이스
  */
 export interface TicketReview {
   reviewText: string;
-  rating?: number; // 1-5 별점 (선택사항)
   createdAt: Date;
-  updatedAt?: Date;
 }
 
 /**
@@ -17,14 +16,10 @@ export interface BaseTicket {
   readonly id: string;
   title: string;
   performedAt: Date;
-  status: TicketStatus;
   place?: string;
   artist?: string;
-  bookingSite?: string;
-  category?: TicketCategory;
   readonly userId: string;
   readonly createdAt: Date;
-  updatedAt: Date;
 }
 
 /**
@@ -52,21 +47,7 @@ export interface UpdateTicketData extends Partial<Omit<Ticket, 'id' | 'userId' |
 /**
  * 티켓 폼 데이터 인터페이스
  */
-export interface TicketFormData extends Pick<BaseTicket, 'title' | 'performedAt' | 'status' | 'place' | 'artist' | 'bookingSite' | 'category'> {
+export interface TicketFormData extends Pick<BaseTicket, 'title' | 'performedAt' | 'place' | 'artist' > {
   reviewText?: string;
-  rating?: number;
   images?: string[];
-}
-
-/**
- * 티켓 필터 옵션
- */
-export interface TicketFilterOptions {
-  status?: TicketStatus;
-  category?: TicketCategory;
-  dateRange?: {
-    start: Date;
-    end: Date;
-  };
-  searchText?: string;
 }
