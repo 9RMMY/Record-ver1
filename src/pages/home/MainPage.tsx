@@ -162,7 +162,6 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
             images: [],
             review: undefined,
             createdAt: new Date(),
-            updatedAt: new Date(),
             isPlaceholder: true,
           },
         ];

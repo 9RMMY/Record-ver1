@@ -18,6 +18,8 @@ export interface BaseTicket {
   performedAt: Date;
   place?: string;
   artist?: string;
+  bookingSite?: string;
+  status: TicketStatus;
   readonly userId: string;
   readonly createdAt: Date;
 }
@@ -37,6 +39,7 @@ export interface Ticket extends BaseTicket {
 export interface CreateTicketData extends Omit<BaseTicket, 'id' | 'userId' | 'createdAt' | 'updatedAt'> {
   review?: Omit<TicketReview, 'createdAt' | 'updatedAt'>;
   images?: string[];
+  bookingSite?: string;
 }
 
 /**
@@ -50,4 +53,14 @@ export interface UpdateTicketData extends Partial<Omit<Ticket, 'id' | 'userId' |
 export interface TicketFormData extends Pick<BaseTicket, 'title' | 'performedAt' | 'place' | 'artist' > {
   reviewText?: string;
   images?: string[];
+}
+
+/**
+ * 티켓 필터 옵션 인터페이스
+ */
+export interface TicketFilterOptions {
+  status?: TicketStatus;
+  category?: TicketCategory;
+  dateRange?: { start: Date; end: Date };
+  searchText?: string;
 }

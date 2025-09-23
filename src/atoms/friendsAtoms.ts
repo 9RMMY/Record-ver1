@@ -33,8 +33,8 @@ import { FriendValidator } from '../utils/validation';
 export const friendsMapAtom = atom<Map<string, Friend>>(new Map([
   ['friend_1', {
     id: 'friend_1',
-    name: '서현서',
-    username: 'wooyoungwoo29',
+    name: '구름이',
+    username: '9RMMY',
     profileImage: 'https://via.placeholder.com/50/20B2AA/FFFFFF?text=서',
     avatar: 'https://via.placeholder.com/50/20B2AA/FFFFFF?text=서',
     createdAt: new Date('2025-08-01T10:00:00'),
@@ -42,8 +42,8 @@ export const friendsMapAtom = atom<Map<string, Friend>>(new Map([
   }],
   ['friend_2', {
     id: 'friend_2',
-    name: '민지',
-    username: 'dxxrjh',
+    name: '먹구름이',
+    username: 'M9RM',
     profileImage: 'https://via.placeholder.com/50/8B4513/FFFFFF?text=민',
     avatar: 'https://via.placeholder.com/50/8B4513/FFFFFF?text=민',
     createdAt: new Date('2025-08-02T10:00:00'),
@@ -51,8 +51,8 @@ export const friendsMapAtom = atom<Map<string, Friend>>(new Map([
   }],
   ['friend_3', {
     id: 'friend_3',
-    name: '이스',
-    username: 'cknvsp',
+    name: '뭉게구름이',
+    username: 'MUNG9',
     profileImage: 'https://via.placeholder.com/50/708090/FFFFFF?text=이',
     avatar: 'https://via.placeholder.com/50/708090/FFFFFF?text=이',
     createdAt: new Date('2025-08-03T10:00:00'),

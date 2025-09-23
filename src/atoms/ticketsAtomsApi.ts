@@ -443,10 +443,13 @@ export const ticketStatsAtom = atom<{
   const now = new Date();
   const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const thisYear = new Date(now.getFullYear(), 0, 1);
-  
+
   return {
     total: tickets.length,
+    public: tickets.filter(t => t.status === TicketStatus.PUBLIC).length,
+    private: tickets.filter(t => t.status === TicketStatus.PRIVATE).length,
     thisMonth: tickets.filter(t => new Date(t.performedAt) >= thisMonth).length,
     thisYear: tickets.filter(t => new Date(t.performedAt) >= thisYear).length,
   };
 });
+
