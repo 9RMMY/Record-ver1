@@ -37,12 +37,20 @@ const ImageOptions = () => {
 
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  // AI 이미지 생성 페이지 이동
+  // AI 이미지 생성 - 기본 설정으로 바로 시작
   const handleAIImageSelect = () => {
-    navigation.navigate('AIImageSettings', {
+    const defaultSettings = {
+      backgroundColor: '자동',
+      includeText: true,
+      imageStyle: '사실적',
+      aspectRatio: '정사각형',
+    };
+
+    navigation.navigate('AIImageResults', {
       ticketData,
       reviewData,
       images: [],
+      settings: defaultSettings,
     });
   };
 
@@ -108,9 +116,6 @@ const ImageOptions = () => {
           }
         },
       );
-    } else {
-      // Android는 바로 데모 이미지 선택
-      handleGallerySelect();
     }
   };
 
@@ -169,7 +174,7 @@ const ImageOptions = () => {
         >
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Image Options</Text>
+        <Text style={styles.headerTitle}>티켓 이미지 선택하기</Text>
         <View style={styles.placeholder} />
       </View>
       
@@ -177,17 +182,13 @@ const ImageOptions = () => {
         style={styles.scrollView}
         contentContainerStyle={styles.content}
       >
-        <Text style={styles.title}>티켓 이미지 선택하기</Text>
         <Text style={styles.subtitle}>
           기억에 남는 장면을 이미지로 표현해보세요!
         </Text>
 
         <View style={styles.optionsContainer}>
           {/* AI 이미지 */}
-          <TouchableOpacity
-            style={[styles.optionButton, styles.AIImageButton]}
-            onPress={handleAIImageSelect}
-          >
+          <TouchableOpacity style={styles.generateButton} onPress={handleAIImageSelect}>
             <Image
               source={require('../../assets/mic.png')}
               style={styles.buttonIcon}
@@ -254,27 +255,38 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: Spacing.lg,
-    height: Layout.navigationBarHeight,
+    justifyContent: 'space-between',
+    padding: Spacing.screenPadding,
     backgroundColor: Colors.systemBackground,
-    borderBottomWidth: 0.5,
-    borderBottomColor: Colors.separator,
-    position: 'relative',
-  },
-  backButton: {
-    position: 'absolute',
-    left: Spacing.lg,
-    width: 44,
-    height: 44,
-    borderRadius: BorderRadius.round,
-    backgroundColor: 'transparent',
-    justifyContent: 'center',
-    alignItems: 'center',
+    ...Shadows.small,
     zIndex: 1,
   },
-  backButtonText: { ...Typography.body, color: Colors.systemBlue, fontWeight: '400' },
-  headerTitle: { ...Typography.headline, color: Colors.label },
+
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: BorderRadius.round,
+    backgroundColor: Colors.secondarySystemBackground,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...Shadows.small,
+    zIndex: 2,
+  },
+  backButtonText: {
+    ...Typography.title3,
+    color: Colors.label,
+    fontWeight: 'bold',
+  },
+
+  headerTitle: {
+    ...Typography.headline,
+    color: Colors.label,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    textAlign: 'center',
+  },
+
   placeholder: {
     position: 'absolute',
     right: Spacing.lg,
@@ -319,7 +331,12 @@ const styles = StyleSheet.create({
   },
   buttonIcon: { width: 80, height: 80, marginRight: 16 },
   AIImageButton: { backgroundColor: '#B11515', height: 120 },
-  GalleryButton: { backgroundColor: '#FFFFFF', height: 120, borderWidth: 1, borderColor: '#E5E5EA' },
+  GalleryButton: {
+    backgroundColor: '#FFFFFF',
+    height: 120,
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+  },
   textContainer: { flexDirection: 'column', flex: 1 },
 
   optionButtonText: {
@@ -360,6 +377,22 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 17,
   },
+
+    generateButton: { 
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    padding: 20,
+    borderRadius: 16,
+    backgroundColor: '#B11515', 
+    height: 120,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+
 
   bottomButtonContainer: {
     padding: 24,

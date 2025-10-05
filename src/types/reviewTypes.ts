@@ -29,11 +29,17 @@ export type RootStackParamList = {
     ticketData: TicketData; 
     reviewData: ReviewData;
   };
-  AIImageSettings: {
+    AIImageResults: {
     ticketData: TicketData;
     reviewData: ReviewData;
-    images?: string[];
-  };
+    images: string[];
+    settings: {
+      backgroundColor: string;
+      includeText: boolean;
+      imageStyle: string;
+      aspectRatio: string;
+    };
+  }
   TicketComplete: {
     ticketData: TicketData;
     reviewData: ReviewData;

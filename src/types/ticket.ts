@@ -19,6 +19,7 @@ export interface BaseTicket {
   place?: string;
   artist?: string;
   bookingSite?: string;
+  genre: string | null;
   status: TicketStatus;
   readonly userId: string;
   readonly createdAt: Date;
@@ -30,27 +31,26 @@ export interface BaseTicket {
 export interface Ticket extends BaseTicket {
   review?: TicketReview;
   images?: readonly string[];
-  isPlaceholder?: boolean; // 빈 카드 전용 플래그
+  isPlaceholder?: boolean;
 }
 
 /**
- * 티켓 생성용 데이터 인터페이스
- */
-export interface CreateTicketData extends Omit<BaseTicket, 'id' | 'userId' | 'createdAt' | 'updatedAt'> {
-  review?: Omit<TicketReview, 'createdAt' | 'updatedAt'>;
+ * 티켓 생성용 데이터 인터페이스 (티켓 생성)
+*/
+export interface CreateTicketData extends Omit<BaseTicket, 'id' | 'userId' | 'createdAt'> {
+  review?: Omit<TicketReview, 'createdAt'>;
   images?: string[];
-  bookingSite?: string;
 }
 
 /**
- * 티켓 업데이트용 데이터 인터페이스
+ * 티켓 업데이트용 데이터 인터페이스 (티켓 수정)
  */
 export interface UpdateTicketData extends Partial<Omit<Ticket, 'id' | 'userId' | 'createdAt'>> {}
 
 /**
  * 티켓 폼 데이터 인터페이스
  */
-export interface TicketFormData extends Pick<BaseTicket, 'title' | 'performedAt' | 'place' | 'artist' > {
+export interface TicketFormData extends Pick<BaseTicket, 'title' | 'performedAt' | 'place' | 'artist' | 'genre'> {
   reviewText?: string;
   images?: string[];
 }
@@ -63,4 +63,5 @@ export interface TicketFilterOptions {
   category?: TicketCategory;
   dateRange?: { start: Date; end: Date };
   searchText?: string;
+  genre?: string;
 }

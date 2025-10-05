@@ -1,9 +1,4 @@
-/**
- * 마이 페이지 - 사용자 프로필 및 티켓 관리
- * 사용자의 프로필 정보, 티켓 컬렉션, 친구 목록을 관리하는 메인 페이지
- * 스크롤에 따른 헤더 애니메이션과 티켓 그리드 뷰 제공
- */
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -19,9 +14,9 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 import { useAtom } from 'jotai';
-import { myTicketsAtom } from '../../atoms/ticketsAtomsApi';
-import { friendsAtom } from '../../atoms/friendsAtomsApi';
-import { userProfileAtom } from '../../atoms/userAtomsApi';
+import { ticketsAtom } from '../../atoms/ticketAtoms';
+import { friendsAtom } from '../../atoms/friendsAtoms';
+import { userProfileAtom } from '../../atoms/userAtoms';
 import { Ticket } from '../../types/ticket';
 import { isPlaceholderTicket } from '../../utils/isPlaceholder';
 import TicketDetailModal from '../../components/TicketDetailModal';
@@ -40,11 +35,11 @@ interface MyPageProps {
 const HEADER_HEIGHT = 80;
 
 const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
-  // 기존 atoms 사용 (안정적인 방식)
-  const [myTickets] = useAtom(myTicketsAtom);
+  // 로컬 상태 관리 atoms 사용
+  const [myTickets] = useAtom(ticketsAtom);
   const [friendsList] = useAtom(friendsAtom);
   const [profile] = useAtom(userProfileAtom);
-  
+
   // 기본값으로 안전하게 처리
   const actualTickets = myTickets || [];
   const actualFriends = friendsList || [];
@@ -58,8 +53,8 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
-  
-  // 로딩 상태 (나중에 API 연동 시 사용)
+
+  // 로딩 상태
   const isLoading = false;
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null); // 선택된 티켓
   const [modalVisible, setModalVisible] = useState(false); // 모달 표시 여부
@@ -69,14 +64,22 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
   // 스크롤 애니메이션을 위한 Animated.Value
   const scrollY = useRef(new Animated.Value(0)).current;
 
-  // 실제 등록된 티켓만 필터링하고 최신순으로 정렬 (티켓 수 세기 & 티켓 그리드에 정렬하려고)
-  const realTickets = actualTickets
-    .filter((ticket: Ticket) => !isPlaceholderTicket(ticket))
-    .sort((a: Ticket, b: Ticket) => {
-      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return dateB - dateA; // 최신순 정렬
-    });
+  // 실제 등록된 티켓만 필터링하고 최신순으로 정렬 (useMemo로 최적화 및 재렌더링 보장)
+  const realTickets = useMemo(() => {
+    return actualTickets
+      .filter((ticket: Ticket) => !isPlaceholderTicket(ticket))
+      .sort((a: Ticket, b: Ticket) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA; // 최신순 정렬
+      });
+  }, [actualTickets]);
+
+  // 🔹 디버깅용 로그
+  console.log('===== MyPage 티켓 디버깅 =====');
+  console.log('actualTickets:', actualTickets);
+  console.log('realTickets (필터 후):', realTickets);
+  console.log('TicketGrid 전달용 티켓 수:', realTickets.length);
 
   // 티켓 카드 클릭 시 상세 모달 열기
   const handleTicketPress = (ticket: Ticket) => {
@@ -111,40 +114,53 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
     extrapolate: 'clamp',
   });
 
-
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* 애니메이션 헤더 - 스크롤에 따라 투명도 변화 */}
-      <Animated.View style={[styles.header, {
-        paddingTop: insets.top,
-        height: HEADER_HEIGHT + insets.top,
-        backgroundColor: headerOpacity.interpolate({
-          inputRange: [0, 1],
-          outputRange: ['rgba(255, 255, 255, 0)', 'rgba(255, 255, 255, 1)']
-        })
-      }]}>
+      <Animated.View
+        style={[
+          styles.header,
+          {
+            paddingTop: insets.top,
+            height: HEADER_HEIGHT + insets.top,
+            backgroundColor: headerOpacity.interpolate({
+              inputRange: [0, 1],
+              outputRange: ['rgba(255, 255, 255, 0)', 'rgba(255, 255, 255, 1)'],
+            }),
+          },
+        ]}
+      >
         {/* 왼쪽 앱 타이틀 */}
         <Animated.Text style={[styles.appTitle, { opacity: headerOpacity }]}>
           Re:cord
         </Animated.Text>
 
         {/* 중앙 사용자 아이디 (스크롤 시 나타남) */}
-        <Animated.View style={[styles.centerIdContainer, {
-          opacity: centerIdOpacity,
-          top: insets.top + 10
-        }]}>
-          <Text style={styles.centerId}>{actualProfile.username || '사용자'}</Text>
+        <Animated.View
+          style={[
+            styles.centerIdContainer,
+            {
+              opacity: centerIdOpacity,
+              top: insets.top + 10,
+            },
+          ]}
+        >
+          <Text style={styles.centerId}>
+            {actualProfile.username || '사용자'}
+          </Text>
         </Animated.View>
 
         {/* 오른쪽 기능 아이콘들 (친구 추가, 설정) */}
-        <Animated.View style={[styles.headerIcons, { opacity: headerIconsOpacity }]}>
-        {/* 친구 추가 버튼 */}
-        <TouchableOpacity
-          style={styles.iconButton}
-          onPress={() => navigation.navigate('AddFriend')}
+        <Animated.View
+          style={[styles.headerIcons, { opacity: headerIconsOpacity }]}
         >
-          <Text style={styles.iconText}>👥+</Text>
-        </TouchableOpacity>
+          {/* 친구 추가 버튼 */}
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => navigation.navigate('AddFriend')}
+          >
+            <Text style={styles.iconText}>👥+</Text>
+          </TouchableOpacity>
           {/* 설정 버튼 */}
           <TouchableOpacity
             style={styles.iconButton}
@@ -160,13 +176,18 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: false }
+          { useNativeDriver: false },
         )}
         scrollEventThrottle={16}
-        contentContainerStyle={[styles.scrollViewContent, { paddingBottom: tabBarHeight }]}
+        contentContainerStyle={[
+          styles.scrollViewContent,
+          { paddingBottom: tabBarHeight },
+        ]}
       >
         {/* 사용자 프로필 섹션 - 아바타, 통계, 사용자 정보 */}
-        <View style={[styles.profileSection, { paddingTop: HEADER_HEIGHT + 32}]}>
+        <View
+          style={[styles.profileSection, { paddingTop: HEADER_HEIGHT + 32 }]}
+        >
           <View style={styles.avatarContainer}>
             {actualProfile.profileImage ? (
               <Image
@@ -187,7 +208,9 @@ const MyPage: React.FC<MyPageProps> = ({ navigation }) => {
           </View>
 
           {/* 사용자 아이디 */}
-          <Text style={styles.username}>{actualProfile.name || actualProfile.username || '사용자'}</Text>
+          <Text style={styles.username}>
+            {actualProfile.name || actualProfile.username || '사용자'}
+          </Text>
 
           {/* 사용자 통계 정보 (티켓 수, 친구 수) */}
           <View style={styles.statsRow}>

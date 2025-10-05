@@ -39,8 +39,8 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
   const [tickets] = useAtom(ticketsAtom);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedFilter, setSelectedFilter] = useState<'밴드' | '연극/뮤지컬'>(
-    '밴드',
+  const [selectedFilter, setSelectedFilter] = useState<'전체' | '밴드' | '연극/뮤지컬'>(
+    '전체',
   );
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [currentTicketIndex, setCurrentTicketIndex] = useState(0);
@@ -112,7 +112,7 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
   };
 
   // 필터 선택 처리
-  const handleFilterSelect = (filter: '밴드' | '연극/뮤지컬') => {
+  const handleFilterSelect = (filter: '전체' | '밴드' | '연극/뮤지컬') => {
     setSelectedFilter(filter);
     setShowFilterDropdown(false);
   };
@@ -130,14 +130,19 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
   // 실제 티켓만 필터링 (빈 카드 제외)
   const realTickets = tickets.filter(ticket => !isPlaceholderTicket(ticket));
 
-  // 현재 월의 티켓만 필터링하고 날짜순 정렬
+// 현재 월의 티켓만 필터링하고 장르 필터 적용 후 날짜순 정렬
   const currentMonthTickets = realTickets
     .filter(ticket => {
       const ticketDate = new Date(ticket.performedAt);
-      return (
+      const isCurrentMonth = (
         ticketDate.getMonth() === getCurrentMonthNumber() &&
         ticketDate.getFullYear() === getCurrentYear()
       );
+      
+      // 장르 필터 적용
+      const matchesGenre = selectedFilter === '전체' || ticket.genre === selectedFilter || !ticket.genre;
+      
+      return isCurrentMonth && matchesGenre;
     })
     .sort((a, b) => {
       return (
@@ -157,6 +162,7 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
             place: '',
             performedAt: undefined as any,
             bookingSite: '',
+            genre: '',
             status: TicketStatus.PUBLIC,
             userId: 'placeholder',
             images: [],
@@ -307,6 +313,24 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
 
             {showFilterDropdown && (
               <View style={styles.filterDropdown}>
+                <TouchableOpacity
+                  style={[
+                    styles.filterOption,
+                    selectedFilter === '전체' &&
+                      styles.filterOptionSelectedBand,
+                  ]}
+                  onPress={() => handleFilterSelect('전체')}
+                >
+                  <Text
+                    style={[
+                      styles.filterOptionText,
+                      selectedFilter === '전체' &&
+                        styles.filterOptionTextSelected,
+                    ]}
+                  >
+                    전체
+                  </Text>
+                </TouchableOpacity>
                 <TouchableOpacity
                   style={[
                     styles.filterOption,

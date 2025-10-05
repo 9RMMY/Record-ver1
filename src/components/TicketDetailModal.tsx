@@ -47,6 +47,12 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showGenreModal, setShowGenreModal] = useState(false);
+
+  const genreOptions = [
+    { label: '밴드', value: '밴드' },
+    { label: '연극/뮤지컬', value: '연극/뮤지컬' },
+  ];
 
   const flipAnimation = useRef(new Animated.Value(0)).current;
   const hintOpacity = useRef(new Animated.Value(1)).current;
@@ -88,6 +94,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
       setShowDatePicker(false);
       setShowTimePicker(false);
       setShowDropdown(false);
+      setShowGenreModal(false);
     }
   }, [visible]);
 
@@ -105,7 +112,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
   const handleEdit = () => {
     if (!ticket) return;
     setIsEditing(true);
-    setShowDropdown(false); // 편집 시작할 때도 드롭다운 닫기
+    setShowDropdown(false);
     setEditedTicket({
       title: ticket.title,
       artist: ticket.artist,
@@ -114,7 +121,6 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
       review: ticket.review ? {
         reviewText: ticket.review.reviewText,
         createdAt: ticket.review.createdAt,
-        updatedAt: new Date(),
       } : undefined,
     });
   };
@@ -123,14 +129,14 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
     if (!ticket || !editedTicket) return;
 
     const title = editedTicket.title !== undefined ? editedTicket.title : ticket.title;
-    const place = editedTicket.place !== undefined ? editedTicket.place : ticket.place;
+    const genre = editedTicket.genre !== undefined ? editedTicket.genre : ticket.genre;
 
     if (!title?.trim()) {
       Alert.alert('오류', '제목은 필수입니다.');
       return;
     }
-    if (!place?.trim()) {
-      Alert.alert('오류', '장소는 필수입니다.');
+    if (!genre?.trim()) {
+      Alert.alert('오류', '장르는 필수입니다.');
       return;
     }
 
@@ -139,8 +145,13 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
       if (result?.success) {
         setIsEditing(false);
         setEditedTicket({});
-        setShowDropdown(false); // 드롭다운 닫기 추가
-        Alert.alert('완료', '티켓이 수정되었습니다.');
+        setShowDropdown(false);
+        Alert.alert('완료', '티켓이 수정되었습니다.', [
+          {
+            text: '확인',
+            onPress: () => onClose(),
+          },
+        ]);
       } else {
         Alert.alert('오류', result?.error?.message || '티켓 수정에 실패했습니다.');
       }
@@ -275,19 +286,29 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
             <View style={styles.headerActions}>
               {isEditing && isMine ? (
                 <>
-                  <TouchableOpacity style={[styles.actionButton, styles.saveButton]} onPress={handleSaveEdit}>
-                    <Text style={[styles.actionButtonText, styles.saveButtonText]}>✓</Text>
+                  <TouchableOpacity
+                    style={[styles.actionButton, styles.saveButton]}
+                    onPress={handleSaveEdit}
+                  >
+                    <Text
+                      style={[styles.actionButtonText, styles.saveButtonText]}
+                    >
+                      ✓
+                    </Text>
                   </TouchableOpacity>
                 </>
               ) : isMine ? (
                 <>
-                  <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={handleShare}
+                  >
                     <Text style={styles.actionButtonText}>↗</Text>
                   </TouchableOpacity>
                   <View style={styles.dropdownContainer}>
                     <TouchableOpacity
                       style={styles.actionButton}
-                      onPress={(e) => {
+                      onPress={e => {
                         e.stopPropagation(); // 드롭다운을 열 때 외부 터치 이벤트 방지
                         setShowDropdown(!showDropdown);
                       }}
@@ -296,26 +317,55 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                     </TouchableOpacity>
                     {showDropdown && (
                       <View style={styles.dropdown}>
-                        <TouchableOpacity style={styles.dropdownItem} onPress={handleEdit}>
+                        <TouchableOpacity
+                          style={styles.dropdownItem}
+                          onPress={handleEdit}
+                        >
                           <Text style={styles.dropdownText}>티켓 편집하기</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.dropdownItem} onPress={handleTogglePrivacy}>
+                        <TouchableOpacity
+                          style={styles.dropdownItem}
+                          onPress={handleTogglePrivacy}
+                        >
                           <Text style={styles.dropdownText}>
-                            {ticket.status === TicketStatus.PUBLIC ? '티켓 비공개하기' : '티켓 공개하기'}
+                            {ticket.status === TicketStatus.PUBLIC
+                              ? '티켓 비공개하기'
+                              : '티켓 공개하기'}
                           </Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.dropdownItem} onPress={handleAddToPhoto}>
-                          <Text style={styles.dropdownText}>사진 앨범에 저장</Text>
+                        <TouchableOpacity
+                          style={styles.dropdownItem}
+                          onPress={handleAddToPhoto}
+                        >
+                          <Text style={styles.dropdownText}>
+                            사진 앨범에 저장
+                          </Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={[styles.dropdownItem, styles.dropdownItemDanger]} onPress={handleDelete}>
-                          <Text style={[styles.dropdownText, styles.dropdownTextDanger]}>내 티켓 삭제하기</Text>
+                        <TouchableOpacity
+                          style={[
+                            styles.dropdownItem,
+                            styles.dropdownItemDanger,
+                          ]}
+                          onPress={handleDelete}
+                        >
+                          <Text
+                            style={[
+                              styles.dropdownText,
+                              styles.dropdownTextDanger,
+                            ]}
+                          >
+                            내 티켓 삭제하기
+                          </Text>
                         </TouchableOpacity>
                       </View>
                     )}
                   </View>
                 </>
               ) : (
-                <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={handleShare}
+                >
                   <Text style={styles.actionButtonText}>↗</Text>
                 </TouchableOpacity>
               )}
@@ -337,20 +387,32 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
               >
                 <View style={styles.flipContainer}>
                   <Animated.View
-                    style={[styles.flipCard, styles.flipCardFront, frontAnimatedStyle]}
+                    style={[
+                      styles.flipCard,
+                      styles.flipCardFront,
+                      frontAnimatedStyle,
+                    ]}
                   >
                     <Image
                       source={{
-                        uri: ticket.images?.[0] || 'https://via.placeholder.com/300x400?text=No+Image',
+                        uri:
+                          ticket.images?.[0] ||
+                          'https://via.placeholder.com/300x400?text=No+Image',
                       }}
                       style={styles.posterImage}
                     />
-                    <Animated.View style={[styles.tapHint, { opacity: hintOpacity }]}>
+                    <Animated.View
+                      style={[styles.tapHint, { opacity: hintOpacity }]}
+                    >
                       <Text style={styles.tapHintText}>탭하여 후기 보기</Text>
                     </Animated.View>
                   </Animated.View>
                   <Animated.View
-                    style={[styles.flipCard, styles.flipCardBack, backAnimatedStyle]}
+                    style={[
+                      styles.flipCard,
+                      styles.flipCardBack,
+                      backAnimatedStyle,
+                    ]}
                   >
                     <View style={styles.reviewCardContent}>
                       <Text style={styles.reviewCardTitle}>관람 후기</Text>
@@ -363,15 +425,22 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                         {isEditing ? (
                           <TextInput
                             style={styles.reviewInput}
-                            value={editedTicket.review?.reviewText ?? ticket.review?.reviewText ?? ''}
-                            onChangeText={(text) => setEditedTicket(prev => ({
-                              ...prev,
-                              review: {
-                                reviewText: text,
-                                createdAt: prev.review?.createdAt ?? new Date(),
-                                updatedAt: new Date(),
-                              }
-                            }))}
+                            value={
+                              editedTicket.review?.reviewText ??
+                              ticket.review?.reviewText ??
+                              ''
+                            }
+                            onChangeText={text =>
+                              setEditedTicket(prev => ({
+                                ...prev,
+                                review: {
+                                  reviewText: text,
+                                  createdAt:
+                                    prev.review?.createdAt ?? new Date(),
+                                  updatedAt: new Date(),
+                                },
+                              }))
+                            }
                             placeholder="관람 후기를 입력하세요"
                             multiline
                             textAlignVertical="top"
@@ -383,7 +452,9 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                         )}
                       </ScrollView>
                     </View>
-                    <Animated.View style={[styles.tapHint, { opacity: hintOpacity }]}>
+                    <Animated.View
+                      style={[styles.tapHint, { opacity: hintOpacity }]}
+                    >
                       <Text style={styles.tapHintText}>탭하여 티켓 보기</Text>
                     </Animated.View>
                   </Animated.View>
@@ -397,7 +468,9 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                 <TextInput
                   style={styles.titleInput}
                   value={editedTicket.title ?? ticket.title}
-                  onChangeText={(text) => setEditedTicket(prev => ({ ...prev, title: text }))}
+                  onChangeText={text =>
+                    setEditedTicket(prev => ({ ...prev, title: text }))
+                  }
                   placeholder="공연 제목"
                   multiline
                   textAlign="center"
@@ -406,7 +479,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                 <Text style={styles.title}>{ticket.title}</Text>
               )}
               {/* n회차 관람 뱃지 */}
-              {viewCount > 1 && !isEditing && (
+              {viewCount >= 1 && !isEditing && (
                 <View style={styles.viewCountBadge}>
                   <Text style={styles.viewCountText}>{viewCount}회차 관람</Text>
                 </View>
@@ -418,9 +491,14 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                 <Text style={styles.detailLabel}>일시</Text>
                 {isEditing ? (
                   <View style={styles.dateTimeEditContainer}>
-                    <TouchableOpacity style={styles.dateEditButton} onPress={() => setShowDatePicker(true)}>
+                    <TouchableOpacity
+                      style={styles.dateEditButton}
+                      onPress={() => setShowDatePicker(true)}
+                    >
                       <Text style={styles.dateEditText}>
-                        {(editedTicket.performedAt ?? ticket.performedAt).toLocaleDateString('ko-KR', {
+                        {(
+                          editedTicket.performedAt ?? ticket.performedAt
+                        ).toLocaleDateString('ko-KR', {
                           year: 'numeric',
                           month: 'long',
                           day: 'numeric',
@@ -428,9 +506,14 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                         })}
                       </Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.timeEditButton} onPress={() => setShowTimePicker(true)}>
+                    <TouchableOpacity
+                      style={styles.timeEditButton}
+                      onPress={() => setShowTimePicker(true)}
+                    >
                       <Text style={styles.timeEditText}>
-                        {(editedTicket.performedAt ?? ticket.performedAt).toLocaleTimeString('ko-KR', {
+                        {(
+                          editedTicket.performedAt ?? ticket.performedAt
+                        ).toLocaleTimeString('ko-KR', {
                           hour: '2-digit',
                           minute: '2-digit',
                           hour12: true,
@@ -440,8 +523,17 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                   </View>
                 ) : (
                   <Text style={styles.detailValue}>
-                    {ticket.performedAt.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' })}{' '}
-                    {ticket.performedAt.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                    {ticket.performedAt.toLocaleDateString('ko-KR', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      weekday: 'short',
+                    })}{' '}
+                    {ticket.performedAt.toLocaleTimeString('ko-KR', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: true,
+                    })}
                   </Text>
                 )}
               </View>
@@ -451,7 +543,9 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                   <TextInput
                     style={styles.detailInput}
                     value={editedTicket.place ?? ticket.place}
-                    onChangeText={(text) => setEditedTicket(prev => ({ ...prev, place: text }))}
+                    onChangeText={text =>
+                      setEditedTicket(prev => ({ ...prev, place: text }))
+                    }
                     placeholder="공연 장소"
                     textAlign="right"
                   />
@@ -465,12 +559,30 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                   <TextInput
                     style={styles.detailInput}
                     value={editedTicket.artist ?? ticket.artist}
-                    onChangeText={(text) => setEditedTicket(prev => ({ ...prev, artist: text }))}
+                    onChangeText={text =>
+                      setEditedTicket(prev => ({ ...prev, artist: text }))
+                    }
                     placeholder="출연진"
                     textAlign="right"
                   />
                 ) : (
                   <Text style={styles.detailValue}>{ticket.artist}</Text>
+                )}
+              </View>
+
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>장르</Text>
+                {isEditing ? (
+                  <TouchableOpacity
+                    style={styles.genreSelector}
+                    onPress={() => setShowGenreModal(true)}
+                  >
+                    <Text style={styles.genreSelectorText}>
+                      {editedTicket.genre ?? ticket.genre ?? '밴드'}
+                    </Text>
+                  </TouchableOpacity>
+                ) : (
+                  <Text style={styles.detailValue}>{ticket.genre}</Text>
                 )}
               </View>
             </View>
@@ -495,6 +607,48 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
           onChange={handleTimeChange}
         />
       )}
+
+      {/* Genre Selection Modal */}
+      <Modal
+        visible={showGenreModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowGenreModal(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setShowGenreModal(false)}>
+          <View style={styles.genreModalOverlay}>
+            <TouchableWithoutFeedback>
+              <View style={styles.genreModalContent}>
+                <Text style={styles.genreModalTitle}>장르 선택</Text>
+                {genreOptions.map(option => (
+                  <TouchableOpacity
+                    key={option.value}
+                    style={[
+                      styles.genreOption,
+                      (editedTicket.genre ?? ticket.genre) === option.value &&
+                        styles.genreOptionSelected,
+                    ]}
+                    onPress={() => {
+                      setEditedTicket(prev => ({ ...prev, genre: option.value }));
+                      setShowGenreModal(false);
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.genreOptionText,
+                        (editedTicket.genre ?? ticket.genre) === option.value &&
+                          styles.genreOptionTextSelected,
+                      ]}
+                    >
+                      {option.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </Modal>
   );
 };
@@ -765,6 +919,64 @@ const styles = StyleSheet.create({
   },
   dropdownTextDanger: {
     color: '#FF6B6B',
+  },
+
+  // 장르 선택 스타일
+  genreSelector: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  genreSelectorText: {
+    fontSize: 14,
+    color: '#2C3E50',
+    fontWeight: '600',
+    textAlign: 'right',
+  },
+
+  // 장르 모달 스타일
+  genreModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  genreModalContent: {
+    backgroundColor: '#FFF',
+    borderRadius: 16,
+    padding: 20,
+    width: width * 0.7,
+    maxWidth: 300,
+  },
+  genreModalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#2C3E50',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  genreOption: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 8,
+    backgroundColor: '#F8F9FA',
+  },
+  genreOptionSelected: {
+    backgroundColor: '#B11515',
+  },
+  genreOptionText: {
+    fontSize: 16,
+    color: '#2C3E50',
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+  genreOptionTextSelected: {
+    color: '#FFF',
+    fontWeight: '600',
   },
 });
 

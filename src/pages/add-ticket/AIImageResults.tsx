@@ -11,7 +11,15 @@ import {
   Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors, Typography, Spacing, BorderRadius, Shadows, ComponentStyles, Layout } from '../../styles/designSystem';
+import {
+  Colors,
+  Typography,
+  Spacing,
+  BorderRadius,
+  Shadows,
+  ComponentStyles,
+  Layout,
+} from '../../styles/designSystem';
 
 interface AIImageResultsProps {
   navigation: any;
@@ -35,7 +43,10 @@ interface AIImageResultsProps {
 
 const { width } = Dimensions.get('window');
 
-const AIImageResults: React.FC<AIImageResultsProps> = ({ navigation, route }) => {
+const AIImageResults: React.FC<AIImageResultsProps> = ({
+  navigation,
+  route,
+}) => {
   const [isGenerating, setIsGenerating] = useState(true);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [generationHistory, setGenerationHistory] = useState<string[]>([]);
@@ -71,24 +82,21 @@ const AIImageResults: React.FC<AIImageResultsProps> = ({ navigation, route }) =>
 
       // 화면 비율에 따른 이미지 크기 설정
       let imageWidth = 400;
-      let imageHeight = 400;
+      let imageHeight = 500;
 
       if (settings?.aspectRatio === '세로형') {
-        imageWidth = 300;
+        imageWidth = 400;
         imageHeight = 500;
-      } else if (settings?.aspectRatio === '가로형') {
-        imageWidth = 500;
-        imageHeight = 300;
       }
 
       console.log('Enhanced Prompt:', enhancedPrompt);
 
       // AI 이미지 생성 시뮬레이션
-      await new Promise<void>((resolve) => setTimeout(() => resolve(), 3000));
+      await new Promise<void>(resolve => setTimeout(() => resolve(), 3000));
 
       const mockGeneratedImageUrl = `https://picsum.photos/${imageWidth}/${imageHeight}?random=${Date.now()}`;
       setGeneratedImage(mockGeneratedImageUrl);
-      setGenerationHistory((prev) => [mockGeneratedImageUrl, ...prev]);
+      setGenerationHistory(prev => [mockGeneratedImageUrl, ...prev]);
 
       Alert.alert('성공', 'AI 이미지가 성공적으로 생성되었습니다!');
     } catch (error) {
@@ -108,16 +116,6 @@ const AIImageResults: React.FC<AIImageResultsProps> = ({ navigation, route }) =>
     }
   };
 
-  const handleModifySettings = () => {
-    // 현재 설정값을 가지고 설정 페이지로 돌아가기
-    navigation.navigate('AIImageSettings', {
-      ticketData,
-      reviewData,
-      images: existingImages,
-      existingSettings: settings,
-    });
-  };
-
   const handleRegenerateImage = () => {
     setGeneratedImage(null);
     handleGenerateAIImage();
@@ -131,22 +129,6 @@ const AIImageResults: React.FC<AIImageResultsProps> = ({ navigation, route }) =>
     navigation.goBack();
   };
 
-  // 현재 설정 요약 텍스트 생성
-  const getSettingsSummary = () => {
-    const parts = [];
-    if (settings?.backgroundColor && settings.backgroundColor !== '자동') {
-      parts.push(`${settings.backgroundColor} 배경`);
-    }
-    if (settings?.includeText === false) parts.push('텍스트 제외');
-    if (settings?.imageStyle && settings.imageStyle !== '사실적') {
-      parts.push(`${settings.imageStyle} 스타일`);
-    }
-    if (settings?.aspectRatio) {
-      parts.push(`${settings.aspectRatio} 비율`);
-    }
-    return parts.join(' • ') || '기본 설정';
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
@@ -154,36 +136,27 @@ const AIImageResults: React.FC<AIImageResultsProps> = ({ navigation, route }) =>
         <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>AI 이미지 결과</Text>
-        <TouchableOpacity style={styles.settingsButton} onPress={handleModifySettings}>
-          <Text style={styles.settingsButtonText}>⚙️</Text>
-        </TouchableOpacity>
+        <Text style={styles.headerTitle}>이미지 생성</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* 현재 설정 표시 */}
-        <View style={styles.settingsContainer}>
-          <Text style={styles.settingsTitle}>현재 생성 조건</Text>
-          <Text style={styles.settingsText}>{getSettingsSummary()}</Text>
-          <TouchableOpacity style={styles.modifyButton} onPress={handleModifySettings}>
-            <Text style={styles.modifyButtonText}>조건 수정하기</Text>
-          </TouchableOpacity>
-        </View>
-
         {/* 생성 중 또는 결과 표시 */}
         {isGenerating ? (
           <View style={styles.generatingContainer}>
-            <ActivityIndicator size="large" color="#9B59B6" />
-            <Text style={styles.generatingTitle}>AI 이미지 생성 중...</Text>
-            <Text style={styles.generatingText}>
-              설정하신 조건에 맞는 이미지를 생성하고 있습니다
-            </Text>
+            <View style={styles.placeholderImage}>
+              <ActivityIndicator size="large" color="#b11515" />
+              <Text style={styles.generatingTitle}>AI 이미지 생성 중...</Text>
+            </View>
           </View>
         ) : (
           generatedImage && (
             <View style={styles.generatedImageContainer}>
               <Text style={styles.generatedImageTitle}>생성된 이미지</Text>
-              <Image source={{ uri: generatedImage }} style={styles.generatedImage} />
+              <Image
+                source={{ uri: generatedImage }}
+                style={styles.generatedImage}
+                resizeMode="cover"
+              />
 
               {/* Action Buttons */}
               <View style={styles.actionButtonsContainer}>
@@ -192,10 +165,13 @@ const AIImageResults: React.FC<AIImageResultsProps> = ({ navigation, route }) =>
                   onPress={handleRegenerateImage}
                   disabled={isGenerating}
                 >
-                  <Text style={styles.regenerateButtonText}>🔄 다시 생성</Text>
+                  <Text style={styles.regenerateButtonText}>다시 생성하기</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.selectButton} onPress={handleSelectImage}>
-                  <Text style={styles.selectButtonText}>✅ 이 이미지 선택</Text>
+                <TouchableOpacity
+                  style={styles.selectButton}
+                  onPress={handleSelectImage}
+                >
+                  <Text style={styles.selectButtonText}>이미지 선택하기</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -206,9 +182,12 @@ const AIImageResults: React.FC<AIImageResultsProps> = ({ navigation, route }) =>
         {generationHistory.length > 1 && (
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>생성 히스토리</Text>
-            <Text style={styles.sectionDescription}>이전 생성 이미지 중 선택 가능</Text>
 
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.historyContainer}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.historyContainer}
+            >
               {generationHistory.slice(1).map((imageUrl, index) => (
                 <TouchableOpacity
                   key={index}
@@ -217,7 +196,12 @@ const AIImageResults: React.FC<AIImageResultsProps> = ({ navigation, route }) =>
                 >
                   <Image
                     source={{ uri: imageUrl }}
-                    style={[styles.historyImage, generatedImage === imageUrl && styles.selectedHistoryImage]}
+                    style={[
+                      styles.historyImage,
+                      generatedImage === imageUrl &&
+                        styles.selectedHistoryImage,
+                    ]}
+                    resizeMode="cover"
                   />
                   {generatedImage === imageUrl && (
                     <View style={styles.selectedOverlay}>
@@ -239,40 +223,41 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: Spacing.lg,
-    height: Layout.navigationBarHeight,
+    justifyContent: 'space-between',
+    padding: Spacing.screenPadding,
     backgroundColor: Colors.systemBackground,
-    borderBottomWidth: 0.5,
-    borderBottomColor: Colors.separator,
-    position: 'relative',
-  },
-  backButton: {
-    position: 'absolute',
-    left: Spacing.lg,
-    width: 44,
-    height: 44,
-    borderRadius: BorderRadius.round,
-    backgroundColor: 'transparent',
-    justifyContent: 'center',
-    alignItems: 'center',
+    ...Shadows.small,
     zIndex: 1,
   },
-  backButtonText: { ...Typography.body, color: Colors.systemBlue, fontWeight: '400' },
-  headerTitle: { ...Typography.headline, color: Colors.label },
-  settingsButton: {
-    position: 'absolute',
-    right: Spacing.lg,
-    width: 44,
-    height: 44,
-    borderRadius: BorderRadius.xl,
-    backgroundColor: Colors.systemPurple,
+
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: BorderRadius.round,
+    backgroundColor: Colors.secondarySystemBackground,
     justifyContent: 'center',
     alignItems: 'center',
+    ...Shadows.small,
+    zIndex: 2,
   },
-  settingsButtonText: { fontSize: 18 },
+  backButtonText: {
+    ...Typography.title3,
+    color: Colors.label,
+    fontWeight: 'bold',
+  },
+
+  headerTitle: {
+    ...Typography.headline,
+    color: Colors.label,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    textAlign: 'center',
+  },
+
   content: { flex: 1 },
-  settingsContainer: {
+  
+  generatingContainer: {
     backgroundColor: '#FFFFFF',
     marginHorizontal: 20,
     marginTop: 20,
@@ -280,42 +265,24 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E0E0E0',
-  },
-  settingsTitle: { fontSize: 16, fontWeight: '600', color: '#2C3E50', marginBottom: 8 },
-  settingsText: { fontSize: 14, color: '#7F8C8D', lineHeight: 20, marginBottom: 12 },
-  modifyButton: {
-    backgroundColor: '#F8F9FA',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    alignSelf: 'flex-start',
-    borderWidth: 1,
-    borderColor: '#9B59B6',
-  },
-  modifyButtonText: { fontSize: 14, fontWeight: '500', color: '#9B59B6' },
-  generatingContainer: {
-    backgroundColor: '#FFFFFF',
-    marginHorizontal: 20,
-    marginTop: 20,
-    padding: 40,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
     alignItems: 'center',
+  },
+  placeholderImage: {
+    width: 300,
+    height: 375,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
   },
   generatingTitle: {
     fontSize: 18,
     fontWeight: '600',
     color: '#2C3E50',
-    marginTop: 16,
-    marginBottom: 8,
+    marginTop: 8,
   },
-  generatingText: {
-    fontSize: 14,
-    color: '#7F8C8D',
-    textAlign: 'center',
-    lineHeight: 20,
-  },
+  
   sectionContainer: {
     backgroundColor: '#FFFFFF',
     marginHorizontal: 20,
@@ -326,8 +293,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E0E0E0',
   },
-  sectionTitle: { fontSize: 18, fontWeight: '600', color: '#2C3E50', marginBottom: 8 },
-  sectionDescription: { fontSize: 14, color: '#7F8C8D', marginBottom: 16 },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#2C3E50',
+    marginBottom: 12,
+  },
+  
   generatedImageContainer: {
     backgroundColor: '#FFFFFF',
     marginHorizontal: 20,
@@ -345,50 +317,50 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   generatedImage: {
-    width: width - 80,
-    height: width - 80,
+    width: 300,
+    height: 375,
     borderRadius: 12,
     marginBottom: 20,
   },
   actionButtonsContainer: { flexDirection: 'row', width: '100%', gap: 12 },
   regenerateButton: {
     flex: 1,
-    backgroundColor: '#E74C3C',
+    backgroundColor: '#f2f2f2',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
   },
-  regenerateButtonText: { fontSize: 14, fontWeight: '600', color: '#FFFFFF' },
+  regenerateButtonText: { fontSize: 14, fontWeight: '600', color: '#000' },
   selectButton: {
     flex: 1,
-    backgroundColor: '#27AE60',
+    backgroundColor: '#b11515',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
   },
   selectButtonText: { fontSize: 14, fontWeight: '600', color: '#FFFFFF' },
+  
   historyContainer: { marginTop: 12 },
   historyImageWrapper: { position: 'relative', marginRight: 12 },
   historyImage: {
-    width: 100,
+    width: 80,
     height: 100,
     borderRadius: 12,
     borderWidth: 2,
     borderColor: 'transparent',
   },
-  selectedHistoryImage: { borderColor: '#27AE60' },
+  selectedHistoryImage: { borderColor: '#b11515' },
   selectedOverlay: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(39, 174, 96, 0.3)',
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  selectedText: { fontSize: 24, color: '#FFFFFF', fontWeight: 'bold' },
+  selectedText: { fontSize: 24, color: '#b11515', fontWeight: 'bold' },
 });
 
 export default AIImageResults;

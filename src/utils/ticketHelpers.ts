@@ -33,11 +33,18 @@ export const TICKET_VALIDATION_RULES: ValidationRule<CreateTicketData>[] = [
   {
     field: 'place',
     validator: (place: string) => {
-      if (!place || place.trim().length === 0) {
-        return new Error('장소는 필수입니다');
-      }
-      if (place.length > TICKET_LIMITS.MAX_PLACE_LENGTH) {
+      // 장소는 선택 사항으로 변경
+      if (place && place.length > TICKET_LIMITS.MAX_PLACE_LENGTH) {
         return new Error(`장소는 ${TICKET_LIMITS.MAX_PLACE_LENGTH}자를 초과할 수 없습니다`);
+      }
+      return null;
+    }
+  },
+  {
+    field: 'genre',
+    validator: (genre: string | null) => {
+      if (!genre || genre.trim().length === 0) {
+        return new Error('장르는 필수입니다');
       }
       return null;
     }
@@ -81,11 +88,18 @@ export const TICKET_UPDATE_VALIDATION_RULES: ValidationRule<UpdateTicketData>[] 
   {
     field: 'place',
     validator: (place: string) => {
-      if (place !== undefined && (!place || place.trim().length === 0)) {
-        return new Error('장소는 비어있을 수 없습니다');
-      }
+      // 장소는 선택 사항
       if (place && place.length > TICKET_LIMITS.MAX_PLACE_LENGTH) {
         return new Error(`장소는 ${TICKET_LIMITS.MAX_PLACE_LENGTH}자를 초과할 수 없습니다`);
+      }
+      return null;
+    }
+  },
+  {
+    field: 'genre',
+    validator: (genre: string | null) => {
+      if (genre !== undefined && (!genre || genre.trim().length === 0)) {
+        return new Error('장르는 비어있을 수 없습니다');
       }
       return null;
     }
@@ -167,9 +181,9 @@ export const applyTicketFilters = (
     filters.push(ticket => ticket.status === filterOptions.status);
   }
 
-  // 카테고리 필터
-  if (filterOptions.category) {
-    filters.push(ticket => ticket.category === filterOptions.category);
+  // 장르 필터
+  if (filterOptions.genre) {
+    filters.push(ticket => ticket.genre === filterOptions.genre);
   }
 
   // 날짜 범위 필터

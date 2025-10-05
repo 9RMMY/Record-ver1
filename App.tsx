@@ -19,10 +19,8 @@ import MainPage from './src/pages/home/MainPage';
 
 // Add ticket pages
 import AddTicketPage from './src/pages/add-ticket/AddTicketPage';
-import ReviewOptions from './src/pages/add-ticket/ReviewOptions';
 import ImageOptions from './src/pages/add-ticket/ImageOptions';
 import AddReviewPage from './src/pages/add-ticket/AddReviewPage';
-import AIImageSettings from './src/pages/add-ticket/AIImageSettings';
 import AIImageResults from './src/pages/add-ticket/AIImageResults';
 import TicketCompletePage from './src/pages/add-ticket/TicketCompletePage';
 
@@ -171,13 +169,6 @@ function App(): React.JSX.Element {
           }}
         />
         <Stack.Screen
-          name="ReviewOptions"
-          component={ReviewOptions}
-          options={{
-            presentation: 'modal',
-          }}
-        />
-        <Stack.Screen
           name="AddReview"
           component={AddReviewPage as any}
           options={{
@@ -187,13 +178,6 @@ function App(): React.JSX.Element {
         <Stack.Screen
           name="ImageOptions"
           component={ImageOptions}
-          options={{
-            presentation: 'modal',
-          }}
-        />
-        <Stack.Screen
-          name="AIImageSettings"
-          component={AIImageSettings}
           options={{
             presentation: 'modal',
           }}

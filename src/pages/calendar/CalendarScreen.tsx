@@ -30,6 +30,9 @@ const CalendarScreen = () => {
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split('T')[0],
   );
+  const [currentMonth, setCurrentMonth] = useState(
+    new Date().toISOString().slice(0, 7), // YYYY-MM 형식
+  );
   const [tickets] = useAtom(ticketsAtom); // 전체 티켓 목록
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null); // 선택된 티켓
   const [modalVisible, setModalVisible] = useState(false); // 모달 표시 여부
@@ -68,6 +71,20 @@ const CalendarScreen = () => {
   // 주간 캘린더에서 날짜 선택 처리
   const handleWeeklyDayPress = (dateString: string) => {
     setSelectedDate(dateString);
+  };
+
+  // 월 변경 처리
+  const handleMonthChange = (month: { dateString: string }) => {
+    const newMonth = month.dateString.slice(0, 7); // YYYY-MM 형식
+    
+    // 월이 변경된 경우에만 처리
+    if (newMonth !== currentMonth) {
+      setCurrentMonth(newMonth);
+      
+      // 해당 월의 1일로 선택 날짜 변경
+      const firstDayOfMonth = `${newMonth}-01`;
+      setSelectedDate(firstDayOfMonth);
+    }
   };
 
   // 스크롤 이벤트 처리 - 스크롤 위치에 따라 캘린더 뷰 전환
@@ -168,6 +185,7 @@ const CalendarScreen = () => {
             selectedDate={selectedDate}
             tickets={tickets}
             onDayPress={handleDayPress}
+            onMonthChange={handleMonthChange}
           />
         </Animated.View>
         

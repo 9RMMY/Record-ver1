@@ -7,6 +7,7 @@ interface CustomCalendarProps {
   selectedDate: string;
   tickets: Ticket[];
   onDayPress: (day: { dateString: string }) => void;
+  onMonthChange?: (month: { dateString: string }) => void;
 }
 
 // Configure calendar locale
@@ -57,6 +58,7 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({
   selectedDate,
   tickets,
   onDayPress,
+  onMonthChange,
 }) => {
   // Format date to YYYY-MM-DD
   const formatDate = (date: Date) => date.toISOString().split('T')[0];
@@ -80,6 +82,7 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({
       <Calendar
         current={selectedDate}
         onDayPress={onDayPress}
+        onMonthChange={onMonthChange}
         markedDates={{
           ...markedDates,
           [selectedDate]: {

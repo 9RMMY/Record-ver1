@@ -72,7 +72,8 @@ const TicketGrid: React.FC<TicketGridProps> = ({
       <FlatList
         data={tickets}
         renderItem={renderTicketCard}
-        keyExtractor={(item, index) => item.id || index.toString()}
+        keyExtractor={(item, index) => item.id || `ticket-${index}`}
+        extraData={tickets.length} // 티켓 개수 변경 시 재렌더링 보장
         numColumns={3}
         scrollEnabled={false}
         contentContainerStyle={styles.gridContent}

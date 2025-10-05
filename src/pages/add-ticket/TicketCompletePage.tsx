@@ -15,6 +15,15 @@ import {
 } from 'react-native-safe-area-context';
 import { useAtom } from 'jotai';
 import { addTicketAtom, TicketStatus } from '../../atoms';
+import {
+  Colors,
+  Typography,
+  Spacing,
+  BorderRadius,
+  Shadows,
+  ComponentStyles,
+  Layout,
+} from '../../styles/designSystem';
 
 interface TicketCompletePageProps {
   navigation: any;
@@ -22,8 +31,9 @@ interface TicketCompletePageProps {
     params?: {
       ticketData?: any;
       reviewData?: {
-        rating: number;
-        reviewText: string;
+        reviewText?: string;
+        text?: string;
+        isPublic?: boolean;
       };
       images?: string[];
     };
@@ -37,6 +47,7 @@ const TicketCompletePage: React.FC<TicketCompletePageProps> = ({ navigation, rou
   const reviewData = route?.params?.reviewData;
   const images = route?.params?.images;
   const [, addTicket] = useAtom(addTicketAtom);
+  const insets = useSafeAreaInsets();
 
   // Get the first image (likely AI generated) to display on ticket
   const ticketImage = images && images.length > 0 ? images[0] : null;
@@ -44,21 +55,48 @@ const TicketCompletePage: React.FC<TicketCompletePageProps> = ({ navigation, rou
   useEffect(() => {
     // Save the complete ticket with review and images
     if (ticketData) {
-      addTicket({
+      console.log('=== 티켓 추가 시작 ===');
+      console.log('ticketData:', ticketData);
+      console.log('reviewData:', reviewData);
+      console.log('images:', images);
+
+      // ReviewData를 TicketReview 형식으로 변환
+      const ticketReview = reviewData?.reviewText || reviewData?.text 
+        ? { 
+            reviewText: reviewData.reviewText || reviewData.text || '',
+            createdAt: new Date(),
+          }
+        : undefined;
+
+      const ticketToAdd = {
         ...ticketData,
-        review: reviewData,
+        review: ticketReview,
         images: images || [],
-        status: '공개', // Default status for new tickets
-      });
+        status: reviewData?.isPublic === false ? TicketStatus.PRIVATE : TicketStatus.PUBLIC,
+      };
+
+      console.log('최종 티켓 데이터:', ticketToAdd);
+
+      const result = addTicket(ticketToAdd);
+
+      // Result 패턴 처리
+      if (!result.success) {
+        console.error('❌ 티켓 추가 실패:', result.error);
+        // 에러 발생 시에도 홈으로 이동 (사용자 경험 개선)
+      } else {
+        console.log('✅ 티켓 추가 성공:', result.data);
+      }
+    } else {
+      console.warn('⚠️ ticketData가 없습니다!');
     }
 
-    // Auto-navigate to home after 5 seconds
+    // Auto-navigate to home after 3 seconds
     const timer = setTimeout(() => {
       navigation.reset({
         index: 0,
         routes: [{ name: 'MainTabs' }],
       });
-    }, 5000);
+    }, 3000);
 
     return () => clearTimeout(timer);
   }, [navigation, ticketData, reviewData, images, addTicket]);
@@ -71,18 +109,11 @@ const TicketCompletePage: React.FC<TicketCompletePageProps> = ({ navigation, rou
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#F8F9FA" />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-          <Text style={styles.backButtonText}>←</Text>
-        </TouchableOpacity>
-      </View>
-
       {/* Main Content */}
-      <View style={styles.content}>
+      <View style={[styles.content, { paddingTop: insets.top + 20 }]}>
         {/* Title */}
         <Text style={styles.title}>새로운 티켓 생성 완료~!</Text>
         <Text style={styles.subtitle}>하나의 추억을 저장했어요.</Text>
@@ -91,7 +122,7 @@ const TicketCompletePage: React.FC<TicketCompletePageProps> = ({ navigation, rou
         <View style={styles.ticketCard}>
           {/* Ticket Header */}
           <View style={styles.ticketHeader}>
-            <Text style={styles.ticketHeaderText}>{ticketData.title}</Text>
+            <Text style={styles.ticketHeaderText}>{ticketData?.title}</Text>
           </View>
 
           {/* Main Ticket Content */}
@@ -100,6 +131,7 @@ const TicketCompletePage: React.FC<TicketCompletePageProps> = ({ navigation, rou
               <Image
                 source={{ uri: ticketImage }}
                 style={styles.ticketImage}
+                resizeMode="cover"
               />
             ) : (
               <View style={styles.ticketPlaceholder}>
@@ -115,16 +147,16 @@ const TicketCompletePage: React.FC<TicketCompletePageProps> = ({ navigation, rou
               {ticketData?.place} •{' '}
               {ticketData?.performedAt
                 ? new Date(ticketData.performedAt).toLocaleDateString('ko-KR', {
-                    month: 'short',
+                    month: 'long',
                     day: 'numeric',
                   })
-                : 'JAN 31'}{' '}
+                : '10월 4일'}{' '}
               • 8PM
             </Text>
           </View>
         </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -133,27 +165,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8F9FA',
   },
-  header: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 20,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'transparent',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  backButtonText: {
-    fontSize: 24,
-    color: '#2C3E50',
-    fontWeight: '300',
-  },
   content: {
     flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
     paddingHorizontal: 20,
   },
   title: {
@@ -204,7 +219,6 @@ const styles = StyleSheet.create({
   ticketImage: {
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
     borderRadius: 12,
   },
   ticketPlaceholder: {
@@ -237,4 +251,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default TicketCompletePage;
+export default TicketCompletePage; 
