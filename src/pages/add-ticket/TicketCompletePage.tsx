@@ -59,6 +59,8 @@ const TicketCompletePage: React.FC<TicketCompletePageProps> = ({ navigation, rou
       console.log('ticketData:', ticketData);
       console.log('reviewData:', reviewData);
       console.log('images:', images);
+      console.log('🖼️ 전달받은 이미지 배열:', images);
+      console.log('🖼️ 첫 번째 이미지 (표시될 이미지):', images?.[0]);
 
       // ReviewData를 TicketReview 형식으로 변환
       const ticketReview = reviewData?.reviewText || reviewData?.text 
@@ -76,6 +78,7 @@ const TicketCompletePage: React.FC<TicketCompletePageProps> = ({ navigation, rou
       };
 
       console.log('최종 티켓 데이터:', ticketToAdd);
+      console.log('🖼️ 최종 티켓의 이미지 배열:', ticketToAdd.images);
 
       const result = addTicket(ticketToAdd);
 
@@ -85,6 +88,7 @@ const TicketCompletePage: React.FC<TicketCompletePageProps> = ({ navigation, rou
         // 에러 발생 시에도 홈으로 이동 (사용자 경험 개선)
       } else {
         console.log('✅ 티켓 추가 성공:', result.data);
+        console.log('🖼️ 저장된 티켓의 이미지:', result.data?.images);
       }
     } else {
       console.warn('⚠️ ticketData가 없습니다!');

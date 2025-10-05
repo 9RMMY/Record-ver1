@@ -67,14 +67,17 @@ function MainTabs() {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
+        
         tabBarStyle: {
-          backgroundColor: '#FFFFFF',
-          borderTopColor: '#E0E0E0',
-          borderTopWidth: 1,
+          position: 'absolute',
+          backgroundColor: 'rgba(95, 255, 36, 1)',
           paddingBottom: insets.bottom,
-          paddingTop: 5,
+          paddingTop: 8,
           height: 60 + insets.bottom,
-          borderRadius: 8,
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+          borderTopWidth: 0,
+          overflow: 'hidden',
         },
         tabBarActiveTintColor: '#B11515',
         tabBarInactiveTintColor: '#7F8C8D',

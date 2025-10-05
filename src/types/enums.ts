@@ -3,11 +3,19 @@
  * 타입 안정성과 코드 일관성을 위한 중앙 집중식 관리
  */
 
-// 티켓 상태 열거형
+// 티켓 공개 범위 열거형 (API/DB 저장용)
 export enum TicketStatus {
-  PUBLIC = '공개',
-  PRIVATE = '비공개',
+  PUBLIC = 'public',
+  FRIENDS = 'friends',
+  PRIVATE = 'private',
 }
+
+// 티켓 공개 범위 UI 표시용 레이블
+export const TICKET_STATUS_LABELS: Record<TicketStatus, string> = {
+  [TicketStatus.PUBLIC]: '전체 공개',
+  [TicketStatus.FRIENDS]: '친구 공개',
+  [TicketStatus.PRIVATE]: '나만 보기',
+};
 
 // 사용자 역할 열거형 (향후 확장 가능)
 export enum UserRole {
@@ -22,12 +30,19 @@ export enum FriendRequestStatus {
   REJECTED = 'rejected',
 }
 
-// 계정 공개 설정 열거형
+// 계정 프로필 공개 설정 열거형 (프로필 페이지 전용)
 export enum AccountVisibility {
   PUBLIC = 'public',
   PRIVATE = 'private',
   FRIENDS_ONLY = 'friends_only',
 }
+
+// 계정 공개 설정 UI 표시용 레이블
+export const ACCOUNT_VISIBILITY_LABELS: Record<AccountVisibility, string> = {
+  [AccountVisibility.PUBLIC]: '전체 공개',
+  [AccountVisibility.PRIVATE]: '비공개',
+  [AccountVisibility.FRIENDS_ONLY]: '친구만',
+};
 
 // 티켓 카테고리 열거형
 export enum TicketCategory {

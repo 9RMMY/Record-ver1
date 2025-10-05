@@ -20,7 +20,6 @@ export {
   addTicketAtom,
   updateTicketAtom,
   deleteTicketAtom,
-  bulkDeleteTicketsAtom,
   
   // 유틸리티 atoms
   createFilteredTicketsAtom,
@@ -133,4 +132,7 @@ export {
   TicketCategory,
   ErrorType,
   CONSTANTS,
+  // UI 레이블
+  TICKET_STATUS_LABELS,
+  ACCOUNT_VISIBILITY_LABELS,
 } from '../types/enums';

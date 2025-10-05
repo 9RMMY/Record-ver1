@@ -94,7 +94,15 @@ const AIImageResults: React.FC<AIImageResultsProps> = ({
       // AI 이미지 생성 시뮬레이션
       await new Promise<void>(resolve => setTimeout(() => resolve(), 3000));
 
-      const mockGeneratedImageUrl = `https://picsum.photos/${imageWidth}/${imageHeight}?random=${Date.now()}`;
+      // 🔹 고정된 시드 값 사용 - 티켓 데이터 기반으로 일관된 이미지 생성
+      const seed = ticketData?.title 
+        ? ticketData.title.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0)
+        : Math.floor(Math.random() * 10000);
+      
+      const mockGeneratedImageUrl = `https://picsum.photos/seed/${seed}/${imageWidth}/${imageHeight}`;
+      console.log('🖼️ 생성된 이미지 URL:', mockGeneratedImageUrl);
+      console.log('🔑 시드 값:', seed);
+      
       setGeneratedImage(mockGeneratedImageUrl);
       setGenerationHistory(prev => [mockGeneratedImageUrl, ...prev]);
 
@@ -108,10 +116,11 @@ const AIImageResults: React.FC<AIImageResultsProps> = ({
 
   const handleSelectImage = () => {
     if (generatedImage) {
+      // AI 생성 이미지를 첫 번째로 설정 (모든 화면에서 일관되게 표시)
       navigation.navigate('TicketComplete', {
         ticketData,
         reviewData,
-        images: [...existingImages, generatedImage],
+        images: [generatedImage], // 선택한 이미지만 전달
       });
     }
   };

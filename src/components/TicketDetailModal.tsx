@@ -1,8 +1,3 @@
-/**
- * 티켓 상세 모달 컴포넌트
- * 카드 뒤집기 애니메이션, 공유, 삭제, 수정 기능 포함
- * 모달 전체는 스크롤 X, 카드 내부만 스크롤 가능
- */
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
@@ -24,8 +19,23 @@ import {
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ticket, UpdateTicketData } from '../types/ticket';
 import { useAtom } from 'jotai';
-import { deleteTicketAtom, updateTicketAtom, TicketStatus, getTicketByIdAtom, ticketsAtom } from '../atoms';
+import {
+  deleteTicketAtom,
+  updateTicketAtom,
+  TicketStatus,
+  TICKET_STATUS_LABELS,
+  getTicketByIdAtom,
+  ticketsAtom,
+} from '../atoms';
 import { TicketDetailModalProps } from '../types/componentProps';
+import PrivacySelectionModal from './PrivacySelectionModal';
+import {
+  Colors,
+  Typography,
+  Spacing,
+  BorderRadius,
+  Shadows,
+} from '../styles/designSystem';
 
 const { width } = Dimensions.get('window');
 
@@ -43,11 +53,14 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
   const ticket = propTicket ? getTicketById(propTicket.id) || propTicket : null;
   const [isFlipped, setIsFlipped] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedTicket, setEditedTicket] = useState<Partial<UpdateTicketData>>({});
+  const [editedTicket, setEditedTicket] = useState<Partial<UpdateTicketData>>(
+    {},
+  );
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showGenreModal, setShowGenreModal] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
   const genreOptions = [
     { label: '밴드', value: '밴드' },
@@ -60,16 +73,16 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
   if (!ticket) return null;
 
   const getStatusColor = (status: TicketStatus) =>
-    status === TicketStatus.PUBLIC ? '#4ECDC4' : '#FF6B6B';
+    status === TicketStatus.PUBLIC ? '#d7fffcff' : '#FF6B6B';
 
-  // 카드 탭 핸들러 함수 추가
+  // 카드 flipping
   const handleCardTap = () => {
     if (!isEditing) {
       setIsFlipped(!isFlipped);
     }
   };
 
-  // 카드 회전: isEditing 또는 isFlipped 상태에 따라 자동 뒤집힘/복귀
+  // 카드 자동 회전 (isEditing 또는 isFlipped 상태에 따라 자동 뒤집힘/복귀)
   useEffect(() => {
     const toValue = isEditing || isFlipped ? 1 : 0;
     Animated.timing(flipAnimation, {
@@ -79,7 +92,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
     }).start();
   }, [isEditing, isFlipped]);
 
-  // 모달 열릴 때 힌트 표시 및 편집 상태 초기화
+  // 모달 열릴 때 탭 하여 후기 보기 힌트 표시
   useEffect(() => {
     if (visible) {
       hintOpacity.setValue(1);
@@ -95,13 +108,17 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
       setShowTimePicker(false);
       setShowDropdown(false);
       setShowGenreModal(false);
+      setShowPrivacyModal(false);
     }
   }, [visible]);
 
+  // 티켓 공유 handle 함수
   const handleShare = async () => {
     try {
       await Share.share({
-        message: `🎫 ${ticket.title}\n🎤 ${ticket.artist}\n📍 ${ticket.place}\n📅 ${ticket.performedAt.toLocaleDateString('ko-KR')}`,
+        message: `${ticket.title}\n ${ticket.artist}\n ${
+          ticket.place
+        }\n ${ticket.performedAt.toLocaleDateString('ko-KR')}`,
         title: `${ticket.title} 티켓`,
       });
     } catch {
@@ -109,6 +126,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
     }
   };
 
+  // 티켓 수정 handle 함수
   const handleEdit = () => {
     if (!ticket) return;
     setIsEditing(true);
@@ -118,25 +136,26 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
       artist: ticket.artist,
       place: ticket.place,
       performedAt: ticket.performedAt,
-      review: ticket.review ? {
-        reviewText: ticket.review.reviewText,
-        createdAt: ticket.review.createdAt,
-      } : undefined,
+      review: ticket.review
+        ? {
+            reviewText: ticket.review.reviewText,
+            createdAt: ticket.review.createdAt,
+          }
+        : undefined,
     });
   };
 
+  // 티켓 수정 함수
   const handleSaveEdit = async () => {
     if (!ticket || !editedTicket) return;
 
-    const title = editedTicket.title !== undefined ? editedTicket.title : ticket.title;
-    const genre = editedTicket.genre !== undefined ? editedTicket.genre : ticket.genre;
+    const title =
+      editedTicket.title !== undefined ? editedTicket.title : ticket.title;
+    const genre =
+      editedTicket.genre !== undefined ? editedTicket.genre : ticket.genre;
 
     if (!title?.trim()) {
       Alert.alert('오류', '제목은 필수입니다.');
-      return;
-    }
-    if (!genre?.trim()) {
-      Alert.alert('오류', '장르는 필수입니다.');
       return;
     }
 
@@ -153,13 +172,16 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
           },
         ]);
       } else {
-        Alert.alert('오류', result?.error?.message || '티켓 수정에 실패했습니다.');
+        Alert.alert(
+          '오류',
+          result?.error?.message || '티켓 수정에 실패했습니다.',
+        );
       }
     } catch (error) {
       Alert.alert('오류', '티켓 수정 중 오류가 발생했습니다.');
     }
   };
-
+  // 티켓 수정 취소
   const handleCancelEdit = () => {
     setIsEditing(false);
     setEditedTicket({});
@@ -167,7 +189,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
     setShowTimePicker(false);
     setShowDropdown(false);
   };
-
+  // 티켓 날짜 수정
   const handleDateChange = (event: any, selectedDate?: Date) => {
     setShowDatePicker(false);
     if (selectedDate) {
@@ -178,7 +200,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
       setEditedTicket(prev => ({ ...prev, performedAt: newDateTime }));
     }
   };
-
+  // 티켓 시간 수정
   const handleTimeChange = (event: any, selectedTime?: Date) => {
     setShowTimePicker(false);
     if (selectedTime) {
@@ -190,6 +212,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
     }
   };
 
+  // 티켓 삭제 함수
   const handleDelete = () => {
     Alert.alert(
       '티켓 삭제',
@@ -205,37 +228,35 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
               onClose();
               Alert.alert('완료', '티켓이 삭제되었습니다.');
             } else {
-              Alert.alert('오류', result.error?.message || '티켓 삭제에 실패했습니다.');
+              Alert.alert(
+                '오류',
+                result.error?.message || '티켓 삭제에 실패했습니다.',
+              );
             }
           },
         },
-      ]
+      ],
     );
     setShowDropdown(false);
   };
 
+  const handlePrivacySelect = (newStatus: TicketStatus) => {
+    const result = updateTicket(ticket.id, { status: newStatus });
+    if (result?.success) {
+      Alert.alert(
+        '완료',
+        `후기가 성공적으로 "${TICKET_STATUS_LABELS[newStatus]}"로 변경되었습니다.`,
+      );
+    } else {
+      Alert.alert('오류', '상태 변경에 실패했습니다.');
+    }
+    setShowPrivacyModal(false);
+  };
+
+  // 후기 공개 범위 함수
   const handleTogglePrivacy = () => {
-    const newStatus = ticket.status === TicketStatus.PUBLIC ? TicketStatus.PRIVATE : TicketStatus.PUBLIC;
-    Alert.alert(
-      newStatus === TicketStatus.PUBLIC ? '티켓을 공개하시겠습니까?' : '티켓을 비공개하시겠습니까?',
-      '',
-      [
-        { text: '취소', style: 'cancel' },
-        {
-          text: newStatus === TicketStatus.PUBLIC ? '공개하기' : '비공개하기',
-          onPress: () => {
-            const result = updateTicket(ticket.id, { status: newStatus });
-            if (result?.success) {
-              Alert.alert('완료', `티켓이 성공적으로 ${newStatus === TicketStatus.PUBLIC ? '공개되었습니다' : '비공개되었습니다'}.`);
-              console.log('Ticket status updated to:', newStatus); // 콘솔 로그 추가
-            } else {
-              Alert.alert('오류', '상태 변경에 실패했습니다.');
-            }
-            setShowDropdown(false);
-          },
-        },
-      ]
-    );
+    setShowPrivacyModal(true);
+    setShowDropdown(false);
   };
 
   const handleAddToPhoto = () => {
@@ -327,11 +348,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                           style={styles.dropdownItem}
                           onPress={handleTogglePrivacy}
                         >
-                          <Text style={styles.dropdownText}>
-                            {ticket.status === TicketStatus.PUBLIC
-                              ? '티켓 비공개하기'
-                              : '티켓 공개하기'}
-                          </Text>
+                          <Text style={styles.dropdownText}>후기 공개범위 변경</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                           style={styles.dropdownItem}
@@ -608,6 +625,14 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
         />
       )}
 
+      {/* Privacy Selection Modal */}
+      <PrivacySelectionModal
+        visible={showPrivacyModal}
+        currentStatus={ticket.status}
+        onClose={() => setShowPrivacyModal(false)}
+        onSelect={handlePrivacySelect}
+      />
+
       {/* Genre Selection Modal */}
       <Modal
         visible={showGenreModal}
@@ -629,7 +654,10 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                         styles.genreOptionSelected,
                     ]}
                     onPress={() => {
-                      setEditedTicket(prev => ({ ...prev, genre: option.value }));
+                      setEditedTicket(prev => ({
+                        ...prev,
+                        genre: option.value,
+                      }));
                       setShowGenreModal(false);
                     }}
                   >
@@ -654,50 +682,61 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFF' },
+  container: { flex: 1, backgroundColor: Colors.systemBackground },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 30,
-    paddingBottom: 10,
-    backgroundColor: '#FFF',
+    paddingHorizontal: Spacing.screenPadding,
+    paddingTop: Spacing.xl,
+    backgroundColor: Colors.systemBackground,
   },
+
   backButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F8F9FA',
+    borderRadius: BorderRadius.round,
+    backgroundColor: Colors.secondarySystemBackground,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  backButtonText: { fontSize: 24, color: '#2C3E50', fontWeight: 'bold' },
-  headerActions: { flexDirection: 'row', gap: 12 },
+  backButtonText: { 
+    fontSize: 24, 
+    color: Colors.label, 
+    fontWeight: Typography.headline.fontWeight 
+  },
+  headerActions: { flexDirection: 'row', gap: Spacing.md },
   actionButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F8F9FA',
+    borderRadius: BorderRadius.round,
+    backgroundColor: Colors.secondarySystemBackground,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  actionButtonText: { fontSize: 18, color: '#2C3E50', fontWeight: 'bold' },
-  saveButton: { backgroundColor: '#B11515' },
-  saveButtonText: { color: '#FFF' },
+  
+  actionButtonText: { 
+    fontSize: 18, 
+    color: Colors.label, 
+    fontWeight: Typography.headline.fontWeight 
+  },
+  saveButton: { backgroundColor: Colors.primary },
+  saveButtonText: { color: Colors.white },
 
-  content: { flex: 1, backgroundColor: '#F8F9FA' },
+  content: { flex: 1, backgroundColor: Colors.secondarySystemBackground },
+  
   posterContainer: {
     alignItems: 'center',
-    paddingVertical: 10,
-    backgroundColor: '#FFF',
+    paddingTop: Spacing.xl,
+    backgroundColor: Colors.systemBackground,
   },
+
   flipContainer: {
     width: width * 0.85,
     aspectRatio: 0.8,
-    borderColor: '#000',
-    borderWidth: 1,
-    borderRadius: 20,
+    borderColor: Colors.separator,
+    borderWidth: 0.5,
+    borderRadius: BorderRadius.xxl,
     overflow: 'hidden',
   },
   flipCard: {
@@ -705,181 +744,179 @@ const styles = StyleSheet.create({
     height: '100%',
     position: 'absolute',
     backfaceVisibility: 'hidden',
-    borderRadius: 20,
+    borderRadius: BorderRadius.xxl,
     overflow: 'hidden',
-    backgroundColor: '#FFF',
+    backgroundColor: Colors.systemBackground,
   },
-  flipCardFront: { backgroundColor: '#FFF' },
-  flipCardBack: { backgroundColor: '#FFF' },
+  flipCardFront: { backgroundColor: Colors.systemBackground },
+  flipCardBack: { backgroundColor: Colors.systemBackground },
   posterImage: { width: '100%', height: '100%', resizeMode: 'cover' },
 
+  // 탭 하여 후기보기
   tapHint: {
     position: 'absolute',
-    bottom: 16,
+    bottom: Spacing.lg,
     left: 0,
     right: 0,
     alignItems: 'center',
   },
   tapHintText: {
-    fontSize: 12,
-    color: 'rgba(6, 5, 5, 0.8)',
-    backgroundColor: 'rgba(0,0,0,0.2)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    ...Typography.caption1,
+    color: Colors.white,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.md,
     overflow: 'hidden',
   },
 
+  
   reviewCardContent: {
     flex: 1,
-    padding: 16,
-    borderRadius: 20,
-    backgroundColor: '#FFF',
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.xxl,
+    backgroundColor: Colors.systemBackground,
   },
   reviewCardTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#2C3E50',
+    ...Typography.headline,
+    color: Colors.label,
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: Spacing.lg,
   },
   reviewScrollView: {
     flex: 1,
-    maxHeight: 350, // 스크롤 영역 높이 증가
-    width: '100%', // 가로 넓이 직접 지정
+    maxHeight: 350,
+    width: '100%',
     alignSelf: 'center',
   },
   reviewScrollContent: {
-    flexGrow: 1, 
+    flexGrow: 1,
   },
   reviewText: {
-    fontSize: 16,
-    color: '#2C3E50',
-    lineHeight: 24,
+    ...Typography.body,
+    color: Colors.label,
     textAlign: 'left',
   },
 
   titleSection: {
     alignItems: 'center',
-    paddingTop: 8,
-    paddingBottom: 4,
-    backgroundColor: '#FFF',
+    paddingTop: Spacing.lg,
+    paddingBottom: Spacing.xs,
+    backgroundColor: Colors.systemBackground,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#2C3E50',
+    ...Typography.title3,
+    fontWeight: '500',
+    color: Colors.label,
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: Spacing.sm,
   },
   viewCountBadge: {
-    backgroundColor: '#E0E0E0',
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    backgroundColor: Colors.systemGray5,
+    borderRadius: Spacing.lg,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
   },
   viewCountText: {
-    fontSize: 12,
+    ...Typography.caption1,
     fontWeight: '600',
-    color: '#4A4A4A',
+    color: Colors.secondaryLabel,
   },
 
   detailsSection: {
-    backgroundColor: '#FFF',
+    backgroundColor: Colors.systemBackground,
     paddingHorizontal: 28,
-    paddingVertical: 8,
+    paddingVertical: Spacing.sm,
   },
   detailRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F2F6',
+    borderBottomColor: Colors.systemGray5,
   },
-  detailLabel: { 
-    fontSize: 12, 
-    color: '#7F8C8D', 
-    fontWeight: '400',
-    marginRight: 8, // 라벨과 값 사이 간격 추가
+  detailLabel: {
+    ...Typography.caption1,
+    color: Colors.secondaryLabel,
+    marginRight: Spacing.sm,
   },
   detailValue: {
-    fontSize: 15,
-    color: '#2C3E50',
+    ...Typography.subheadline,
+    color: Colors.label,
     fontWeight: '500',
-    flex: 1, // 남은 공간을 채우도록 flex: 1로 변경
+    flex: 1,
     textAlign: 'right',
   },
 
   // 편집 모드 스타일
   titleInput: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#2C3E50',
+    fontWeight: Typography.headline.fontWeight,
+    color: Colors.label,
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: Spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-    paddingHorizontal: 16,
+    borderBottomColor: Colors.systemGray4,
+    paddingHorizontal: Spacing.lg,
   },
   detailInput: {
-    fontSize: 15,
-    color: '#2C3E50',
+    ...Typography.subheadline,
+    color: Colors.label,
     fontWeight: '500',
     flex: 1,
     textAlign: 'right',
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
+    borderBottomColor: Colors.systemGray4,
+    paddingVertical: Spacing.xs,
+    paddingHorizontal: Spacing.sm,
   },
   dateTimeEditContainer: {
     flex: 1,
     flexDirection: 'row',
-    gap: 8,
+    gap: Spacing.sm,
     alignItems: 'center',
     justifyContent: 'flex-end',
   },
   dateEditButton: {
-    backgroundColor: '#F8F9FA',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
+    backgroundColor: Colors.secondarySystemBackground,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: Colors.systemGray4,
   },
   timeEditButton: {
-    backgroundColor: '#F8F9FA',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
+    backgroundColor: Colors.secondarySystemBackground,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: Colors.systemGray4,
   },
   dateEditText: {
-    fontSize: 14,
-    color: '#2C3E50',
+    ...Typography.footnote,
+    color: Colors.label,
     fontWeight: '600',
     textAlign: 'right',
   },
   timeEditText: {
-    fontSize: 14,
-    color: '#2C3E50',
+    ...Typography.footnote,
+    color: Colors.label,
     fontWeight: '600',
     textAlign: 'right',
   },
 
   reviewInput: {
-    fontSize: 16,
-    color: '#2C3E50',
-    lineHeight: 24,
+    ...Typography.body,
+    color: Colors.label,
     textAlign: 'left',
     minHeight: 350,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 8,
-    padding: 12,
-    backgroundColor: '#F8F9FA',
+    borderColor: Colors.systemGray4,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    backgroundColor: Colors.secondarySystemBackground,
   },
 
   // 드롭다운 메뉴 스타일
@@ -890,49 +927,42 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 45,
     right: 0,
-    backgroundColor: '#FFF',
-    borderRadius: 12,
+    backgroundColor: Colors.systemBackground,
+    borderRadius: BorderRadius.lg,
     minWidth: 180,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
+    ...Shadows.large,
     zIndex: 1000,
   },
   dropdownItem: {
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F2F6',
+    borderBottomColor: Colors.systemGray5,
   },
   dropdownItemDanger: {
     borderBottomWidth: 0,
   },
   dropdownText: {
-    fontSize: 15,
-    color: '#2C3E50',
+    ...Typography.subheadline,
+    color: Colors.label,
     fontWeight: '500',
   },
   dropdownTextDanger: {
-    color: '#FF6B6B',
+    color: Colors.systemRed,
   },
 
   // 장르 선택 스타일
   genreSelector: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: '#F8F9FA',
-    borderRadius: 8,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    backgroundColor: Colors.secondarySystemBackground,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: Colors.systemGray4,
   },
   genreSelectorText: {
-    fontSize: 14,
-    color: '#2C3E50',
+    ...Typography.footnote,
+    color: Colors.label,
     fontWeight: '600',
     textAlign: 'right',
   },
@@ -945,37 +975,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   genreModalContent: {
-    backgroundColor: '#FFF',
-    borderRadius: 16,
-    padding: 20,
+    backgroundColor: Colors.systemBackground,
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.xl,
     width: width * 0.7,
     maxWidth: 300,
   },
   genreModalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#2C3E50',
-    marginBottom: 16,
+    ...Typography.headline,
+    color: Colors.label,
+    marginBottom: Spacing.lg,
     textAlign: 'center',
   },
   genreOption: {
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    marginBottom: 8,
-    backgroundColor: '#F8F9FA',
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing.sm,
+    backgroundColor: Colors.secondarySystemBackground,
   },
   genreOptionSelected: {
-    backgroundColor: '#B11515',
+    backgroundColor: Colors.primary,
   },
   genreOptionText: {
-    fontSize: 16,
-    color: '#2C3E50',
+    ...Typography.callout,
+    color: Colors.label,
     textAlign: 'center',
     fontWeight: '500',
   },
   genreOptionTextSelected: {
-    color: '#FFF',
+    color: Colors.white,
     fontWeight: '600',
   },
 });

@@ -1,6 +1,3 @@
-// Apple Design System for TicketBookApp
-// Following Apple's Human Interface Guidelines
-
 export const Colors = {
   // Primary Colors
   primary: '#B11515',           // App accent color (red)
@@ -127,7 +124,6 @@ export const Typography = {
 };
 
 export const Spacing = {
-  // Base spacing unit (4pt grid)
   xs: 4,    // 4pt
   sm: 8,    // 8pt
   md: 12,   // 12pt
@@ -136,9 +132,8 @@ export const Spacing = {
   xxl: 24,  // 24pt
   xxxl: 32, // 32pt
   
-  // Component specific spacing
   cardPadding: 16,
-  screenPadding: 20,
+  screenPadding: 24,
   sectionSpacing: 24,
   buttonPadding: 16,
   inputPadding: 16,
@@ -161,35 +156,30 @@ export const Shadows = {
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
-    elevation: 1, // Android
   },
   medium: {
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 4,
-    elevation: 3, // Android
   },
   large: {
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
     shadowRadius: 8,
-    elevation: 6, // Android
   },
   card: {
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 2, // Android
   },
   button: {
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 3, // Android
   },
 };
 
