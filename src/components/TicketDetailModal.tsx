@@ -68,6 +68,49 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
     { label: '연극/뮤지컬', value: '연극/뮤지컬' },
   ];
 
+  // Scroll 관련 state
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const [currentScale, setCurrentScale] = useState(1);
+  const [cardHeight, setCardHeight] = useState(0);
+
+  // scale 계산
+  const scale = scrollY.interpolate({
+    inputRange: [0, 150],
+    outputRange: [1, 0.65],
+    extrapolate: 'clamp',
+  });
+
+  const headerHeight = 200;
+  const translateY = scrollY.interpolate({
+    inputRange: [0, 150],
+    outputRange: [0, -((1 - 0.65) * cardHeight) / 2 + headerHeight / 2],
+    extrapolate: 'clamp',
+  });
+
+  // scrollY 값 추적해서 currentScale 업데이트
+  useEffect(() => {
+    const listenerId = scrollY.addListener(({ value }) => {
+      const newScale = 1 - (1 - 0.65) * (value / 150);
+      setCurrentScale(newScale);
+    });
+    return () => scrollY.removeListener(listenerId);
+  }, []);
+
+  // flip 이벤트
+  const handleCardTap = () => {
+    if (isEditing) return;
+    if (currentScale < 0.99) return; // 축소 상태에서는 뒤집기 막기
+    setIsFlipped(!isFlipped);
+  };
+
+  useEffect(() => {
+    const listenerId = scrollY.addListener(({ value }) => {
+      const newScale = 1 - (1 - 0.65) * (value / 150);
+      setCurrentScale(newScale);
+    });
+    return () => scrollY.removeListener(listenerId);
+  }, []);
+
   const flipAnimation = useRef(new Animated.Value(0)).current;
   const hintOpacity = useRef(new Animated.Value(1)).current;
   const detailsAnimation = useRef(new Animated.Value(1)).current;
@@ -76,13 +119,6 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
 
   const getStatusColor = (status: TicketStatus) =>
     status === TicketStatus.PUBLIC ? '#d7fffcff' : '#FF6B6B';
-
-  // 카드 flipping
-  const handleCardTap = () => {
-    if (!isEditing) {
-      setIsFlipped(!isFlipped);
-    }
-  };
 
   // 카드 자동 회전 (isEditing 또는 isFlipped 상태에 따라 자동 뒤집힘/복귀)
   useEffect(() => {
@@ -365,7 +401,9 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                           style={styles.dropdownItem}
                           onPress={handleTogglePrivacy}
                         >
-                          <Text style={styles.dropdownText}>후기 공개범위 변경</Text>
+                          <Text style={styles.dropdownText}>
+                            후기 공개범위 변경
+                          </Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                           style={styles.dropdownItem}
@@ -406,138 +444,165 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
             </View>
           </View>
 
-          {/* Content */}
-          <View style={styles.content}>
+          {/* 카드 - ScrollView 밖 */}
+          <Animated.ScrollView
+            style={styles.content}
+            scrollEventThrottle={16}
+            showsVerticalScrollIndicator={false}
+            onScroll={Animated.event(
+              [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+              { useNativeDriver: true },
+            )}
+          >
             <View style={styles.posterContainer}>
-              <TouchableOpacity
-                onPress={() => {
-                  if (showDropdown) {
-                    setShowDropdown(false);
-                  } else {
-                    handleCardTap();
-                  }
-                }}
-                activeOpacity={0.9}
+              {/* Animated.View 적용: scale + translateY */}
+              <Animated.View
+                style={[
+                  styles.posterAnimatedWrapper,
+                  {
+                    transform: [{ translateY }, { scale }],
+                  },
+                ]}
               >
-                <View style={styles.flipContainer}>
-                  <Animated.View
-                    style={[
-                      styles.flipCard,
-                      styles.flipCardFront,
-                      frontAnimatedStyle,
-                    ]}
-                  >
-                    <Image
-                      source={{
-                        uri:
-                          ticket.images?.[0] ||
-                          'https://via.placeholder.com/300x400?text=No+Image',
-                      }}
-                      style={styles.posterImage}
-                    />
+                <TouchableOpacity
+                  onPress={() => {
+                    if (showDropdown) {
+                      setShowDropdown(false);
+                    } else {
+                      handleCardTap();
+                    }
+                  }}
+                  activeOpacity={0.9}
+                >
+                  <View style={styles.flipContainer}>
                     <Animated.View
-                      style={[styles.tapHint, { opacity: hintOpacity }]}
+                      style={[
+                        styles.flipCard,
+                        styles.flipCardFront,
+                        frontAnimatedStyle,
+                      ]}
                     >
-                      <Text style={styles.tapHintText}>탭하여 후기 보기</Text>
-                    </Animated.View>
-                  </Animated.View>
-                  <Animated.View
-                    style={[
-                      styles.flipCard,
-                      styles.flipCardBack,
-                      backAnimatedStyle,
-                    ]}
-                  >
-                    <View style={styles.reviewCardContent}>
-                      <Text style={styles.reviewCardTitle}>관람 후기</Text>
-                      <ScrollView
-                        style={styles.reviewScrollView}
-                        contentContainerStyle={styles.reviewScrollContent}
-                        showsVerticalScrollIndicator
-                        nestedScrollEnabled
+                      <Image
+                        source={{
+                          uri:
+                            ticket.images?.[0] ||
+                            'https://via.placeholder.com/400x500?text=No+Image',
+                        }}
+                        style={styles.posterImage}
+                      />
+                      <Animated.View
+                        style={[styles.tapHint, { opacity: hintOpacity }]}
                       >
-                        {isEditing ? (
-                          <TextInput
-                            style={styles.reviewInput}
-                            value={
-                              editedTicket.review?.reviewText ??
-                              ticket.review?.reviewText ??
-                              ''
-                            }
-                            onChangeText={text =>
-                              setEditedTicket(prev => ({
-                                ...prev,
-                                review: {
-                                  reviewText: text,
-                                  createdAt:
-                                    prev.review?.createdAt ?? new Date(),
-                                  updatedAt: new Date(),
-                                },
-                              }))
-                            }
-                            placeholder="관람 후기를 입력하세요"
-                            multiline
-                            textAlignVertical="top"
-                          />
-                        ) : (
-                          <Text style={styles.reviewText}>
-                            {ticket.review?.reviewText ?? '후기가 없습니다.'}
-                          </Text>
-                        )}
-                      </ScrollView>
-                    </View>
-                    <Animated.View
-                      style={[styles.tapHint, { opacity: hintOpacity }]}
-                    >
-                      <Text style={styles.tapHintText}>탭하여 티켓 보기</Text>
+                        <Text style={styles.tapHintText}>탭하여 후기 보기</Text>
+                      </Animated.View>
                     </Animated.View>
-                  </Animated.View>
-                </View>
-              </TouchableOpacity>
-            </View>
 
-            {/* Title & Details */}
-            <View style={styles.titleSection}>
-              {isEditing ? (
-                <TextInput
-                  style={styles.titleInput}
-                  value={editedTicket.title ?? ticket.title}
-                  onChangeText={text =>
-                    setEditedTicket(prev => ({ ...prev, title: text }))
-                  }
-                  placeholder="공연 제목"
-                  multiline
-                  textAlign="center"
-                />
-              ) : (
-                <Text style={styles.title}>{ticket.title}</Text>
-              )}
-              {/* n회차 관람 뱃지 */}
-              {viewCount >= 1 && !isEditing && (
-                <View style={styles.viewCountBadge}>
-                  <Text style={styles.viewCountText}>{viewCount}회차 관람</Text>
-                </View>
-              )}
+                    <Animated.View
+                      style={[
+                        styles.flipCard,
+                        styles.flipCardBack,
+                        backAnimatedStyle,
+                      ]}
+                    >
+                      {/* 후기 */}
+                      <View style={styles.reviewCardContent}>
+                        <Text style={styles.reviewCardTitle}>관람 후기</Text>
+                        <ScrollView
+                          style={styles.reviewScrollView}
+                          contentContainerStyle={styles.reviewScrollContent}
+                          showsVerticalScrollIndicator
+                          nestedScrollEnabled
+                        >
+                          {isEditing ? (
+                            <TextInput
+                              style={styles.reviewInput}
+                              value={
+                                editedTicket.review?.reviewText ??
+                                ticket.review?.reviewText ??
+                                ''
+                              }
+                              onChangeText={text =>
+                                setEditedTicket(prev => ({
+                                  ...prev,
+                                  review: {
+                                    reviewText: text,
+                                    createdAt:
+                                      prev.review?.createdAt ?? new Date(),
+                                    updatedAt: new Date(),
+                                  },
+                                }))
+                              }
+                              placeholder="관람 후기를 입력하세요"
+                              multiline
+                              textAlignVertical="top"
+                            />
+                          ) : (
+                            <Text style={styles.reviewText}>
+                              {ticket.review?.reviewText ?? '후기가 없습니다.'}
+                            </Text>
+                          )}
+                        </ScrollView>
+                      </View>
+
+                      <Animated.View
+                        style={[styles.tapHint, { opacity: hintOpacity }]}
+                      >
+                        <Text style={styles.tapHintText}>탭하여 티켓 보기</Text>
+                      </Animated.View>
+                    </Animated.View>
+
+                    {/* n회차 관람 뱃지 */}
+                    {viewCount >= 1 && !isEditing && (
+                      <View style={styles.viewCountBadge}>
+                        <Text style={styles.viewCountText}>
+                          {viewCount}회차 관람
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                </TouchableOpacity>
+              </Animated.View>
+
+              {/* 제목 */}
+              <View style={styles.titleSection}>
+                {isEditing ? (
+                  <TextInput
+                    style={styles.titleInput}
+                    value={editedTicket.title ?? ticket.title}
+                    onChangeText={text =>
+                      setEditedTicket(prev => ({ ...prev, title: text }))
+                    }
+                    multiline
+                    textAlign="center"
+                  />
+                ) : (
+                  <Text style={[styles.title]}>
+                    {ticket.title}
+                  </Text>
+                )}
+              </View>
             </View>
 
             <View style={styles.detailsSection}>
               {/* 아코디언 헤더 */}
-              <TouchableOpacity 
-                style={styles.detailsHeader} 
+              <TouchableOpacity
+                style={styles.detailsHeader}
                 onPress={toggleDetails}
                 activeOpacity={0.7}
               >
                 <Text style={styles.detailsHeaderText}>공연 정보</Text>
-                <Animated.Text 
+                <Animated.Text
                   style={[
                     styles.detailsChevron,
                     {
-                      transform: [{
-                        rotate: detailsAnimation.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: ['0deg', '180deg'],
-                        }),
-                      }],
+                      transform: [
+                        {
+                          rotate: detailsAnimation.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: ['0deg', '180deg'],
+                          }),
+                        },
+                      ],
                     },
                   ]}
                 >
@@ -546,7 +611,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
               </TouchableOpacity>
 
               {/* 아코디언 컨텐츠 */}
-              <Animated.View 
+              <Animated.View
                 style={[
                   styles.detailsContent,
                   {
@@ -558,106 +623,104 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                   },
                 ]}
               >
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>일시</Text>
-                {isEditing ? (
-                  <View style={styles.dateTimeEditContainer}>
-                    <TouchableOpacity
-                      style={styles.dateEditButton}
-                      onPress={() => setShowDatePicker(true)}
-                    >
-                      <Text style={styles.dateEditText}>
-                        {(
-                          editedTicket.performedAt ?? ticket.performedAt
-                        ).toLocaleDateString('ko-KR', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                          weekday: 'short',
-                        })}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.timeEditButton}
-                      onPress={() => setShowTimePicker(true)}
-                    >
-                      <Text style={styles.timeEditText}>
-                        {(
-                          editedTicket.performedAt ?? ticket.performedAt
-                        ).toLocaleTimeString('ko-KR', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                          hour12: true,
-                        })}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                ) : (
-                  <Text style={styles.detailValue}>
-                    {ticket.performedAt.toLocaleDateString('ko-KR', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      weekday: 'short',
-                    })}{' '}
-                    {ticket.performedAt.toLocaleTimeString('ko-KR', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      hour12: true,
-                    })}
-                  </Text>
-                )}
-              </View>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>장소</Text>
-                {isEditing ? (
-                  <TextInput
-                    style={styles.detailInput}
-                    value={editedTicket.place ?? ticket.place}
-                    onChangeText={text =>
-                      setEditedTicket(prev => ({ ...prev, place: text }))
-                    }
-                    placeholder="공연 장소"
-                    textAlign="right"
-                  />
-                ) : (
-                  <Text style={styles.detailValue}>{ticket.place}</Text>
-                )}
-              </View>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>출연</Text>
-                {isEditing ? (
-                  <TextInput
-                    style={styles.detailInput}
-                    value={editedTicket.artist ?? ticket.artist}
-                    onChangeText={text =>
-                      setEditedTicket(prev => ({ ...prev, artist: text }))
-                    }
-                    placeholder="출연진"
-                    textAlign="right"
-                  />
-                ) : (
-                  <Text style={styles.detailValue}>{ticket.artist}</Text>
-                )}
-              </View>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>장르</Text>
-                {isEditing ? (
-                  <TouchableOpacity
-                    style={styles.genreSelector}
-                    onPress={() => setShowGenreModal(true)}
-                  >
-                    <Text style={styles.genreSelectorText}>
-                      {editedTicket.genre ?? ticket.genre ?? '밴드'}
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>일시</Text>
+                  {isEditing ? (
+                    <View style={styles.dateTimeEditContainer}>
+                      <TouchableOpacity
+                        style={styles.dateEditButton}
+                        onPress={() => setShowDatePicker(true)}
+                      >
+                        <Text style={styles.dateEditText}>
+                          {(
+                            editedTicket.performedAt ?? ticket.performedAt
+                          ).toLocaleDateString('ko-KR', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            weekday: 'short',
+                          })}
+                        </Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.timeEditButton}
+                        onPress={() => setShowTimePicker(true)}
+                      >
+                        <Text style={styles.timeEditText}>
+                          {(
+                            editedTicket.performedAt ?? ticket.performedAt
+                          ).toLocaleTimeString('ko-KR', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true,
+                          })}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <Text style={styles.detailValue}>
+                      {ticket.performedAt.toLocaleDateString('ko-KR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        weekday: 'short',
+                      })}{' '}
+                      {ticket.performedAt.toLocaleTimeString('ko-KR', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true,
+                      })}
                     </Text>
-                  </TouchableOpacity>
-                ) : (
-                  <Text style={styles.detailValue}>{ticket.genre}</Text>
-                )}
-              </View>
+                  )}
+                </View>
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>장소</Text>
+                  {isEditing ? (
+                    <TextInput
+                      style={styles.detailInput}
+                      value={editedTicket.place ?? ticket.place}
+                      onChangeText={text =>
+                        setEditedTicket(prev => ({ ...prev, place: text }))
+                      }
+                      placeholder="공연 장소"
+                    />
+                  ) : (
+                    <Text style={styles.detailValue}>{ticket.place}</Text>
+                  )}
+                </View>
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>출연</Text>
+                  {isEditing ? (
+                    <TextInput
+                      style={styles.detailInput}
+                      value={editedTicket.artist ?? ticket.artist}
+                      onChangeText={text =>
+                        setEditedTicket(prev => ({ ...prev, artist: text }))
+                      }
+                      placeholder="출연진"
+                    />
+                  ) : (
+                    <Text style={styles.detailValue}>{ticket.artist}</Text>
+                  )}
+                </View>
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>장르</Text>
+                  {isEditing ? (
+                    <TouchableOpacity
+                      style={styles.genreSelector}
+                      onPress={() => setShowGenreModal(true)}
+                    >
+                      <Text style={styles.genreSelectorText}>
+                        {editedTicket.genre ?? ticket.genre ?? '밴드'}
+                      </Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <Text style={styles.detailValue}>{ticket.genre}</Text>
+                  )}
+                </View>
               </Animated.View>
             </View>
-          </View>
+          </Animated.ScrollView>
         </View>
       </TouchableWithoutFeedback>
 
@@ -754,10 +817,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  backButtonText: { 
-    fontSize: 24, 
-    color: Colors.label, 
-    fontWeight: Typography.headline.fontWeight 
+  backButtonText: {
+    fontSize: 24,
+    color: Colors.label,
+    fontWeight: Typography.headline.fontWeight,
   },
   headerActions: { flexDirection: 'row', gap: Spacing.md },
   actionButton: {
@@ -768,21 +831,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  
-  actionButtonText: { 
-    fontSize: 18, 
-    color: Colors.label, 
-    fontWeight: Typography.headline.fontWeight 
+
+  actionButtonText: {
+    fontSize: 18,
+    color: Colors.label,
+    fontWeight: Typography.headline.fontWeight,
   },
   saveButton: { backgroundColor: Colors.primary },
   saveButtonText: { color: Colors.white },
 
-  content: { flex: 1, backgroundColor: Colors.secondarySystemBackground },
-  
+  content: { flex: 1, backgroundColor: Colors.systemBackground },
+
   posterContainer: {
     alignItems: 'center',
     paddingTop: Spacing.xl,
     backgroundColor: Colors.systemBackground,
+  },
+
+  // wrapper for animated transform
+  posterAnimatedWrapper: {
+    alignItems: 'center',
   },
 
   flipContainer: {
@@ -824,7 +892,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
 
-  
   reviewCardContent: {
     flex: 1,
     padding: Spacing.lg,
@@ -854,9 +921,10 @@ const styles = StyleSheet.create({
 
   titleSection: {
     alignItems: 'center',
-    paddingTop: Spacing.lg,
+    paddingTop: Spacing.xl,
     paddingBottom: Spacing.xs,
-    backgroundColor: Colors.systemBackground,
+    width: '100%',
+    paddingHorizontal: Spacing.screenPadding,
   },
   title: {
     ...Typography.title3,
@@ -864,12 +932,19 @@ const styles = StyleSheet.create({
     color: Colors.label,
     textAlign: 'center',
     marginBottom: Spacing.sm,
+    paddingHorizontal: 28,
   },
+
+  // 다회차 관람 뱃지
   viewCountBadge: {
+    position: 'absolute',
+    top: 16, // 카드 위쪽에서 띄울 거리
+    right: 16, // 오른쪽 끝 기준
     backgroundColor: Colors.systemGray5,
     borderRadius: Spacing.lg,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
+    zIndex: 10,
   },
   viewCountText: {
     ...Typography.caption1,
@@ -877,11 +952,12 @@ const styles = StyleSheet.create({
     color: Colors.secondaryLabel,
   },
 
+  // 공연 정보
   detailsSection: {
     backgroundColor: Colors.systemBackground,
     paddingHorizontal: 28,
     paddingTop: Spacing.sm,
-    paddingBottom: Spacing.lg,
+    paddingBottom: Spacing.xxxl,
   },
   detailsHeader: {
     flexDirection: 'row',
@@ -899,12 +975,13 @@ const styles = StyleSheet.create({
     ...Typography.title2,
     color: Colors.secondaryLabel,
   },
+
   detailsContent: {
     overflow: 'hidden',
   },
   detailRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     paddingVertical: Spacing.md,
     borderBottomWidth: 1,
@@ -913,84 +990,76 @@ const styles = StyleSheet.create({
   detailLabel: {
     ...Typography.caption1,
     color: Colors.secondaryLabel,
-    marginRight: Spacing.sm,
+    marginLeft: Spacing.sm,
+    marginRight: Spacing.lg,
   },
   detailValue: {
     ...Typography.subheadline,
     color: Colors.label,
     fontWeight: '500',
     flex: 1,
-    textAlign: 'right',
   },
 
   // 편집 모드 스타일
   titleInput: {
-    fontSize: 24,
-    fontWeight: Typography.headline.fontWeight,
+    ...Typography.title3,
+    fontWeight: '500',
     color: Colors.label,
     textAlign: 'center',
     marginBottom: Spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.systemGray4,
-    paddingHorizontal: Spacing.lg,
+    paddingHorizontal: 28,
+    borderWidth: 0,
+    backgroundColor: 'transparent',
   },
+  
   detailInput: {
     ...Typography.subheadline,
     color: Colors.label,
     fontWeight: '500',
     flex: 1,
-    textAlign: 'right',
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.systemGray4,
-    paddingVertical: Spacing.xs,
-    paddingHorizontal: Spacing.sm,
+    textAlign: 'left',
+    paddingVertical: 0,
+    paddingHorizontal: 0,
+    borderWidth: 0,
+    backgroundColor: 'transparent',
   },
   dateTimeEditContainer: {
     flex: 1,
     flexDirection: 'row',
     gap: Spacing.sm,
     alignItems: 'center',
-    justifyContent: 'flex-end',
+    justifyContent: 'flex-start',
   },
   dateEditButton: {
-    backgroundColor: Colors.secondarySystemBackground,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    borderColor: Colors.systemGray4,
+    backgroundColor: 'transparent',
+    paddingHorizontal: 0,
+    paddingVertical: 0,
   },
   timeEditButton: {
-    backgroundColor: Colors.secondarySystemBackground,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    borderColor: Colors.systemGray4,
+    backgroundColor: 'transparent',
+    paddingHorizontal: 0,
+    paddingVertical: 0,
   },
   dateEditText: {
-    ...Typography.footnote,
+    ...Typography.subheadline,
     color: Colors.label,
-    fontWeight: '600',
-    textAlign: 'right',
+    fontWeight: '500',
   },
   timeEditText: {
-    ...Typography.footnote,
+    ...Typography.subheadline,
     color: Colors.label,
-    fontWeight: '600',
-    textAlign: 'right',
+    fontWeight: '500',
   },
+
 
   reviewInput: {
     ...Typography.body,
     color: Colors.label,
     textAlign: 'left',
     minHeight: 350,
-    borderWidth: 1,
-    borderColor: Colors.systemGray4,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
-    backgroundColor: Colors.secondarySystemBackground,
+    borderWidth: 0,
+    padding: 0,
+    backgroundColor: 'transparent',
   },
 
   // 드롭다운 메뉴 스타일
@@ -1027,18 +1096,14 @@ const styles = StyleSheet.create({
 
   // 장르 선택 스타일
   genreSelector: {
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    backgroundColor: Colors.secondarySystemBackground,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    borderColor: Colors.systemGray4,
+    paddingVertical: 0,
+    paddingHorizontal: 0,
+    backgroundColor: 'transparent',
   },
   genreSelectorText: {
-    ...Typography.footnote,
+    ...Typography.subheadline,
     color: Colors.label,
-    fontWeight: '600',
-    textAlign: 'right',
+    fontWeight: '500',
   },
 
   // 장르 모달 스타일

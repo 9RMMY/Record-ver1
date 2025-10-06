@@ -165,7 +165,6 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
   const currentTicket = displayTickets[currentTicketIndex] || displayTickets[0];
   const isPlaceholder = isPlaceholderTicket(currentTicket);
 
-  // 🔹 PanResponder
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
