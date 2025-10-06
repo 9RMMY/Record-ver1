@@ -61,6 +61,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
   const [showDropdown, setShowDropdown] = useState(false);
   const [showGenreModal, setShowGenreModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [isDetailsExpanded, setIsDetailsExpanded] = useState(true);
 
   const genreOptions = [
     { label: '밴드', value: '밴드' },
@@ -69,6 +70,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
 
   const flipAnimation = useRef(new Animated.Value(0)).current;
   const hintOpacity = useRef(new Animated.Value(1)).current;
+  const detailsAnimation = useRef(new Animated.Value(1)).current;
 
   if (!ticket) return null;
 
@@ -109,8 +111,23 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
       setShowDropdown(false);
       setShowGenreModal(false);
       setShowPrivacyModal(false);
+      setIsDetailsExpanded(true);
+      detailsAnimation.setValue(1);
     }
   }, [visible]);
+
+  // 디테일 섹션 아코디언 애니메이션
+  useEffect(() => {
+    Animated.timing(detailsAnimation, {
+      toValue: isDetailsExpanded ? 1 : 0,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
+  }, [isDetailsExpanded]);
+
+  const toggleDetails = () => {
+    setIsDetailsExpanded(!isDetailsExpanded);
+  };
 
   // 티켓 공유 handle 함수
   const handleShare = async () => {
@@ -504,6 +521,43 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
             </View>
 
             <View style={styles.detailsSection}>
+              {/* 아코디언 헤더 */}
+              <TouchableOpacity 
+                style={styles.detailsHeader} 
+                onPress={toggleDetails}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.detailsHeaderText}>공연 정보</Text>
+                <Animated.Text 
+                  style={[
+                    styles.detailsChevron,
+                    {
+                      transform: [{
+                        rotate: detailsAnimation.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['0deg', '180deg'],
+                        }),
+                      }],
+                    },
+                  ]}
+                >
+                  ∨
+                </Animated.Text>
+              </TouchableOpacity>
+
+              {/* 아코디언 컨텐츠 */}
+              <Animated.View 
+                style={[
+                  styles.detailsContent,
+                  {
+                    maxHeight: detailsAnimation.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0, 500],
+                    }),
+                    opacity: detailsAnimation,
+                  },
+                ]}
+              >
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>일시</Text>
                 {isEditing ? (
@@ -586,7 +640,6 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                   <Text style={styles.detailValue}>{ticket.artist}</Text>
                 )}
               </View>
-
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>장르</Text>
                 {isEditing ? (
@@ -602,6 +655,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                   <Text style={styles.detailValue}>{ticket.genre}</Text>
                 )}
               </View>
+              </Animated.View>
             </View>
           </View>
         </View>
@@ -826,7 +880,27 @@ const styles = StyleSheet.create({
   detailsSection: {
     backgroundColor: Colors.systemBackground,
     paddingHorizontal: 28,
-    paddingVertical: Spacing.sm,
+    paddingTop: Spacing.sm,
+    paddingBottom: Spacing.lg,
+  },
+  detailsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.systemGray5,
+  },
+  detailsHeaderText: {
+    ...Typography.headline,
+    color: Colors.label,
+  },
+  detailsChevron: {
+    ...Typography.title2,
+    color: Colors.secondaryLabel,
+  },
+  detailsContent: {
+    overflow: 'hidden',
   },
   detailRow: {
     flexDirection: 'row',
