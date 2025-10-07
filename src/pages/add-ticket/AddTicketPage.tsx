@@ -119,23 +119,22 @@ const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation, route }) => {
         onClose={() => navigation.goBack()}
         onSelectManual={() => setShowInputMethodModal(false)}
       />
-
-      {/* 헤더 */}
+      {/* 헤더 */}{' '}
       <View style={styles.header}>
+        {' '}
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Text style={styles.backButtonText}>←</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.headerTitle}>공연 정보 입력하기</Text>
-
+          {' '}
+          <Text style={styles.backButtonText}>←</Text>{' '}
+        </TouchableOpacity>{' '}
+        <Text style={styles.headerTitle}>공연 정보 입력하기</Text>{' '}
         <TouchableOpacity onPress={handleSubmit}>
-          <Text style={styles.nextButtonText}>다음</Text>
-        </TouchableOpacity>
+          {' '}
+          <Text style={styles.nextButtonText}>다음</Text>{' '}
+        </TouchableOpacity>{' '}
       </View>
-
       {/* 컨텍스트 메시지 */}
       {(fromEmptyState || fromAddButton) && (
         <View style={styles.contextMessage}>
@@ -145,7 +144,6 @@ const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation, route }) => {
           </Text>
         </View>
       )}
-
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.formContainer}>
           {/* 제목 */}
@@ -240,33 +238,35 @@ const AddTicketPage: React.FC<AddTicketPageProps> = ({ navigation, route }) => {
 
           {/* 공연 날짜 및 시간 */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>공연 날짜 및 시간 *</Text>
-            <TouchableOpacity
-              style={styles.dateButton}
-              onPress={showDateTimePicker}
-            >
-              <Text style={styles.dateButtonText}>
-                {formData.performedAt.toLocaleDateString('ko-KR', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}{' '}
-                {formData.performedAt.toLocaleTimeString('ko-KR', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hour12: true,
-                })}
-              </Text>
-            </TouchableOpacity>
+            <Text style={styles.label}>공연 일시 *</Text>
+              <TouchableOpacity
+                style={styles.dateButton}
+                onPress={showDateTimePicker}
+              >
+                <Text style={styles.dateButtonText}>
+                  {formData.performedAt.toLocaleDateString('ko-KR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}{' '}
+                  {formData.performedAt.toLocaleTimeString('ko-KR', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true,
+                  })}
+                </Text>
+              </TouchableOpacity>
 
-            {showDatePicker && Platform.OS === 'ios' && (
-              <DateTimePicker
-                value={formData.performedAt}
-                mode="datetime"
-                display="default"
-                onChange={handleDateChange}
-              />
-            )}
+              {showDatePicker && Platform.OS === 'ios' && (
+                <View style={styles.datePickerContainer}>
+                  <DateTimePicker
+                    value={formData.performedAt}
+                    mode="datetime"
+                    display="default"
+                    onChange={handleDateChange}
+                  />
+                </View>
+              )}
           </View>
         </View>
       </ScrollView>
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: Spacing.screenPadding,
+    padding: Spacing.lg,
     backgroundColor: Colors.systemBackground,
     ...Shadows.small,
     zIndex: 1,
@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
   backButtonText: {
     ...Typography.title3,
     color: Colors.label,
-    fontWeight: 'bold',
+    fontWeight: '500',
   },
   headerTitle: { ...Typography.headline, color: Colors.label },
   nextButtonText: {
@@ -310,7 +310,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.secondarySystemBackground,
     paddingHorizontal: Spacing.sectionSpacing,
     paddingVertical: Spacing.lg,
-    marginTop: Spacing.sm,
     borderBottomWidth: 1,
     borderBottomColor: Colors.systemGray5,
   },
@@ -326,7 +325,7 @@ const styles = StyleSheet.create({
   inputGroup: { marginBottom: Spacing.sectionSpacing },
   label: {
     ...Typography.callout,
-    fontWeight: '600',
+    fontWeight: '500',
     color: Colors.label,
     marginBottom: Spacing.sm,
   },
@@ -346,9 +345,10 @@ const styles = StyleSheet.create({
     color: Colors.label,
   },
 
+  // 장르 선택 모달
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(0,0,0,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -356,18 +356,16 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.systemBackground,
     borderRadius: BorderRadius.lg,
     padding: 20,
-    width: '80%',
+    width: '70%',
   },
   modalTitle: {
-    ...Typography.callout,
-    fontWeight: 'bold',
+    ...Typography.body,
+    fontWeight: '500',
     marginBottom: 10,
     textAlign: 'center',
   },
   modalOption: {
     paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.systemGray5,
   },
   modalOptionText: {
     ...Typography.body,
@@ -387,6 +385,17 @@ const styles = StyleSheet.create({
     ...Typography.body,
     color: Colors.label,
   },
+  datePickerContainer: {
+  borderRadius: BorderRadius.sm,
+  marginTop: 6, // 버튼과 picker 사이 간격
+  paddingVertical: 4, // picker 주변 패딩
+  paddingHorizontal: 6,
+  backgroundColor: Colors.systemBackground,
+  borderWidth: 1,
+  borderColor: Colors.systemGray5,
+  ...Shadows.small,
+},
+
 });
 
 export default AddTicketPage;

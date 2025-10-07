@@ -83,7 +83,7 @@ export const Typography = {
   
   // Headline
   headline: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: '600' as const,
     lineHeight: 22,
   },
