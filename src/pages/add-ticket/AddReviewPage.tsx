@@ -201,30 +201,41 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: Spacing.screenPadding,
-    backgroundColor: '#fff',
+    padding: Spacing.lg,
+    backgroundColor: Colors.systemBackground,
     ...Shadows.small,
+    zIndex: 1,
   },
   backButton: {
     width: 40,
     height: 40,
-    borderRadius: 999,
-    backgroundColor: '#F2F2F2',
+    borderRadius: BorderRadius.round,
+    backgroundColor: Colors.secondarySystemBackground,
     justifyContent: 'center',
     alignItems: 'center',
+    ...Shadows.small,
   },
-  backButtonText: { fontSize: 18, fontWeight: 'bold' },
-  headerTitle: { ...Typography.headline, color: '#000' },
-  nextButtonText: { color: '#B11515', fontWeight: '600' },
+  backButtonText: {
+    ...Typography.title3,
+    color: Colors.label,
+    fontWeight: '500',
+  },
+  headerTitle: { ...Typography.headline, color: Colors.label },
+  nextButtonText: {
+    ...Typography.body,
+    color: '#B11515',
+  },
 
   // 추천 질문 카드
-  questionSection: { marginTop: 12 },
+  questionSection: { marginVertical: 16, alignItems: 'center'},
   questionCard: {
-    width: width,
+    width: width * 0.85, // 화면의 85%만 차지
+    marginHorizontal: width * 0.025, // 카드 간 간격 확보
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 40,
+    paddingVertical: 20,
     backgroundColor: '#E6E6E6',
+    borderRadius: 16,
   },
   questionText: { fontSize: 16, color: '#2C3E50', fontWeight: '500' },
 
@@ -254,16 +265,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 12,
   },
-  sectionTitle: { fontWeight: '600', fontSize: 16 },
+  sectionTitle: { fontWeight: '500', fontSize: 17 },
   toggleRow: { flexDirection: 'row', alignItems: 'center' },
   statusLabel: { fontSize: 14, marginRight: 8 },
   reviewInput: {
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
     borderRadius: 12,
     padding: 16,
     backgroundColor: '#F8F9FA',
-    minHeight: 120,
+    minHeight: 450,
     textAlignVertical: 'top',
   },
   characterCount: {
@@ -276,25 +285,21 @@ const styles = StyleSheet.create({
   // 하단 플로팅 녹음 버튼
   floatingContainer: {
     position: 'absolute',
-    bottom: 100,
+    bottom: 50,
     left: 0,
     right: 0,
     alignItems: 'center',
   },
   recordButton: {
-    width: 80,
-    height: 80,
+    width: 70,
+    height: 70,
     borderRadius: 40,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 6,
   },
   recordButtonActive: { backgroundColor: '#B11515' },
   recordButtonInactive: { backgroundColor: '#E0E0E0' },
-  recordButtonText: { fontSize: 16, fontWeight: '600', color: '#fff' },
+  recordButtonText: { fontSize: 16, fontWeight: '600', color: '#000000ff' },
 });
 
 export default AddReviewPage;
